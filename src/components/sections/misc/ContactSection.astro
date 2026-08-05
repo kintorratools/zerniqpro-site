@@ -84,7 +84,7 @@ const copy =
         >
           {copy.formTitle}
         </h2>
-        <form>
+        <form data-demo-form data-demo-message={copy.demoMessage}>
           <div class="grid gap-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextInput
@@ -115,7 +115,12 @@ const copy =
             <p class="text-sm text-neutral-600 dark:text-neutral-400">
               {copy.formSubTitle}
             </p>
-
+            <p
+              class="mt-2 hidden text-sm text-orange-500 dark:text-orange-400"
+              data-demo-status
+              aria-live="polite"
+            >
+            </p>
           </div>
         </form>
       </div>
