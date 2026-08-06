@@ -1,6 +1,6 @@
 # Architecture: Cloudflare SSR & Strapi Boundary
 
-> **Phase 1 (current)** — Mixed/hybrid foundation: static pages with one on-demand SSR health endpoint.
+> **Phase 1 (completed)** — Mixed/hybrid foundation: static pages with one on-demand SSR health endpoint.
 > No Strapi deployment in this phase.
 
 ## Runtime Responsibilities
@@ -33,7 +33,7 @@ Strapi (single instance)
 - CMS adapter layer created but not called by any page
 - Health endpoint confirms Workers runtime readiness
 
-### Phase 2 (current): Site Contract & Connectivity Probe
+### Phase 2 (completed): Site Contract & Connectivity Probe
 
 **Site Record (Strapi 5 flat entity)**:
 
@@ -78,12 +78,14 @@ Strapi (single instance)
 - Boundary tests: invalid hex → 502, invalid protocol → 502, nullable fields → 200 with safe defaults
 - `.dev.vars` is never created or modified by the test
 
-### Phase 3: Per-Route SSR Content
+### Phase 3 (current): Shadow SSR & Product Contract
 
-- Product and support pages use `export const prerender = false`
-- Content fetched from Strapi via `strapiFetch()`
-- Content cache headers configured per route
-- Static fallback retained for non-CMS pages
+- Product Contract established: `ProductRecord` → `ProductViewModel` with Zod validation
+- Dynamic zone block types: text, feature-grid, specifications
+- Shadow SSR route: `/preview/products/[handle]` validates full CMS → Worker pipeline
+- Product SSR integration test uses `wrangler dev` with production bundle
+- Existing `/products/[id]` static pages remain unchanged
+- Product JSON-LD, canonical URLs, and SEO metadata verified
 
 ### Phase 4: Full Migration
 
@@ -151,6 +153,7 @@ src/lib/cms/
 - `pnpm build` — Astro + Cloudflare adapter build
 - `pnpm worker:dry-run` — Wrangler dry-run validates Worker entry
 - `pnpm test:cms` — CMS integration test against mock Strapi server
+- `pnpm test:product` — Product SSR integration test via wrangler dev
 - `pnpm test:smoke` — HTTP smoke test against `astro preview`
 
 ## This Phase Does NOT Include

@@ -37,5 +37,8 @@ jobs:
       - name: CMS integration tests
         run: pnpm test:cms
 
+      - name: Product SSR tests
+        run: pnpm test:product
+
       - name: Smoke tests
         run: pnpm test:smoke

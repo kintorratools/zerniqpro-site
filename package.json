@@ -15,6 +15,7 @@
     "test:smoke": "start-server-and-test preview:worker http-get://127.0.0.1:4321 test:smoke:http",
     "deploy": "pnpm build && wrangler deploy --config dist/server/wrangler.json",
     "test:cms": "node scripts/test-cms-integration.mjs",
+    "test:product": "node scripts/test-product-ssr.mjs",
     "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist/server/wrangler.json"
   },
   "dependencies": {

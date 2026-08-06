@@ -7,6 +7,7 @@ const ROUTES = [
   { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
   { path: '/api/cms-probe.json', expectStatus: s => s === 503 },
+  { path: '/preview/products/test-product/', expectStatus: s => s === 503 },
 ];
 
 const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:4321';
@@ -140,6 +141,19 @@ for (const route of ROUTES) {
       }
 
       console.log(`OK   ${route.path} -> cms-probe checks passed`);
+    }
+
+    // Extra checks for product preview shadow route (no CMS configured)
+    if (route.path === '/preview/products/test-product/') {
+      const xRobots = res.headers.get('x-robots-tag') ?? '';
+      if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
+        console.error(
+          `FAIL ${route.path} -> X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
+        );
+        failed = true;
+        continue;
+      }
+      console.log(`OK   ${route.path} -> noindex/nofollow verified`);
     }
   } catch (err) {
     console.error(`FAIL ${route.path} -> ${err.message}`);

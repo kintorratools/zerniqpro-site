@@ -1,0 +1,138 @@
+---
+export const prerender = false;
+
+import { getCmsConfig } from '@lib/cms/config';
+import { getSiteConfig } from '@lib/cms/site';
+import { getProductByHandle } from '@lib/cms/product';
+import {
+  CmsTimeoutError,
+  CmsNotConfiguredError,
+  CmsContentNotFoundError,
+} from '@lib/cms/errors';
+import ProductBlockRenderer from '@components/cms/ProductBlockRenderer.astro';
+
+const handle = Astro.params.handle!;
+
+function errorResponse(status: number, html: string): Response {
+  return new Response(html, {
+    status,
+    headers: { 'X-Robots-Tag': 'noindex, nofollow' },
+  });
+}
+
+const config = getCmsConfig();
+
+if (!config.configured) {
+  return errorResponse(
+    503,
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>503 — CMS Not Configured</title></head><body><h1>503 — CMS Not Configured</h1></body></html>'
+  );
+}
+
+let site;
+let product;
+
+try {
+  site = await getSiteConfig();
+} catch (e) {
+  if (e instanceof CmsTimeoutError) {
+    return errorResponse(
+      504,
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>504 — Gateway Timeout</title></head><body><h1>504 — Gateway Timeout</h1></body></html>'
+    );
+  }
+  if (e instanceof CmsNotConfiguredError) {
+    return errorResponse(
+      503,
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>503 — CMS Not Configured</title></head><body><h1>503 — CMS Not Configured</h1></body></html>'
+    );
+  }
+  return errorResponse(
+    502,
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>502 — Bad Gateway</title></head><body><h1>502 — Bad Gateway</h1></body></html>'
+  );
+}
+
+try {
+  product = await getProductByHandle(handle);
+} catch (e) {
+  if (e instanceof CmsTimeoutError) {
+    return errorResponse(
+      504,
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>504 — Gateway Timeout</title></head><body><h1>504 — Gateway Timeout</h1></body></html>'
+    );
+  }
+  if (e instanceof CmsContentNotFoundError) {
+    return errorResponse(
+      404,
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>404 — Not Found</title></head><body><h1>404 — Not Found</h1></body></html>'
+    );
+  }
+  return errorResponse(
+    502,
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>502 — Bad Gateway</title></head><body><h1>502 — Bad Gateway</h1></body></html>'
+  );
+}
+
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+const canonical = `${site.domain}/products/${handle}/`;
+const pageTitle = `${product.seo.title} | ${site.name}`;
+
+const jsonLdString = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.name,
+  description: product.summary,
+  brand: {
+    '@type': 'Brand',
+    name: site.name,
+  },
+});
+---
+
+<!doctype html>
+<html lang={site.defaultLocale}>
+  <head>
+    <meta charset="utf-8" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={product.seo.description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Fragment
+      set:html={`<script type="application/ld+json">${jsonLdString}</script>`}
+    />
+  </head>
+  <body>
+    <main>
+      <h1>{product.name}</h1>
+
+      {product.summary && <p>{product.summary}</p>}
+
+      {
+        product.hero && (
+          <section>
+            {product.hero.eyebrow && <p>{product.hero.eyebrow}</p>}
+            {product.hero.heading && product.hero.heading !== product.name && (
+              <h2>{product.hero.heading}</h2>
+            )}
+            {product.hero.description &&
+              product.hero.description !== product.summary && (
+                <p>{product.hero.description}</p>
+              )}
+            {product.hero.imageUrl && (
+              <img
+                src={product.hero.imageUrl}
+                alt={product.hero.imageAlt ?? ''}
+                style="max-width:100%;height:auto;aspect-ratio:16/9"
+              />
+            )}
+          </section>
+        )
+      }
+
+      <ProductBlockRenderer blocks={product.blocks} />
+    </main>
+  </body>
+</html>

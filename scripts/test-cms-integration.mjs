@@ -114,6 +114,12 @@ function startMockStrapi() {
         res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
+      // Verify site key filter
+      if (url.searchParams.get('filters[key][$eq]') !== 'zerniq') {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: { status: 400 } }));
+        return;
+      }
       if (url.searchParams.get('populate') === '*') {
         res.writeHead(400);
         res.end(JSON.stringify({ error: { status: 400 } }));
@@ -370,7 +376,7 @@ async function runScenario(label, token, testFn) {
   const wu = `http://127.0.0.1:${wp}`;
 
   console.log(
-    `\n[Scenario: ${label}] Starting worker (token=${token}, port=${wp})...`
+    `\n[Scenario: ${label}] Starting worker (token=***, port=${wp})...`
   );
   workerProcess = await startWorker(wp, token, mockUrl);
 
