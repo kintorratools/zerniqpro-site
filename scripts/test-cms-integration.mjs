@@ -1,321 +1,375 @@
 import { createServer } from 'node:http';
-
-const MOCK_PORT = Number(process.env.MOCK_STRAPI_PORT ?? 4579);
-const MOCK_HOST = '127.0.0.1';
-const MOCK_URL = `http://${MOCK_HOST}:${MOCK_PORT}`;
+import { spawn } from 'node:child_process';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 let mockServer;
+let previewProcess;
 let failed = false;
+
+const MOCK_HOST = '127.0.0.1';
 
 const MOCK_SITE_RECORD = {
   id: 1,
   documentId: 'abc123',
-  siteName: 'Zerniq NA',
-  siteKey: 'zerniq',
-  locale: 'en',
+  key: 'zerniq',
+  name: 'ZERNIQ',
+  domain: 'https://zerniqpro.com',
   defaultLocale: 'en',
-  siteTitle: 'Zerniq North America',
-  siteDescription: 'Professional power tools for the North American market',
-  tagline: 'Built for Pros',
-  primaryColor: '#f59e0b',
-  secondaryColor: '#1e293b',
-  contactEmail: 'info@zerniqpro.com',
-  contactPhone: '+1-800-ZERNIQ',
-  socialLinks: {
-    twitter: 'https://x.com/zerniq',
-    instagram: 'https://instagram.com/zerniq',
+  defaultSeo: {
+    title: 'ZERNIQ Tools',
+    description: 'Professional power tools for North America',
+  },
+  branding: {
+    logoUrl: 'https://zerniqpro.com/logo.png',
+    faviconUrl: 'https://zerniqpro.com/favicon.ico',
+    primaryColor: '#ff6600',
+    accentColor: '#1e293b',
   },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   publishedAt: '2025-06-01T00:00:00.000Z',
 };
 
-/** Start a minimal mock Strapi HTTP server */
+/** Start a mock Strapi HTTP server on a dynamic port. Returns { server, url }. */
 function startMockStrapi() {
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Content-Type', 'application/json');
+      const url = new URL(req.url, `http://${MOCK_HOST}`);
 
-      const url = new URL(req.url, MOCK_URL);
-
-      if (req.method === 'GET' && url.pathname === '/api/sites') {
-        const siteKey = url.searchParams.get('filters[siteKey][$eq]');
-        if (siteKey === 'zerniq') {
-          res.writeHead(200);
-          res.end(
-            JSON.stringify({
-              data: [MOCK_SITE_RECORD],
-              meta: { pagination: { total: 1 } },
-            })
-          );
-        } else {
-          res.writeHead(200);
-          res.end(
-            JSON.stringify({ data: [], meta: { pagination: { total: 0 } } })
-          );
-        }
+      if (req.method !== 'GET' || url.pathname !== '/api/sites') {
+        res.writeHead(404);
+        res.end(
+          JSON.stringify({ error: { status: 404, message: 'Not found' } })
+        );
         return;
       }
 
-      res.writeHead(404);
-      res.end(JSON.stringify({ error: { status: 404, message: 'Not found' } }));
+      // Verify required headers
+      const auth = req.headers['authorization'] ?? '';
+      if (auth !== 'Bearer test-token') {
+        console.error(`  Mock: Missing/wrong Authorization header: "${auth}"`);
+        res.writeHead(401);
+        res.end(
+          JSON.stringify({ error: { status: 401, message: 'Unauthorized' } })
+        );
+        return;
+      }
+
+      const accept = req.headers['accept'] ?? '';
+      if (accept !== 'application/json') {
+        console.error(`  Mock: Wrong Accept header: "${accept}"`);
+        res.writeHead(406);
+        res.end(
+          JSON.stringify({ error: { status: 406, message: 'Not Acceptable' } })
+        );
+        return;
+      }
+
+      // Verify query parameters match the contract
+      const key = url.searchParams.get('filters[key][$eq]');
+      const pageSize = url.searchParams.get('pagination[pageSize]');
+      const status = url.searchParams.get('status');
+
+      if (key !== 'zerniq') {
+        console.error(
+          `  Mock: Expected filters[key][$eq]=zerniq, got "${key}"`
+        );
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+      if (pageSize !== '1') {
+        console.error(
+          `  Mock: Expected pagination[pageSize]=1, got "${pageSize}"`
+        );
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+      if (status !== 'published') {
+        console.error(`  Mock: Expected status=published, got "${status}"`);
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+
+      // Verify no populate=*
+      if (url.searchParams.get('populate') === '*') {
+        console.error('  Mock: populate=* detected — forbidden');
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+
+      // Verify populate targets
+      const popSeo = url.searchParams.get('populate[defaultSeo]');
+      const popBrand = url.searchParams.get('populate[branding]');
+      if (popSeo !== '*' || popBrand !== '*') {
+        console.error(
+          '  Mock: Missing populate[defaultSeo]=* or populate[branding]=*'
+        );
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+
+      // Verify field selection
+      const f0 = url.searchParams.get('fields[0]');
+      const f1 = url.searchParams.get('fields[1]');
+      const f2 = url.searchParams.get('fields[2]');
+      const f3 = url.searchParams.get('fields[3]');
+      if (
+        f0 !== 'key' ||
+        f1 !== 'name' ||
+        f2 !== 'domain' ||
+        f3 !== 'defaultLocale'
+      ) {
+        console.error(
+          `  Mock: Unexpected fields selection: ${f0},${f1},${f2},${f3}`
+        );
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
+        );
+        return;
+      }
+
+      // All checks passed
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(
+        JSON.stringify({
+          data: [MOCK_SITE_RECORD],
+          meta: { pagination: { total: 1 } },
+        })
+      );
     });
 
-    server.listen(MOCK_PORT, MOCK_HOST, () => {
-      console.log(`Mock Strapi listening on ${MOCK_URL}`);
-      resolve(server);
+    server.listen(0, MOCK_HOST, () => {
+      const port = server.address().port;
+      const url = `http://${MOCK_HOST}:${port}`;
+      console.log(`Mock Strapi listening on ${url}`);
+      resolve({ server, url, port });
     });
 
     server.on('error', reject);
   });
 }
 
-/** Test the mock Strapi responds with valid site data */
-async function testMockStrapiSiteQuery() {
-  console.log('\n--- Test: mock Strapi returns valid site data ---');
+/** Spawn Astro dev server as a child process (dev mode accesses process.env, unlike preview) */
+function startPreview(previewPort, mockUrl) {
+  // Set env on parent process so child inherits it naturally
+  process.env.CMS_SITE_KEY = 'zerniq';
+  process.env.STRAPI_URL = mockUrl;
+  process.env.STRAPI_API_TOKEN = 'test-token';
 
-  try {
-    const res = await fetch(
-      `${MOCK_URL}/api/sites?filters[siteKey][$eq]=zerniq&populate=*`
-    );
-    const body = await res.json();
-
-    if (res.status !== 200) {
-      console.error(`FAIL: expected 200, got ${res.status}`);
-      failed = true;
-      return;
-    }
-
-    if (!Array.isArray(body.data) || body.data.length !== 1) {
-      console.error('FAIL: expected data array with 1 item');
-      failed = true;
-      return;
-    }
-
-    const record = body.data[0];
-
-    // Validate SiteRecord flat entity shape (Strapi 5 — no attributes wrapper)
-    const requiredFields = [
-      'id',
-      'documentId',
-      'siteName',
-      'siteKey',
-      'locale',
-      'defaultLocale',
-      'siteTitle',
-      'siteDescription',
-      'createdAt',
-      'updatedAt',
-    ];
-    for (const field of requiredFields) {
-      if (!(field in record)) {
-        console.error(`FAIL: missing required field "${field}" in site record`);
-        failed = true;
-        return;
+  return new Promise((resolve, reject) => {
+    const astroBin = './node_modules/astro/bin/astro.mjs';
+    const child = spawn(
+      process.execPath,
+      [astroBin, 'dev', '--host', '127.0.0.1', '--port', String(previewPort)],
+      {
+        stdio: ['ignore', 'pipe', 'pipe'],
       }
-    }
+    );
 
-    if (record.siteKey !== 'zerniq') {
-      console.error(`FAIL: expected siteKey "zerniq", got "${record.siteKey}"`);
-      failed = true;
-      return;
-    }
+    let resolved = false;
 
-    if (typeof record.id !== 'number') {
-      console.error(`FAIL: expected id to be number, got ${typeof record.id}`);
-      failed = true;
-      return;
-    }
+    const onData = data => {
+      const text = data.toString();
+      if (!resolved && (text.includes('Local') || text.includes('http://'))) {
+        resolved = true;
+        setTimeout(() => resolve(child), 1000);
+      }
+    };
 
-    console.log('PASS: mock Strapi returns valid Strapi 5 flat entity');
-    console.log(`  Site: ${record.siteName} (${record.siteKey})`);
-    console.log(`  Document ID: ${record.documentId}`);
-    console.log(`  Locale: ${record.locale}`);
-  } catch (err) {
-    console.error(`FAIL: ${err.message}`);
-    failed = true;
-  }
+    child.stdout.on('data', onData);
+    child.stderr.on('data', onData);
+
+    child.on('error', err => {
+      if (!resolved) reject(err);
+    });
+
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve(child);
+      }
+    }, 20000);
+  });
 }
 
-/** Test that unknown site key returns empty data */
-async function testMockStrapiUnknownSite() {
-  console.log('\n--- Test: mock Strapi returns empty for unknown site ---');
+/** Wait for a URL to be reachable */
+async function waitForUrl(url, maxRetries = 30) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok || res.status >= 400) return true;
+    } catch {
+      // not ready yet
+    }
+    await sleep(500);
+  }
+  return false;
+}
+
+/** Stop a child process */
+function stopProcess(proc) {
+  if (!proc) return;
+  try {
+    proc.kill('SIGTERM');
+    setTimeout(() => {
+      try {
+        proc.kill('SIGKILL');
+      } catch {}
+    }, 3000);
+  } catch {}
+}
+
+async function testCmsProbe(previewUrl) {
+  console.log('\n--- Test: /api/cms-probe.json end-to-end ---');
 
   try {
-    const res = await fetch(
-      `${MOCK_URL}/api/sites?filters[siteKey][$eq]=unknown&populate=*`
-    );
+    const res = await fetch(`${previewUrl}/api/cms-probe.json`);
     const body = await res.json();
 
+    // Status code check
     if (res.status !== 200) {
-      console.error(`FAIL: expected 200, got ${res.status}`);
+      console.error(`FAIL: expected HTTP 200, got ${res.status}`);
+      console.error(`  Body: ${JSON.stringify(body)}`);
       failed = true;
       return;
     }
+    console.log(`PASS: HTTP ${res.status}`);
 
-    if (!Array.isArray(body.data) || body.data.length !== 0) {
-      console.error('FAIL: expected empty data array');
+    // Status field
+    if (body.status !== 'ok') {
+      console.error(`FAIL: expected status "ok", got "${body.status}"`);
       failed = true;
       return;
     }
+    console.log(`PASS: status = "ok"`);
 
-    console.log('PASS: unknown site key returns empty data');
-  } catch (err) {
-    console.error(`FAIL: ${err.message}`);
-    failed = true;
-  }
-}
-
-/** Test Strapi 5 flat entity contract: no attributes wrapper */
-async function testFlatEntityContract() {
-  console.log(
-    '\n--- Test: Strapi 5 flat entity contract (no attributes wrapper) ---'
-  );
-
-  try {
-    const res = await fetch(
-      `${MOCK_URL}/api/sites?filters[siteKey][$eq]=zerniq&populate=*`
-    );
-    const body = await res.json();
-
-    // Strapi 4 had data.attributes.siteName — verify this is NOT the case
-    if (body.data?.[0]?.attributes) {
+    // cmsReachable
+    if (body.cmsReachable !== true) {
       console.error(
-        'FAIL: response has "attributes" wrapper — this is Strapi 4, not Strapi 5'
+        `FAIL: expected cmsReachable=true, got ${body.cmsReachable}`
       );
       failed = true;
       return;
     }
+    console.log(`PASS: cmsReachable = true`);
 
-    const record = body.data[0];
-    // In Strapi 5, fields are at the top level of the data item
-    if (record.siteName === 'Zerniq NA' && record.documentId === 'abc123') {
-      console.log('PASS: Strapi 5 flat entity structure confirmed');
-    } else {
-      console.error('FAIL: unexpected entity structure');
+    // Site object
+    const site = body.site;
+    if (!site || typeof site !== 'object') {
+      console.error('FAIL: missing site object');
       failed = true;
+      return;
     }
+
+    if (site.key !== 'zerniq') {
+      console.error(`FAIL: site.key expected "zerniq", got "${site.key}"`);
+      failed = true;
+      return;
+    }
+    if (site.name !== 'ZERNIQ') {
+      console.error(`FAIL: site.name expected "ZERNIQ", got "${site.name}"`);
+      failed = true;
+      return;
+    }
+    if (site.domain !== 'https://zerniqpro.com') {
+      console.error(
+        `FAIL: site.domain expected "https://zerniqpro.com", got "${site.domain}"`
+      );
+      failed = true;
+      return;
+    }
+    if (site.defaultLocale !== 'en') {
+      console.error(
+        `FAIL: site.defaultLocale expected "en", got "${site.defaultLocale}"`
+      );
+      failed = true;
+      return;
+    }
+    console.log(`PASS: site.key = "zerniq"`);
+    console.log(`PASS: site.name = "ZERNIQ"`);
+    console.log(`PASS: site.domain = "https://zerniqpro.com"`);
+    console.log(`PASS: site.defaultLocale = "en"`);
+
+    // Cache-Control header
+    const cacheControl = res.headers.get('cache-control') ?? '';
+    if (!cacheControl.includes('no-store')) {
+      console.error(`FAIL: Cache-Control missing no-store: "${cacheControl}"`);
+      failed = true;
+      return;
+    }
+    console.log(`PASS: Cache-Control includes no-store`);
+
+    // X-Robots-Tag header
+    const xRobots = res.headers.get('x-robots-tag') ?? '';
+    if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
+      console.error(
+        `FAIL: X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
+      );
+      failed = true;
+      return;
+    }
+    console.log(`PASS: X-Robots-Tag includes noindex and nofollow`);
+
+    // Verify no sensitive data leaked
+    if (
+      JSON.stringify(body).includes('test-token') ||
+      JSON.stringify(body).includes('token')
+    ) {
+      console.error('FAIL: Response contains token or sensitive data');
+      failed = true;
+      return;
+    }
+    console.log(`PASS: No sensitive data in response`);
   } catch (err) {
     console.error(`FAIL: ${err.message}`);
-    failed = true;
-  }
-}
-
-/** Test the view model mapping from SiteRecord to SiteViewModel */
-async function testViewModelMapping() {
-  console.log('\n--- Test: SiteRecord → SiteViewModel mapping ---');
-
-  try {
-    const res = await fetch(
-      `${MOCK_URL}/api/sites?filters[siteKey][$eq]=zerniq&populate=*`
-    );
-    const {
-      data: [record],
-    } = await res.json();
-
-    // Simulate the toViewModel mapping from schemas.ts
-    const viewModel = {
-      documentId: record.documentId,
-      siteName: record.siteName,
-      siteKey: record.siteKey,
-      locale: record.locale,
-      siteTitle: record.siteTitle,
-      siteDescription: record.siteDescription,
-      tagline: record.tagline,
-      primaryColor: record.primaryColor,
-      secondaryColor: record.secondaryColor,
-      contactEmail: record.contactEmail,
-      contactPhone: record.contactPhone,
-      socialLinks: record.socialLinks,
-      publishedAt: record.publishedAt,
-    };
-
-    // Verify ViewModel excludes internal fields
-    if (
-      'id' in viewModel ||
-      'createdAt' in viewModel ||
-      'updatedAt' in viewModel ||
-      'defaultLocale' in viewModel
-    ) {
-      console.error('FAIL: ViewModel contains internal Strapi fields');
-      failed = true;
-      return;
-    }
-
-    // Verify required public fields
-    if (viewModel.siteTitle !== 'Zerniq North America') {
-      console.error('FAIL: ViewModel siteTitle mismatch');
-      failed = true;
-      return;
-    }
-
-    if (
-      viewModel.siteDescription !==
-      'Professional power tools for the North American market'
-    ) {
-      console.error('FAIL: ViewModel siteDescription mismatch');
-      failed = true;
-      return;
-    }
-
-    console.log('PASS: SiteRecord → SiteViewModel mapping is correct');
-    console.log(`  Excluded: id, createdAt, updatedAt, defaultLocale`);
-    console.log(
-      `  Retained: siteTitle, siteDescription, tagline, contactEmail, etc.`
-    );
-  } catch (err) {
-    console.error(`FAIL: ${err.message}`);
-    failed = true;
-  }
-}
-
-/** Test the buildSiteQuery generates correct Strapi path */
-async function testQueryBuilder() {
-  console.log('\n--- Test: buildSiteQuery generates correct path ---');
-
-  // Simulate queries.ts — encodeURIComponent + filter
-  const path = `/api/sites?filters[siteKey][$eq]=${encodeURIComponent('zerniq')}&populate=*`;
-  const expectedPath = '/api/sites?filters[siteKey][$eq]=zerniq&populate=*';
-
-  if (path === expectedPath) {
-    console.log(`PASS: buildSiteQuery → "${path}"`);
-  } else {
-    console.error(`FAIL: expected "${expectedPath}", got "${path}"`);
-    failed = true;
-  }
-}
-
-/** Test query with special characters in siteKey */
-async function testQueryBuilderWithSpecialChars() {
-  console.log('\n--- Test: buildSiteQuery encodes special characters ---');
-
-  const key = 'zerniq-na';
-  const path = `/api/sites?filters[siteKey][$eq]=${encodeURIComponent(key)}&populate=*`;
-  const expectedPath = '/api/sites?filters[siteKey][$eq]=zerniq-na&populate=*';
-
-  if (path === expectedPath) {
-    console.log(`PASS: buildSiteQuery("zerniq-na") → hyphen preserved`);
-  } else {
-    console.error(`FAIL: expected "${expectedPath}", got "${path}"`);
     failed = true;
   }
 }
 
 async function main() {
-  mockServer = await startMockStrapi();
+  // 1. Start mock Strapi on a dynamic port
+  const { server, url: mockUrl } = await startMockStrapi();
+  mockServer = server;
 
-  try {
-    await testMockStrapiSiteQuery();
-    await testMockStrapiUnknownSite();
-    await testFlatEntityContract();
-    await testViewModelMapping();
-    await testQueryBuilder();
-    await testQueryBuilderWithSpecialChars();
-  } finally {
-    mockServer.close();
-    console.log('\nMock Strapi server stopped.');
+  // 2. Find an available port for Astro preview
+  // Use a specific port to avoid conflicts with the concurrent smoke test
+  const previewPort = 4322;
+  const previewUrl = `http://127.0.0.1:${previewPort}`;
+
+  // 3. Start Astro preview with mock Strapi as CMS backend
+  console.log(`\nStarting Astro preview on port ${previewPort}...`);
+  previewProcess = await startPreview(previewPort, mockUrl);
+
+  const ready = await waitForUrl(previewUrl);
+  if (!ready) {
+    console.error('FAIL: Astro preview did not start');
+    failed = true;
+  } else {
+    console.log('Astro preview is ready.');
+    await testCmsProbe(previewUrl);
   }
+
+  // 4. Cleanup
+  stopProcess(previewProcess);
+  mockServer.close();
+  console.log('\nTest resources cleaned up.');
 
   if (failed) {
     console.error('\nCMS integration test FAILED');

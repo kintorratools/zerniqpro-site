@@ -106,10 +106,10 @@ for (const route of ROUTES) {
         continue;
       }
 
-      const xRobots = res.headers.get('x-robots-tag');
-      if (xRobots !== 'noindex') {
+      const xRobots = res.headers.get('x-robots-tag') ?? '';
+      if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
         console.error(
-          `FAIL ${route.path} -> X-Robots-Tag missing noindex: "${xRobots}"`
+          `FAIL ${route.path} -> X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
         );
         failed = true;
         continue;

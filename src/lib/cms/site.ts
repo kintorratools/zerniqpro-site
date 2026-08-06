@@ -4,8 +4,6 @@ import { buildSiteQuery } from './queries';
 import { parseSiteCollectionResponse } from './schemas';
 import { CmsContentNotFoundError } from './errors';
 import type { SiteViewModel } from './models';
-import type { StrapiCollectionResponse } from './types';
-import type { SiteRecord } from './models';
 
 /**
  * Fetch the site configuration from Strapi for the given site key.
@@ -16,12 +14,19 @@ export async function getSiteConfig(siteKey?: string): Promise<SiteViewModel> {
   const key = siteKey ?? config.siteKey;
   const path = buildSiteQuery(key);
 
-  // Strapi returns a collection-response when filtering even if single match
-  const raw = await strapiFetch<StrapiCollectionResponse<SiteRecord>>(path);
+  // strapiFetch response is treated as unknown for safety
+  const raw: unknown = await strapiFetch(path);
 
-  if (!raw?.data?.length) {
-    throw new CmsContentNotFoundError(key);
+  // Guard: must be an object with a data array
+  if (
+    !raw ||
+    typeof raw !== 'object' ||
+    !('data' in raw) ||
+    !Array.isArray((raw as Record<string, unknown>).data) ||
+    ((raw as Record<string, unknown>).data as unknown[]).length === 0
+  ) {
+    throw new CmsContentNotFoundError();
   }
 
-  return parseSiteCollectionResponse(raw, key);
+  return parseSiteCollectionResponse(raw);
 }

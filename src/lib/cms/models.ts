@@ -1,43 +1,47 @@
 /**
  * Strapi 5 flat entity — Site content type as returned by the REST API.
- * Strapi 5 has no `attributes` wrapper; fields are at the top level.
+ * Multi-site design: a single Strapi instance serves multiple independent
+ * storefronts keyed by a unique `key`.
  */
 export interface SiteRecord {
   id: number;
   documentId: string;
-  siteName: string;
-  siteKey: string;
-  locale: string;
+  key: string;
+  name: string;
+  domain: string;
   defaultLocale: string;
-  siteTitle: string;
-  siteDescription: string;
-  tagline?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  socialLinks?: Record<string, string>;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string | null;
+  defaultSeo?: {
+    title?: string;
+    description?: string;
+  };
+  branding?: {
+    logoUrl?: string;
+    faviconUrl?: string;
+    primaryColor?: string;
+    accentColor?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  publishedAt?: string | null;
 }
 
 /**
  * View model consumed by the frontend.
- * Derived from SiteRecord after validation with minimal mapping.
+ * Derived from SiteRecord after validation with sensible defaults.
  */
 export interface SiteViewModel {
-  documentId: string;
-  siteName: string;
-  siteKey: string;
-  locale: string;
-  siteTitle: string;
-  siteDescription: string;
-  tagline?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  socialLinks?: Record<string, string>;
-  publishedAt: string | null;
+  key: string;
+  name: string;
+  domain: string;
+  defaultLocale: string;
+  seo: {
+    title: string;
+    description: string;
+  };
+  branding?: {
+    logoUrl?: string;
+    faviconUrl?: string;
+    primaryColor?: string;
+    accentColor?: string;
+  };
 }

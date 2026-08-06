@@ -1,4 +1,4 @@
-/** CMS fetch errors — never expose raw token or internal URLs. */
+/** CMS fetch errors — never expose raw token, internal URLs, or response body. */
 
 export class CmsError extends Error {
   constructor(
@@ -25,15 +25,15 @@ export class CmsNotConfiguredError extends CmsError {
 }
 
 export class CmsContentNotFoundError extends CmsError {
-  constructor(documentId: string) {
-    super(`CMS content not found: ${documentId}`);
+  constructor() {
+    super('CMS content was not found');
     this.name = 'CmsContentNotFoundError';
   }
 }
 
 export class CmsValidationError extends CmsError {
-  constructor(message: string) {
-    super(`CMS validation failed: ${message}`);
+  constructor() {
+    super('CMS response validation failed');
     this.name = 'CmsValidationError';
   }
 }

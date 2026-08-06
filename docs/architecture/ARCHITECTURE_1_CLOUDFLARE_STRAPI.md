@@ -35,13 +35,44 @@ Strapi (single instance)
 
 ### Phase 2 (current): Site Contract & Connectivity Probe
 
-- Generic `SiteRecord` (Strapi 5 flat entity) and `SiteViewModel` (frontend contract) defined
-- Zod validation via `astro/zod` ensures data integrity
-- `buildSiteQuery(siteKey)` generates filtered Strapi API paths
-- `getSiteConfig()` fetches and validates site config from Strapi
-- `/api/cms-probe.json` endpoint: 503 unconfigured / 200 connected / 504 timeout
-- Mock Strapi server in `test-cms-integration.mjs` for local CMS contract validation
-- Smoke test verifies probe returns 503 when CMS unconfigured
+**Site Record (Strapi 5 flat entity)**:
+
+- `key`, `name`, `domain`, `defaultLocale` — required identity fields
+- `defaultSeo` (`{ title?, description? }`) — optional SEO override
+- `branding` (`{ logoUrl?, faviconUrl?, primaryColor?, accentColor? }`) — optional brand assets
+
+**Site View Model (frontend contract)**:
+
+- `key`, `name`, `domain`, `defaultLocale`
+- `seo` (`{ title, description }`) — defaults to name if not provided
+- `branding?` — same shape as record
+
+**Zod validation via `astro/zod`**:
+
+- `key`/`name`/`defaultLocale`: `trim().min(1)` non-empty
+- `domain`, `logoUrl`, `faviconUrl`: `z.string().url()` enforced
+- `primaryColor`/`accentColor`: hex color regex (`#RGB` to `#RRGGBBAA`)
+- Errors use fixed messages; never leak Zod issues, data, or siteKey
+
+**Query: `buildSiteQuery(siteKey)`**:
+
+- Uses `URLSearchParams` — no manual encoding
+- `filters[key][$eq]`, `pagination[pageSize]=1`, `status=published`
+- `fields[0..3]`: only `key`, `name`, `domain`, `defaultLocale`
+- `populate[defaultSeo]=*` and `populate[branding]=*` — never `populate=*`
+
+**Endpoint: `/api/cms-probe.json`**:
+
+- Calls `getSiteConfig()` (not raw `strapiFetch`) — full pipeline exercised
+- All responses include `X-Robots-Tag: noindex, nofollow`
+- 503 unconfigured / 200 ok + site data / 504 timeout / 502 error
+
+**Integration test: `test-cms-integration.mjs`**:
+
+- Starts mock Strapi on dynamic port (`listen(0)`)
+- Mock validates: Authorization, Accept, query params, no `populate=*`
+- Spawns real Astro preview with `STRAPI_URL`/`STRAPI_API_TOKEN`/`CMS_SITE_KEY`
+- Fetches real `/api/cms-probe.json` — true end-to-end via Astro SSR
 
 ### Phase 3: Per-Route SSR Content
 
