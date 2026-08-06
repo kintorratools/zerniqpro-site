@@ -1,10 +1,9 @@
 export const prerender = false;
 
-import { CMS_SITE_KEY, STRAPI_URL } from 'astro:env/server';
+import { getCmsConfig } from '@lib/cms/config';
 
 export async function GET() {
-  const siteKey = CMS_SITE_KEY ?? 'zerniq';
-  const cmsConfigured = Boolean(STRAPI_URL);
+  const { siteKey, configured: cmsConfigured } = getCmsConfig();
 
   const body = {
     status: 'ok',

@@ -4,7 +4,7 @@ const ROUTES = [
   { path: '/products/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/blog/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/contact/', expectStatus: s => s >= 200 && s < 300 },
-  { path: '/404', expectStatus: (s) => s === 404 || (s >= 200 && s < 300) },
+  { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
 ];
 
@@ -34,7 +34,18 @@ for (const route of ROUTES) {
         failed = true;
         continue;
       }
+
+      const cacheControl = res.headers.get('cache-control') ?? '';
+      if (!cacheControl.includes('no-store')) {
+        console.error(
+          `FAIL ${route.path} -> Cache-Control missing no-store: "${cacheControl}"`
+        );
+        failed = true;
+        continue;
+      }
+
       const body = await res.json();
+
       if (body.status !== 'ok') {
         console.error(
           `FAIL ${route.path} -> status is "${body.status}", expected "ok"`
@@ -49,6 +60,28 @@ for (const route of ROUTES) {
         failed = true;
         continue;
       }
+      if (body.architecture !== 'cloudflare-strapi-postgres-r2') {
+        console.error(
+          `FAIL ${route.path} -> architecture is "${body.architecture}", expected "cloudflare-strapi-postgres-r2"`
+        );
+        failed = true;
+        continue;
+      }
+      if (typeof body.siteKey !== 'string' || body.siteKey.length === 0) {
+        console.error(
+          `FAIL ${route.path} -> siteKey is not a non-empty string: "${body.siteKey}"`
+        );
+        failed = true;
+        continue;
+      }
+      if (typeof body.cmsConfigured !== 'boolean') {
+        console.error(
+          `FAIL ${route.path} -> cmsConfigured is not boolean: ${typeof body.cmsConfigured}`
+        );
+        failed = true;
+        continue;
+      }
+
       console.log(`OK   ${route.path} -> health checks passed`);
     }
   } catch (err) {

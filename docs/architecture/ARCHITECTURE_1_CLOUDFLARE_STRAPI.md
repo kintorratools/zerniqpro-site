@@ -1,6 +1,7 @@
 # Architecture: Cloudflare SSR & Strapi Boundary
 
-> **Phase 1** — Establishes the runtime boundary between the Astro frontend and the future Strapi backend. No Strapi deployment in this phase.
+> **Phase 1 (current)** — Mixed/hybrid foundation: static pages with one on-demand SSR health endpoint.
+> No Strapi deployment in this phase.
 
 ## Runtime Responsibilities
 
@@ -13,40 +14,44 @@
 
 ## Multi-Site Architecture
 
-The `CMS_SITE_KEY` environment variable determines which site content to fetch from Strapi. This allows a single Strapi instance to serve multiple storefronts (e.g., North America, Europe) via separate Cloudflare Workers deployments.
+The `CMS_SITE_KEY` environment variable determines which site content to fetch from Strapi. This allows a single Strapi instance to serve multiple storefronts (e.g., different brands, different product lines, regional variants) via separate Cloudflare Workers deployments.
 
 ```
 Strapi (single instance)
-├── siteKey: "zerniq-na"  → Worker A (zerniqpro.com)
-├── siteKey: "zerniq-eu"  → Worker B (zerniqpro.eu)
-└── siteKey: "another"    → Worker C
+├── siteKey: "zerniq-na"      → Worker A (North America product line)
+├── siteKey: "zerniq-eu"      → Worker B (EU product line)
+├── siteKey: "another-brand"  → Worker C (different brand)
 ```
 
 ## Progressive Migration Path
 
-### Phase 1 (current): Static Only
+### Phase 1 (current): Mixed Foundation
 
 - All pages are statically generated from local `.md`/`.mdx` files
-- Cloudflare adapter configured, but `output: "server"` is not set
+- One SSR endpoint: `/api/health.json` runs on-demand (`export const prerender = false`)
+- Cloudflare adapter configured, `output` remains at default (static)
 - CMS adapter layer created but not called by any page
-- Health endpoint confirms runtime readiness
+- Health endpoint confirms Workers runtime readiness
 
-### Phase 2: Single-Route SSR
+### Phase 2: Strapi Connectivity Probe
 
-- One route (e.g., `/api/health.json`) runs as SSR
-- Validates Cloudflare Workers runtime compatibility
-- Smoke test verifies runtime detection
+- Verify Strapi API connectivity from the Workers runtime
+- Define a generic View Model schema for product/support content
+- CMS `strapiFetch()` validated against real (test) Strapi endpoints
+- No production content migration yet
 
-### Phase 3: Strapi SSR
+### Phase 3: Per-Route SSR Content
 
-- Product/blog pages fetch from Strapi via `strapiFetch()`
-- Content cache headers configured
-- `output: "server"` enabled per-route
+- Product and support pages use `export const prerender = false`
+- Content fetched from Strapi via `strapiFetch()`
+- Content cache headers configured per route
+- Static fallback retained for non-CMS pages
 
 ### Phase 4: Full Migration
 
 - All content managed in Strapi
 - Static fallback removed
+- Global `output: "server"` considered only at this stage
 - Shopify integration for cart/checkout (see below)
 
 ## Shopify Future Integration
@@ -79,20 +84,30 @@ All content (product descriptions, specs, guides, support) remains in Strapi.
 | `STRAPI_URL`             | server  | secret | (none)                  | Strapi API base URL     |
 | `STRAPI_API_TOKEN`       | server  | secret | (none)                  | Strapi API bearer token |
 
+Secrets (`STRAPI_URL`, `STRAPI_API_TOKEN`) are accessed via `getSecret()` from `astro:env/server`.
+
 ## CMS Adapter Layer
 
 ```
 src/lib/cms/
-├── config.ts   — Reads env, returns CmsConfig
-├── client.ts   — strapiFetch<T>() wrapper
-├── errors.ts   — Typed CMS errors (never expose token)
+├── config.ts   — getCmsConfig() reads env via getSecret() for secrets
+├── client.ts   — strapiFetch<T>() wrapper with origin guard
+├── errors.ts   — Typed CMS errors (never expose URL, token, or response body)
 └── types.ts    — Strapi 5 response structure, CmsConfig
 ```
+
+### Security: `strapiFetch()` Origin Guard
+
+- Rejects absolute URLs (`http://`, `https://`) and protocol-relative paths (`//`)
+- Validates resolved origin matches `STRAPI_URL` origin
+- Callers cannot override `Authorization` or `Accept` headers
+- Errors never expose the configured URL or token
 
 ## Validation
 
 - `pnpm format:check` — Code formatting
 - `pnpm build` — Astro + Cloudflare adapter build
+- `pnpm worker:dry-run` — Wrangler dry-run validates Worker entry
 - `pnpm test:smoke` — HTTP smoke test against `astro preview`
 
 ## This Phase Does NOT Include

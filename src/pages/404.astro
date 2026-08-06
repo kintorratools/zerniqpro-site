@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 // Import section components
 import MainLayout from '@/layouts/MainLayout.astro';
 import Btn404 from '@components/ui/buttons/Btn404.astro';
@@ -41,6 +43,9 @@ const translations: Translations = {
 const urlPath = Astro.url.pathname;
 const lang: TranslationKeys = /^\/fr(\/|$)/.test(urlPath) ? 'fr' : defaultLang;
 const homeHref = lang === 'fr' ? '/fr' : '/';
+
+// Set proper 404 status for SEO and smoke tests
+Astro.response.status = 404;
 
 const { pageTitle, subTitle, content, homeTitle, backTitle } =
   translations[lang];

@@ -1,17 +1,19 @@
 import {
   CMS_SITE_KEY,
   CMS_REQUEST_TIMEOUT_MS,
-  STRAPI_URL,
-  STRAPI_API_TOKEN,
+  getSecret,
 } from 'astro:env/server';
 import type { CmsConfig } from './types';
 
 export function getCmsConfig(): CmsConfig {
+  const secretStrapiUrl = getSecret('STRAPI_URL');
+  const secretStrapiToken = getSecret('STRAPI_API_TOKEN');
+
   return {
     siteKey: CMS_SITE_KEY ?? 'zerniq',
-    baseUrl: STRAPI_URL,
-    apiToken: STRAPI_API_TOKEN,
+    baseUrl: secretStrapiUrl,
+    apiToken: secretStrapiToken,
     timeoutMs: CMS_REQUEST_TIMEOUT_MS ?? 8000,
-    configured: Boolean(STRAPI_URL),
+    configured: Boolean(secretStrapiUrl),
   };
 }
