@@ -34,5 +34,8 @@ jobs:
       - name: Wrangler dry run
         run: pnpm worker:dry-run
 
+      - name: CMS integration tests
+        run: pnpm test:cms
+
       - name: Smoke tests
         run: pnpm test:smoke

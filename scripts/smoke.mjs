@@ -6,6 +6,7 @@ const ROUTES = [
   { path: '/contact/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
+  { path: '/api/cms-probe.json', expectStatus: s => s === 503 },
 ];
 
 const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:4321';
@@ -83,6 +84,62 @@ for (const route of ROUTES) {
       }
 
       console.log(`OK   ${route.path} -> health checks passed`);
+    }
+
+    // Extra checks for CMS probe endpoint
+    if (route.path === '/api/cms-probe.json') {
+      const ct = res.headers.get('content-type') ?? '';
+      if (!ct.includes('application/json')) {
+        console.error(
+          `FAIL ${route.path} -> Content-Type is not JSON: "${ct}"`
+        );
+        failed = true;
+        continue;
+      }
+
+      const cacheControl = res.headers.get('cache-control') ?? '';
+      if (!cacheControl.includes('no-store')) {
+        console.error(
+          `FAIL ${route.path} -> Cache-Control missing no-store: "${cacheControl}"`
+        );
+        failed = true;
+        continue;
+      }
+
+      const xRobots = res.headers.get('x-robots-tag');
+      if (xRobots !== 'noindex') {
+        console.error(
+          `FAIL ${route.path} -> X-Robots-Tag missing noindex: "${xRobots}"`
+        );
+        failed = true;
+        continue;
+      }
+
+      const body = await res.json();
+
+      if (body.status !== 'unconfigured') {
+        console.error(
+          `FAIL ${route.path} -> status is "${body.status}", expected "unconfigured"`
+        );
+        failed = true;
+        continue;
+      }
+      if (body.cmsReachable !== false) {
+        console.error(
+          `FAIL ${route.path} -> cmsReachable is ${body.cmsReachable}, expected false`
+        );
+        failed = true;
+        continue;
+      }
+      if (typeof body.siteKey !== 'string' || body.siteKey.length === 0) {
+        console.error(
+          `FAIL ${route.path} -> siteKey is not a non-empty string: "${body.siteKey}"`
+        );
+        failed = true;
+        continue;
+      }
+
+      console.log(`OK   ${route.path} -> cms-probe checks passed`);
     }
   } catch (err) {
     console.error(`FAIL ${route.path} -> ${err.message}`);

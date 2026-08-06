@@ -23,3 +23,17 @@ export class CmsNotConfiguredError extends CmsError {
     this.name = 'CmsNotConfiguredError';
   }
 }
+
+export class CmsContentNotFoundError extends CmsError {
+  constructor(documentId: string) {
+    super(`CMS content not found: ${documentId}`);
+    this.name = 'CmsContentNotFoundError';
+  }
+}
+
+export class CmsValidationError extends CmsError {
+  constructor(message: string) {
+    super(`CMS validation failed: ${message}`);
+    this.name = 'CmsValidationError';
+  }
+}

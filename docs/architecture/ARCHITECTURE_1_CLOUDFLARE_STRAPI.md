@@ -33,12 +33,15 @@ Strapi (single instance)
 - CMS adapter layer created but not called by any page
 - Health endpoint confirms Workers runtime readiness
 
-### Phase 2: Strapi Connectivity Probe
+### Phase 2 (current): Site Contract & Connectivity Probe
 
-- Verify Strapi API connectivity from the Workers runtime
-- Define a generic View Model schema for product/support content
-- CMS `strapiFetch()` validated against real (test) Strapi endpoints
-- No production content migration yet
+- Generic `SiteRecord` (Strapi 5 flat entity) and `SiteViewModel` (frontend contract) defined
+- Zod validation via `astro/zod` ensures data integrity
+- `buildSiteQuery(siteKey)` generates filtered Strapi API paths
+- `getSiteConfig()` fetches and validates site config from Strapi
+- `/api/cms-probe.json` endpoint: 503 unconfigured / 200 connected / 504 timeout
+- Mock Strapi server in `test-cms-integration.mjs` for local CMS contract validation
+- Smoke test verifies probe returns 503 when CMS unconfigured
 
 ### Phase 3: Per-Route SSR Content
 
@@ -93,7 +96,11 @@ src/lib/cms/
 ├── config.ts   — getCmsConfig() reads env via getSecret() for secrets
 ├── client.ts   — strapiFetch<T>() wrapper with origin guard
 ├── errors.ts   — Typed CMS errors (never expose URL, token, or response body)
-└── types.ts    — Strapi 5 response structure, CmsConfig
+├── types.ts    — Strapi 5 response structure, CmsConfig
+├── models.ts   — SiteRecord (Strapi 5 flat entity) and SiteViewModel (frontend contract)
+├── schemas.ts  — Zod validation via astro/zod (SiteRecord → SiteViewModel)
+├── queries.ts  — buildSiteQuery(siteKey) returns relative Strapi API path
+└── site.ts     — getSiteConfig() fetches and validates site config from Strapi
 ```
 
 ### Security: `strapiFetch()` Origin Guard
@@ -108,6 +115,7 @@ src/lib/cms/
 - `pnpm format:check` — Code formatting
 - `pnpm build` — Astro + Cloudflare adapter build
 - `pnpm worker:dry-run` — Wrangler dry-run validates Worker entry
+- `pnpm test:cms` — CMS integration test against mock Strapi server
 - `pnpm test:smoke` — HTTP smoke test against `astro preview`
 
 ## This Phase Does NOT Include
