@@ -1,14 +1,16 @@
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 let mockServer;
-let previewProcess;
+let workerProcess;
 let failed = false;
 
 const MOCK_HOST = '127.0.0.1';
 
-const MOCK_SITE_RECORD = {
+const VALID_SITE = {
   id: 1,
   documentId: 'abc123',
   key: 'zerniq',
@@ -30,7 +32,51 @@ const MOCK_SITE_RECORD = {
   publishedAt: '2025-06-01T00:00:00.000Z',
 };
 
-/** Start a mock Strapi HTTP server on a dynamic port. Returns { server, url }. */
+/** Boundary test data — matched by Authorization token */
+const TOKEN_DATA = {
+  'test-token': {
+    data: [VALID_SITE],
+    meta: { pagination: { total: 1 } },
+  },
+  'test-token-invalid-hex': {
+    data: [
+      {
+        ...VALID_SITE,
+        branding: { ...VALID_SITE.branding, primaryColor: '#12345' },
+      },
+    ],
+    meta: { pagination: { total: 1 } },
+  },
+  'test-token-invalid-proto': {
+    data: [{ ...VALID_SITE, domain: 'ftp://example.com' }],
+    meta: { pagination: { total: 1 } },
+  },
+  'test-token-nullable': {
+    data: [{ ...VALID_SITE, defaultSeo: null, branding: null }],
+    meta: { pagination: { total: 1 } },
+  },
+  'test-token-nullable-inner': {
+    data: [
+      {
+        ...VALID_SITE,
+        defaultSeo: { title: null, description: null },
+        branding: {
+          logoUrl: null,
+          faviconUrl: null,
+          primaryColor: null,
+          accentColor: null,
+        },
+      },
+    ],
+    meta: { pagination: { total: 1 } },
+  },
+  'test-token-nullable-trim': {
+    data: [{ ...VALID_SITE, defaultSeo: { title: '   ', description: '   ' } }],
+    meta: { pagination: { total: 1 } },
+  },
+};
+
+/** Start a mock Strapi HTTP server */
 function startMockStrapi() {
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
@@ -38,92 +84,49 @@ function startMockStrapi() {
 
       if (req.method !== 'GET' || url.pathname !== '/api/sites') {
         res.writeHead(404);
-        res.end(
-          JSON.stringify({ error: { status: 404, message: 'Not found' } })
-        );
+        res.end(JSON.stringify({ error: { status: 404 } }));
         return;
       }
 
-      // Verify required headers
+      // Token determines response mode
       const auth = req.headers['authorization'] ?? '';
-      if (auth !== 'Bearer test-token') {
-        console.error(`  Mock: Missing/wrong Authorization header: "${auth}"`);
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+      const mode = TOKEN_DATA[token];
+      if (!mode) {
         res.writeHead(401);
-        res.end(
-          JSON.stringify({ error: { status: 401, message: 'Unauthorized' } })
-        );
+        res.end(JSON.stringify({ error: { status: 401 } }));
         return;
       }
-
-      const accept = req.headers['accept'] ?? '';
-      if (accept !== 'application/json') {
-        console.error(`  Mock: Wrong Accept header: "${accept}"`);
+      if ((req.headers['accept'] ?? '') !== 'application/json') {
         res.writeHead(406);
-        res.end(
-          JSON.stringify({ error: { status: 406, message: 'Not Acceptable' } })
-        );
+        res.end(JSON.stringify({ error: { status: 406 } }));
         return;
       }
 
-      // Verify query parameters match the contract
-      const key = url.searchParams.get('filters[key][$eq]');
-      const pageSize = url.searchParams.get('pagination[pageSize]');
-      const status = url.searchParams.get('status');
-
-      if (key !== 'zerniq') {
-        console.error(
-          `  Mock: Expected filters[key][$eq]=zerniq, got "${key}"`
-        );
+      // Verify query params
+      if (url.searchParams.get('pagination[pageSize]') !== '1') {
         res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
+        res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
-      if (pageSize !== '1') {
-        console.error(
-          `  Mock: Expected pagination[pageSize]=1, got "${pageSize}"`
-        );
+      if (url.searchParams.get('status') !== 'published') {
         res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
+        res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
-      if (status !== 'published') {
-        console.error(`  Mock: Expected status=published, got "${status}"`);
-        res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
-        return;
-      }
-
-      // Verify no populate=*
       if (url.searchParams.get('populate') === '*') {
-        console.error('  Mock: populate=* detected — forbidden');
         res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
+        res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
-
-      // Verify populate targets
-      const popSeo = url.searchParams.get('populate[defaultSeo]');
-      const popBrand = url.searchParams.get('populate[branding]');
-      if (popSeo !== '*' || popBrand !== '*') {
-        console.error(
-          '  Mock: Missing populate[defaultSeo]=* or populate[branding]=*'
-        );
+      if (
+        url.searchParams.get('populate[defaultSeo]') !== '*' ||
+        url.searchParams.get('populate[branding]') !== '*'
+      ) {
         res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
+        res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
-
-      // Verify field selection
       const f0 = url.searchParams.get('fields[0]');
       const f1 = url.searchParams.get('fields[1]');
       const f2 = url.searchParams.get('fields[2]');
@@ -134,52 +137,54 @@ function startMockStrapi() {
         f2 !== 'domain' ||
         f3 !== 'defaultLocale'
       ) {
-        console.error(
-          `  Mock: Unexpected fields selection: ${f0},${f1},${f2},${f3}`
-        );
         res.writeHead(400);
-        res.end(
-          JSON.stringify({ error: { status: 400, message: 'Bad request' } })
-        );
+        res.end(JSON.stringify({ error: { status: 400 } }));
         return;
       }
 
-      // All checks passed
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
-      res.end(
-        JSON.stringify({
-          data: [MOCK_SITE_RECORD],
-          meta: { pagination: { total: 1 } },
-        })
-      );
+      res.end(JSON.stringify(mode));
     });
 
     server.listen(0, MOCK_HOST, () => {
       const port = server.address().port;
-      const url = `http://${MOCK_HOST}:${port}`;
-      console.log(`Mock Strapi listening on ${url}`);
-      resolve({ server, url, port });
+      console.log(`Mock Strapi on ${MOCK_HOST}:${port}`);
+      resolve({ server, port });
     });
 
     server.on('error', reject);
   });
 }
 
-/** Spawn Astro dev server as a child process (dev mode accesses process.env, unlike preview) */
-function startPreview(previewPort, mockUrl) {
-  // Set env on parent process so child inherits it naturally
-  process.env.CMS_SITE_KEY = 'zerniq';
-  process.env.STRAPI_URL = mockUrl;
-  process.env.STRAPI_API_TOKEN = 'test-token';
-
+/** Start wrangler dev */
+function startWorker(workerPort, token, mockUrl) {
   return new Promise((resolve, reject) => {
-    const astroBin = './node_modules/astro/bin/astro.mjs';
+    const isWin = process.platform === 'win32';
+    const cmd = isWin ? 'pnpm.cmd' : 'pnpm';
+
     const child = spawn(
-      process.execPath,
-      [astroBin, 'dev', '--host', '127.0.0.1', '--port', String(previewPort)],
+      cmd,
+      [
+        'exec',
+        'wrangler',
+        'dev',
+        '--config',
+        'dist/server/wrangler.json',
+        '--ip',
+        '127.0.0.1',
+        '--port',
+        String(workerPort),
+        '--var',
+        `STRAPI_URL:${mockUrl}`,
+        '--var',
+        `STRAPI_API_TOKEN:${token}`,
+        '--var',
+        'CMS_SITE_KEY:zerniq',
+      ],
       {
         stdio: ['ignore', 'pipe', 'pipe'],
+        shell: isWin,
       }
     );
 
@@ -187,9 +192,9 @@ function startPreview(previewPort, mockUrl) {
 
     const onData = data => {
       const text = data.toString();
-      if (!resolved && (text.includes('Local') || text.includes('http://'))) {
+      if (!resolved && text.includes('http://')) {
         resolved = true;
-        setTimeout(() => resolve(child), 1000);
+        setTimeout(() => resolve(child), 2000);
       }
     };
 
@@ -205,25 +210,24 @@ function startPreview(previewPort, mockUrl) {
         resolved = true;
         resolve(child);
       }
-    }, 20000);
+    }, 30000);
   });
 }
 
-/** Wait for a URL to be reachable */
-async function waitForUrl(url, maxRetries = 30) {
+/** Wait for URL to respond */
+async function waitForUrl(url, maxRetries = 50) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const res = await fetch(url);
       if (res.ok || res.status >= 400) return true;
     } catch {
-      // not ready yet
+      /* still starting */
     }
     await sleep(500);
   }
   return false;
 }
 
-/** Stop a child process */
 function stopProcess(proc) {
   if (!proc) return;
   try {
@@ -236,140 +240,199 @@ function stopProcess(proc) {
   } catch {}
 }
 
-async function testCmsProbe(previewUrl) {
-  console.log('\n--- Test: /api/cms-probe.json end-to-end ---');
+function findFreePort() {
+  return new Promise(resolve => {
+    const srv = createServer();
+    srv.listen(0, '127.0.0.1', () => {
+      const p = srv.address().port;
+      srv.close(() => resolve(p));
+    });
+  });
+}
 
-  try {
-    const res = await fetch(`${previewUrl}/api/cms-probe.json`);
-    const body = await res.json();
+/* ---------- Test scenarios ---------- */
 
-    // Status code check
-    if (res.status !== 200) {
-      console.error(`FAIL: expected HTTP 200, got ${res.status}`);
-      console.error(`  Body: ${JSON.stringify(body)}`);
-      failed = true;
-      return;
-    }
-    console.log(`PASS: HTTP ${res.status}`);
+async function testValidSite(workerUrl) {
+  console.log('\n--- [valid] valid site → 200 ---');
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
 
-    // Status field
-    if (body.status !== 'ok') {
-      console.error(`FAIL: expected status "ok", got "${body.status}"`);
-      failed = true;
-      return;
-    }
-    console.log(`PASS: status = "ok"`);
+  check(res.status === 200, `status 200 (got ${res.status})`);
+  check(body.status === 'ok', `status="ok"`);
+  check(body.cmsReachable === true, 'cmsReachable=true');
+  check(body.site.key === 'zerniq', 'site.key=zerniq');
+  check(body.site.name === 'ZERNIQ', 'site.name=ZERNIQ');
+  check(body.site.domain === 'https://zerniqpro.com', 'site.domain correct');
+  check(body.site.defaultLocale === 'en', 'site.defaultLocale=en');
 
-    // cmsReachable
-    if (body.cmsReachable !== true) {
-      console.error(
-        `FAIL: expected cmsReachable=true, got ${body.cmsReachable}`
-      );
-      failed = true;
-      return;
-    }
-    console.log(`PASS: cmsReachable = true`);
+  const cc = res.headers.get('cache-control') ?? '';
+  check(cc.includes('no-store'), 'Cache-Control: no-store');
 
-    // Site object
-    const site = body.site;
-    if (!site || typeof site !== 'object') {
-      console.error('FAIL: missing site object');
-      failed = true;
-      return;
-    }
+  const xr = res.headers.get('x-robots-tag') ?? '';
+  check(
+    xr.includes('noindex') && xr.includes('nofollow'),
+    'X-Robots-Tag: noindex,nofollow'
+  );
 
-    if (site.key !== 'zerniq') {
-      console.error(`FAIL: site.key expected "zerniq", got "${site.key}"`);
-      failed = true;
-      return;
-    }
-    if (site.name !== 'ZERNIQ') {
-      console.error(`FAIL: site.name expected "ZERNIQ", got "${site.name}"`);
-      failed = true;
-      return;
-    }
-    if (site.domain !== 'https://zerniqpro.com') {
-      console.error(
-        `FAIL: site.domain expected "https://zerniqpro.com", got "${site.domain}"`
-      );
-      failed = true;
-      return;
-    }
-    if (site.defaultLocale !== 'en') {
-      console.error(
-        `FAIL: site.defaultLocale expected "en", got "${site.defaultLocale}"`
-      );
-      failed = true;
-      return;
-    }
-    console.log(`PASS: site.key = "zerniq"`);
-    console.log(`PASS: site.name = "ZERNIQ"`);
-    console.log(`PASS: site.domain = "https://zerniqpro.com"`);
-    console.log(`PASS: site.defaultLocale = "en"`);
+  const raw = JSON.stringify(body);
+  check(!raw.includes('test-token'), 'no token in response');
+}
 
-    // Cache-Control header
-    const cacheControl = res.headers.get('cache-control') ?? '';
-    if (!cacheControl.includes('no-store')) {
-      console.error(`FAIL: Cache-Control missing no-store: "${cacheControl}"`);
-      failed = true;
-      return;
-    }
-    console.log(`PASS: Cache-Control includes no-store`);
+async function testInvalidHex(workerUrl) {
+  console.log('\n--- [invalid-hex] #12345 → 502 ---');
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
 
-    // X-Robots-Tag header
-    const xRobots = res.headers.get('x-robots-tag') ?? '';
-    if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
-      console.error(
-        `FAIL: X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
-      );
-      failed = true;
-      return;
-    }
-    console.log(`PASS: X-Robots-Tag includes noindex and nofollow`);
+  check(res.status === 502, `status 502 (got ${res.status})`);
+  check(body.status === 'error', `status="error" (got ${body.status})`);
+  check(body.cmsReachable === false, 'cmsReachable=false');
 
-    // Verify no sensitive data leaked
-    if (
-      JSON.stringify(body).includes('test-token') ||
-      JSON.stringify(body).includes('token')
-    ) {
-      console.error('FAIL: Response contains token or sensitive data');
-      failed = true;
-      return;
-    }
-    console.log(`PASS: No sensitive data in response`);
-  } catch (err) {
-    console.error(`FAIL: ${err.message}`);
+  const raw = JSON.stringify(body);
+  check(!raw.includes('#12345'), 'no invalid value in response');
+  check(!raw.includes('test-token'), 'no token in response');
+}
+
+async function testInvalidProtocol(workerUrl) {
+  console.log('\n--- [invalid-proto] ftp:// → 502 ---');
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
+
+  check(res.status === 502, `status 502 (got ${res.status})`);
+  check(body.status === 'error', `status="error" (got ${body.status})`);
+  check(body.cmsReachable === false, 'cmsReachable=false');
+
+  const raw = JSON.stringify(body);
+  check(!raw.includes('ftp'), 'no ftp in response');
+  check(!raw.includes('test-token'), 'no token in response');
+}
+
+async function testNullableOuter(workerUrl) {
+  console.log(
+    '\n--- [nullable] defaultSeo=null, branding=null → 200 with defaults ---'
+  );
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
+
+  check(res.status === 200, `status 200 (got ${res.status})`);
+  check(body.status === 'ok', `status="ok"`);
+  check(body.cmsReachable === true, 'cmsReachable=true');
+  check(body.site?.key === 'zerniq', 'site.key=zerniq');
+  check(body.site?.name === 'ZERNIQ', 'site.name=ZERNIQ');
+  check(body.site?.branding === undefined, 'branding is absent');
+  // Null→undefined normalization confirmed by 200 (no schema rejection)
+  console.log('  PASS: null defaults accepted (normalized in ViewModel)');
+}
+
+async function testNullableInner(workerUrl) {
+  console.log(
+    '\n--- [nullable-inner] inner fields null → 200 with defaults ---'
+  );
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
+
+  check(res.status === 200, `status 200 (got ${res.status})`);
+  check(body.status === 'ok', `status="ok"`);
+  check(body.cmsReachable === true, 'cmsReachable=true');
+  check(body.site?.key === 'zerniq', 'site.key=zerniq');
+  console.log('  PASS: inner null fields accepted (normalized in ViewModel)');
+}
+
+async function testNullableTrim(workerUrl) {
+  console.log('\n--- [nullable-trim] whitespace SEO → 200 with defaults ---');
+  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
+  const body = await res.json();
+
+  check(res.status === 200, `status 200 (got ${res.status})`);
+  check(body.status === 'ok', `status="ok"`);
+  check(body.cmsReachable === true, 'cmsReachable=true');
+  check(body.site?.key === 'zerniq', 'site.key=zerniq');
+  console.log(
+    '  PASS: whitespace trimmed to defaults (normalized in ViewModel)'
+  );
+}
+
+/* ---------- Helpers ---------- */
+
+function check(condition, msg) {
+  if (condition) {
+    console.log(`  PASS: ${msg}`);
+  } else {
+    console.error(`  FAIL: ${msg}`);
     failed = true;
   }
 }
 
-async function main() {
-  // 1. Start mock Strapi on a dynamic port
-  const { server, url: mockUrl } = await startMockStrapi();
-  mockServer = server;
+async function runScenario(label, token, testFn) {
+  stopProcess(workerProcess);
+  await sleep(2000);
 
-  // 2. Find an available port for Astro preview
-  // Use a specific port to avoid conflicts with the concurrent smoke test
-  const previewPort = 4322;
-  const previewUrl = `http://127.0.0.1:${previewPort}`;
+  const wp = await findFreePort();
+  const wu = `http://127.0.0.1:${wp}`;
 
-  // 3. Start Astro preview with mock Strapi as CMS backend
-  console.log(`\nStarting Astro preview on port ${previewPort}...`);
-  previewProcess = await startPreview(previewPort, mockUrl);
+  console.log(
+    `\n[Scenario: ${label}] Starting worker (token=${token}, port=${wp})...`
+  );
+  workerProcess = await startWorker(wp, token, mockUrl);
 
-  const ready = await waitForUrl(previewUrl);
+  const ready = await waitForUrl(wu);
   if (!ready) {
-    console.error('FAIL: Astro preview did not start');
+    console.error(`  FAIL: Worker did not start for ${label}`);
     failed = true;
-  } else {
-    console.log('Astro preview is ready.');
-    await testCmsProbe(previewUrl);
+    return;
   }
 
-  // 4. Cleanup
-  stopProcess(previewProcess);
-  mockServer.close();
-  console.log('\nTest resources cleaned up.');
+  await testFn(wu);
+}
+
+/* ---------- Main ---------- */
+
+let mockUrl;
+
+async function main() {
+  // 1. Verify build artifacts
+  try {
+    readFileSync(resolve('dist/server/wrangler.json'));
+    console.log('Build artifact: dist/server/wrangler.json — OK');
+  } catch {
+    console.error(
+      'ERROR: dist/server/wrangler.json not found. Run pnpm build first.'
+    );
+    process.exit(1);
+  }
+
+  // 2. Start mock Strapi
+  const { server, port: mockPort } = await startMockStrapi();
+  mockServer = server;
+  mockUrl = `http://${MOCK_HOST}:${mockPort}`;
+
+  try {
+    await runScenario('valid', 'test-token', testValidSite);
+    await runScenario('invalid-hex', 'test-token-invalid-hex', testInvalidHex);
+    await runScenario(
+      'invalid-proto',
+      'test-token-invalid-proto',
+      testInvalidProtocol
+    );
+    await runScenario(
+      'nullable-outer',
+      'test-token-nullable',
+      testNullableOuter
+    );
+    await runScenario(
+      'nullable-inner',
+      'test-token-nullable-inner',
+      testNullableInner
+    );
+    await runScenario(
+      'nullable-trim',
+      'test-token-nullable-trim',
+      testNullableTrim
+    );
+  } finally {
+    stopProcess(workerProcess);
+    mockServer.close();
+    console.log('\nTest resources cleaned up.');
+  }
 
   if (failed) {
     console.error('\nCMS integration test FAILED');

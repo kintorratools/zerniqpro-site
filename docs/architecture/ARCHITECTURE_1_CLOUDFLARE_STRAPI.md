@@ -38,20 +38,22 @@ Strapi (single instance)
 **Site Record (Strapi 5 flat entity)**:
 
 - `key`, `name`, `domain`, `defaultLocale` — required identity fields
-- `defaultSeo` (`{ title?, description? }`) — optional SEO override
-- `branding` (`{ logoUrl?, faviconUrl?, primaryColor?, accentColor? }`) — optional brand assets
+- `defaultSeo` (`{ title?, description? }`) — optional SEO override; may be `null` from Strapi
+- `branding` (`{ logoUrl?, faviconUrl?, primaryColor?, accentColor? }`) — optional brand assets; may be `null` from Strapi
+- Strapi returns `null` for empty optional components/fields; mapper normalizes `null → undefined`
 
 **Site View Model (frontend contract)**:
 
 - `key`, `name`, `domain`, `defaultLocale`
-- `seo` (`{ title, description }`) — defaults to name if not provided
-- `branding?` — same shape as record
+- `seo` (`{ title, description }`) — defaults to name if not provided, trimmed whitespace → default
+- `branding?` — never contains `null`
 
 **Zod validation via `astro/zod`**:
 
 - `key`/`name`/`defaultLocale`: `trim().min(1)` non-empty
-- `domain`, `logoUrl`, `faviconUrl`: `z.string().url()` enforced
-- `primaryColor`/`accentColor`: hex color regex (`#RGB` to `#RRGGBBAA`)
+- `domain`, `logoUrl`, `faviconUrl`: `z.string().url()` + `refine()` for `http:`/`https:` only
+- `primaryColor`/`accentColor`: hex regex accepting only `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`
+- `defaultSeo`/`branding` accept `null` (Strapi nullable), inner fields accept `null`
 - Errors use fixed messages; never leak Zod issues, data, or siteKey
 
 **Query: `buildSiteQuery(siteKey)`**:
@@ -69,10 +71,12 @@ Strapi (single instance)
 
 **Integration test: `test-cms-integration.mjs`**:
 
-- Starts mock Strapi on dynamic port (`listen(0)`)
-- Mock validates: Authorization, Accept, query params, no `populate=*`
-- Spawns real Astro preview with `STRAPI_URL`/`STRAPI_API_TOKEN`/`CMS_SITE_KEY`
-- Fetches real `/api/cms-probe.json` — true end-to-end via Astro SSR
+- Verifies `dist/server/wrangler.json` build artifact exists
+- Starts mock Strapi on dynamic port (`listen(0)`) — validates Auth, Accept, query params
+- Spawns production Worker via `wrangler dev --config dist/server/wrangler.json --var KEY:VALUE ...` with dynamic port
+- Both `astro dev` and `astro preview` use the Cloudflare Vite plugin + `workerd` runtime (not plain Node SSR)
+- Boundary tests: invalid hex → 502, invalid protocol → 502, nullable fields → 200 with safe defaults
+- `.dev.vars` is never created or modified by the test
 
 ### Phase 3: Per-Route SSR Content
 
