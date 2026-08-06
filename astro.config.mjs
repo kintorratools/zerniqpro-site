@@ -1,4 +1,5 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
@@ -8,7 +9,7 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   // https://docs.astro.build/en/guides/images/#authorizing-remote-images
-  site: 'https://screwfast.uk',
+  site: process.env.SITE_URL ?? 'https://zerniqpro.com',
   image: {
     domains: ['images.unsplash.com'],
   },
@@ -23,6 +24,38 @@ export default defineConfig({
   //   },
   // },
   prefetch: true,
+  env: {
+    schema: {
+      SITE_URL: envField.string({
+        context: 'server',
+        access: 'public',
+        default: 'https://zerniqpro.com',
+      }),
+      CMS_SITE_KEY: envField.string({
+        context: 'server',
+        access: 'public',
+        default: 'zerniq',
+      }),
+      CMS_REQUEST_TIMEOUT_MS: envField.number({
+        context: 'server',
+        access: 'public',
+        default: 8000,
+      }),
+      STRAPI_URL: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      STRAPI_API_TOKEN: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+    },
+  },
+  adapter: cloudflare({
+    imageService: 'compile',
+  }),
   integrations: [
     sitemap({
       i18n: {

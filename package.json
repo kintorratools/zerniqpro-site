@@ -5,15 +5,19 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build && node process-html.mjs",
+    "build": "node scripts/generate-favicon.mjs && astro check && astro build && node process-html.mjs",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "preview": "astro preview",
+    "preview:worker": "astro preview --host 127.0.0.1 --port 4321",
     "astro": "astro",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke:http": "node scripts/smoke.mjs",
+    "test:smoke": "start-server-and-test preview:worker http-get://127.0.0.1:4321 test:smoke:http",
+    "deploy": "astro check && astro build && wrangler deploy"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/cloudflare": "^14.1.7",
     "@astrojs/mdx": "^7.0.5",
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/starlight": "^0.41.5",
@@ -36,6 +40,8 @@
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "typescript": "^6.0.3"
+    "start-server-and-test": "^3.0.12",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.119.0"
   }
 }

@@ -1,0 +1,5 @@
+SITE_URL=https://zerniqpro.com
+CMS_SITE_KEY=zerniq
+CMS_REQUEST_TIMEOUT_MS=8000
+STRAPI_URL=http://localhost:1337
+STRAPI_API_TOKEN=replace-with-local-token
