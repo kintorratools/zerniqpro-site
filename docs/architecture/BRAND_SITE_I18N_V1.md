@@ -39,18 +39,13 @@ The `branding` component is removed from Site. All visual identity fields now li
 interface SiteViewModel {
   key: string;
   name: string;
-  domain: string; // derived from brand.domain
   defaultLocale: string;
   seo: { title: string; description: string };
-  brand: {
-    key: string;
-    name: string;
-    domain: string;
-  };
+  brandKey: string;
 }
 ```
 
-The ViewModel flattens the Brand relation for frontend convenience — `brand.key`, `brand.name`, and `brand.domain` are always available without a second fetch.
+The ViewModel stores `brandKey` as the relation source. Brand identity is resolved in a subsequent fetch — Site no longer embeds brand domain or name directly.
 
 ### BrandViewModel (Frontend Contract)
 
@@ -90,7 +85,13 @@ Strapi CMS
     └── isDefault: true
               │
               ▼
-     getRuntimeConfig()
+  1. getSiteConfig(siteKey)  → SiteViewModel { brandKey: "zerniq", ... }
+              │
+              ▼
+  2. Promise.all([
+       getBrand(brandKey),   // filters[filters[key][$eq]]
+       getLocales(siteKey),  // all locale entries (including disabled)
+     ])
               │
               ▼
      RuntimeConfig {
@@ -102,21 +103,25 @@ Strapi CMS
               ▼
      getEnabledLocales() → ["en", "es", "fr"]
      getDefaultLocale()  → "en"
-     isLocaleEnabled("de") → true
+     isLocaleEnabled("de") → false
 ```
 
 ### Runtime Config Layer
 
-`getRuntimeConfig()` is the single entry point that resolves all Phase 4 data. It performs two parallel Strapi fetches:
+`getRuntimeConfig()` is the single entry point that resolves all Phase 4.1 data. It follows a two-step pattern:
 
-1. `getSiteConfig(siteKey)` — fetches Site (with populated Brand relation)
-2. `getLocales()` — fetches all Locale entries
+1. `getSiteConfig(siteKey)` — fetches Site first, extracts `brandKey` from the result
+2. `Promise.all([getBrand(brandKey), getLocales(siteKey)])` — fetches Brand and Locales in parallel using the resolved `brandKey`
 
-The result is a `RuntimeConfig` object consumed by layout components, middleware, and i18n utilities. Both calls share the same `strapiFetch` origin guard and error handling.
+The result is a `RuntimeConfig` object consumed by layout components, middleware, and i18n utilities. All calls share the same `strapiFetch` origin guard and error handling.
+
+### Brand Query (`brand-queries.ts`)
+
+`buildBrandQuery(brandKey)` filters by `filters[key][$eq]` — the Brand's own unique key, not the site key. This decouples Brand lookup from Site, allowing the same Brand to be referenced by multiple Sites if needed.
 
 ### Site Runtime (`site-runtime.ts`)
 
-The `getSiteConfig()` function is updated to also fetch and validate Brand. It calls `getBrand(brandKey)` internally using the Brand relation from Site, then merges Brand into the SiteViewModel.
+`getRuntimeConfig()` first calls `getSiteConfig()` to obtain `brandKey` from the Site record, then issues `getBrand(brandKey)` and `getLocales(siteKey)` in parallel. Brand is no longer populated inline by the Site query.
 
 ### i18n Config (`i18n/config.ts`)
 
@@ -131,17 +136,17 @@ The `getSiteConfig()` function is updated to also fetch and validate Brand. It c
 
 ### CMS-Controlled
 
-Locales are managed entirely in Strapi. The Content Editor enables or disables a locale via the Strapi admin panel. The frontend has no hardcoded locale list — it queries Strapi at runtime.
+Locales are managed in Strapi. The Content Editor toggles a locale's `enabled` flag via the Strapi admin panel. The five supported locale codes (`en`, `es`, `de`, `fr`, `pt-BR`) are fixed in the schema — the CMS controls which are enabled or disabled, but cannot add or remove locale codes. All locale entries (including disabled ones) are fetched from Strapi; `getEnabledLocales()` filters the result for display.
 
 ### Rules
 
-| Rule              | Detail                                                                                               |
-| ----------------- | ---------------------------------------------------------------------------------------------------- |
-| `en` is mandatory | The `en` locale MUST always exist and be enabled. It is the canonical fallback for all content.      |
-| Default locale    | Exactly one locale has `isDefault: true`. Typically `en`.                                            |
-| Supported codes   | `en`, `es`, `de`, `fr`, `pt-BR`                                                                      |
-| Enabled toggle    | Non-default locales can be toggled on/off. Disabled locales are excluded from `getEnabledLocales()`. |
-| No auto-creation  | The frontend never creates or modifies locale records.                                               |
+| Rule              | Detail                                                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `en` is mandatory | The `en` locale MUST always exist, be enabled, and be the default. It is the canonical fallback for all content. |
+| Default locale    | Exactly one locale has `isDefault: true`. Must be `en`.                                                          |
+| Supported codes   | `en`, `es`, `de`, `fr`, `pt-BR` — fixed in the schema; CMS cannot add/remove codes.                              |
+| Enabled toggle    | Non-default locales can be toggled on/off. Disabled locales are excluded from `getEnabledLocales()`.             |
+| No auto-creation  | The frontend never creates or modifies locale records.                                                           |
 
 ### Locale Record (Strapi 5 Flat Entity)
 
@@ -205,29 +210,32 @@ The review process is entirely within Strapi Admin. The frontend only ever recei
 
 ### New Files
 
-| File                            | Purpose                                                          |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `src/lib/cms/brand-models.ts`   | `BrandRecord` and `BrandViewModel` interfaces                    |
-| `src/lib/cms/brand-schemas.ts`  | Zod validation: `BrandRecord` → `BrandViewModel`                 |
-| `src/lib/cms/brand-queries.ts`  | `buildBrandQuery(brandKey)` — returns Strapi API path            |
-| `src/lib/cms/brand.ts`          | `getBrand(brandKey)` — fetches and validates brand from Strapi   |
-| `src/lib/cms/locale-models.ts`  | `LocaleRecord` and `LocaleViewModel` interfaces                  |
-| `src/lib/cms/locale-schemas.ts` | Zod validation: `LocaleRecord[]` → `LocaleViewModel[]`           |
-| `src/lib/cms/locale-queries.ts` | `buildLocaleQuery()` — returns Strapi API path for all locales   |
-| `src/lib/cms/locale.ts`         | `getLocales()` — fetches and validates all locales from Strapi   |
-| `src/lib/site-runtime.ts`       | `getRuntimeConfig()` — aggregates Site + Brand + Locales         |
-| `src/lib/i18n/config.ts`        | `getEnabledLocales()`, `isLocaleEnabled()`, `getDefaultLocale()` |
+| File                              | Purpose                                                          |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `src/lib/cms/brand-models.ts`     | `BrandRecord` and `BrandViewModel` interfaces                    |
+| `src/lib/cms/brand-schemas.ts`    | Zod validation: `BrandRecord` → `BrandViewModel`                 |
+| `src/lib/cms/brand-queries.ts`    | `buildBrandQuery(brandKey)` — returns Strapi API path            |
+| `src/lib/cms/brand.ts`            | `getBrand(brandKey)` — fetches and validates brand from Strapi   |
+| `src/lib/cms/locale-models.ts`    | `LocaleRecord` and `LocaleViewModel` interfaces                  |
+| `src/lib/cms/locale-schemas.ts`   | Zod validation: `LocaleRecord[]` → `LocaleViewModel[]`           |
+| `src/lib/cms/locale-queries.ts`   | `buildLocaleQuery()` — returns Strapi API path for all locales   |
+| `src/lib/cms/locale.ts`           | `getLocales()` — fetches and validates all locales from Strapi   |
+| `src/lib/runtime/site-runtime.ts` | `getRuntimeConfig()` — aggregates Site + Brand + Locales         |
+| `src/lib/i18n/config.ts`          | `getEnabledLocales()`, `isLocaleEnabled()`, `getDefaultLocale()` |
 
 ### Modified Files
 
-| File                     | Change                                                               |
-| ------------------------ | -------------------------------------------------------------------- |
-| `src/lib/cms/models.ts`  | SiteRecord: remove `branding`, add `brand: { documentId, key }`      |
-|                          | SiteViewModel: add `brand: { key, name, domain }`                    |
-| `src/lib/cms/schemas.ts` | Remove `branding` from `siteRecordSchema`; add brand relation schema |
-|                          | `toViewModel()` maps brand relation into SiteViewModel               |
-| `src/lib/cms/queries.ts` | `buildSiteQuery()` populates `brand` instead of `branding`           |
-| `src/lib/cms/site.ts`    | `getSiteConfig()` resolves brand via `getBrand()` internally         |
+| File                              | Change                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/lib/cms/models.ts`           | SiteRecord: remove `branding`, add `brand: { documentId, key }`                      |
+|                                   | SiteViewModel: add `brandKey: string`                                                |
+| `src/lib/cms/schemas.ts`          | Remove `branding` from `siteRecordSchema`; add brand relation schema                 |
+|                                   | `toViewModel()` extracts `brandKey` from the brand relation                          |
+| `src/lib/cms/queries.ts`          | `buildSiteQuery()` populates `brand` instead of `branding`                           |
+| `src/lib/cms/site.ts`             | `getSiteConfig()` returns SiteViewModel with `brandKey`; Brand is fetched separately |
+| `src/lib/cms/brand.ts`            | `getBrand(brandKey)` queries by Brand.key via `filters[key][$eq]`                    |
+| `src/lib/cms/brand-queries.ts`    | `buildBrandQuery(brandKey)` filters on Brand's own key                               |
+| `src/lib/runtime/site-runtime.ts` | `getRuntimeConfig()` fetches Site first, then parallel Brand + Locales               |
 
 ## 7. Validation
 

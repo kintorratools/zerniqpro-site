@@ -2,8 +2,7 @@
 export const prerender = false;
 
 import { getCmsConfig } from '@lib/cms/config';
-import { getSiteConfig } from '@lib/cms/site';
-import { getBrand } from '@lib/cms/brand';
+import { getRuntimeConfig } from '@lib/runtime/site-runtime';
 import { getProductByHandle } from '@lib/cms/product';
 import {
   CmsTimeoutError,
@@ -30,13 +29,11 @@ if (!config.configured) {
   );
 }
 
-let site;
-let brand;
+let runtime;
 let product;
 
 try {
-  site = await getSiteConfig();
-  brand = await getBrand();
+  runtime = await getRuntimeConfig();
 } catch (e) {
   if (e instanceof CmsTimeoutError) {
     return errorResponse(
@@ -79,8 +76,8 @@ try {
 
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
-const canonical = `${brand.domain}/products/${handle}/`;
-const pageTitle = `${product.seo.title} | ${site.name}`;
+const canonical = `${runtime.brand.domain}/products/${handle}/`;
+const pageTitle = `${product.seo.title} | ${runtime.site.name}`;
 
 const jsonLdString = JSON.stringify({
   '@context': 'https://schema.org',
@@ -89,13 +86,13 @@ const jsonLdString = JSON.stringify({
   description: product.summary,
   brand: {
     '@type': 'Brand',
-    name: brand.name,
+    name: runtime.brand.name,
   },
 });
 ---
 
 <!doctype html>
-<html lang={site.defaultLocale}>
+<html lang={runtime.site.defaultLocale}>
   <head>
     <meta charset="utf-8" />
     <title>{pageTitle}</title>

@@ -41,7 +41,7 @@ export async function GET() {
         key: site.key,
         name: site.name,
         defaultLocale: site.defaultLocale,
-        brand: site.brand,
+        brandKey: site.brandKey,
       },
     });
   } catch (err) {

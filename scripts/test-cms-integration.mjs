@@ -161,7 +161,7 @@ function startWorker(workerPort, token, mockUrl) {
         '--var',
         `STRAPI_URL:${mockUrl}`,
         '--var',
-        `STRAPI_API_TOKEN:${token}`,
+        'STRAPI_API_TOKEN:' + token,
         '--var',
         'CMS_SITE_KEY:zerniq',
       ],
@@ -245,7 +245,7 @@ async function testValidSite(workerUrl) {
   check(body.cmsReachable === true, 'cmsReachable=true');
   check(body.site.key === 'zerniq', 'site.key=zerniq');
   check(body.site.name === 'ZERNIQ', 'site.name=ZERNIQ');
-  check(body.site?.brand?.key === 'zerniq', 'site.brand.key correct');
+  check(body.site?.brandKey === 'zerniq', 'site.brandKey correct');
   check(body.site.defaultLocale === 'en', 'site.defaultLocale=en');
 
   const cc = res.headers.get('cache-control') ?? '';
@@ -276,33 +276,28 @@ async function testInvalidBrand(workerUrl) {
 
 async function testNullableOuter(workerUrl) {
   console.log(
-    '\n--- [nullable] defaultSeo=null, brand=null → 200 with defaults ---'
+    '\n--- [nullable] defaultSeo=null, brand=null → 502 (brand required) ---'
   );
   const res = await fetch(`${workerUrl}/api/cms-probe.json`);
   const body = await res.json();
 
-  check(res.status === 200, `status 200 (got ${res.status})`);
-  check(body.status === 'ok', `status="ok"`);
-  check(body.cmsReachable === true, 'cmsReachable=true');
-  check(body.site?.key === 'zerniq', 'site.key=zerniq');
-  check(body.site?.name === 'ZERNIQ', 'site.name=ZERNIQ');
-  check(body.site?.brand === undefined, 'brand is absent when null');
-  // Null→undefined normalization confirmed by 200 (no schema rejection)
-  console.log('  PASS: null defaults accepted (normalized in ViewModel)');
+  check(res.status === 502, `status 502 (got ${res.status})`);
+  check(body.status === 'error', `status="error" (got ${body.status})`);
+  check(body.cmsReachable === false, 'cmsReachable=false');
+  console.log('  PASS: null brand rejected with 502');
 }
 
 async function testNullableInner(workerUrl) {
   console.log(
-    '\n--- [nullable-inner] inner fields null → 200 with defaults ---'
+    '\n--- [nullable-inner] inner fields null, brand=null → 502 (brand required) ---'
   );
   const res = await fetch(`${workerUrl}/api/cms-probe.json`);
   const body = await res.json();
 
-  check(res.status === 200, `status 200 (got ${res.status})`);
-  check(body.status === 'ok', `status="ok"`);
-  check(body.cmsReachable === true, 'cmsReachable=true');
-  check(body.site?.key === 'zerniq', 'site.key=zerniq');
-  console.log('  PASS: inner null fields accepted (normalized in ViewModel)');
+  check(res.status === 502, `status 502 (got ${res.status})`);
+  check(body.status === 'error', `status="error" (got ${body.status})`);
+  check(body.cmsReachable === false, 'cmsReachable=false');
+  console.log('  PASS: null brand rejected with 502');
 }
 
 async function testNullableTrim(workerUrl) {

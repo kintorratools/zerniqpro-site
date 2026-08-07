@@ -50,16 +50,16 @@ function toViewModel(record: SiteRecord): SiteViewModel {
     nullToUndefined(record.defaultSeo?.description)?.trim() ||
     `Official website for ${record.name}.`;
 
-  // Brand: normalize null/undefined; keep only key for now
-  // name and domain come from the Brand entity (fetched separately)
-  const brand = nullToUndefined(record.brand);
+  if (!record.brand || !record.brand.key?.trim()) {
+    throw new CmsValidationError();
+  }
 
   return {
     key: record.key,
     name: record.name,
     defaultLocale: record.defaultLocale,
     seo: { title: seoTitle, description: seoDescription },
-    brand: brand ? { key: brand.key, name: '', domain: '' } : undefined,
+    brandKey: record.brand.key.trim(),
   };
 }
 

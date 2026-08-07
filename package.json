@@ -17,6 +17,7 @@
     "test:cms": "node scripts/test-cms-integration.mjs",
     "test:product": "node scripts/test-product-ssr.mjs",
     "test:brand-i18n": "node scripts/test-brand-i18n.mjs",
+    "test:generic": "node scripts/test-generic-template.mjs",
     "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist/server/wrangler.json"
   },
   "dependencies": {

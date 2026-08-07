@@ -1,4 +1,3 @@
-import { getCmsConfig } from './config';
 import { strapiFetch } from './client';
 import { buildLocaleQuery } from './locale-queries';
 import { parseLocaleCollectionResponse } from './locale-schemas';
@@ -6,14 +5,10 @@ import { CmsContentNotFoundError } from './errors';
 import type { LocaleViewModel } from './locale-models';
 
 /**
- * Fetch all enabled locales from Strapi for the given site key.
- * Falls back to `getCmsConfig().siteKey` if no argument is provided.
- * Enforces that 'en' is always enabled regardless of CMS data.
+ * Fetch all locales (including disabled) from Strapi for the given site key.
  */
-export async function getLocales(siteKey?: string): Promise<LocaleViewModel[]> {
-  const config = getCmsConfig();
-  const key = siteKey ?? config.siteKey;
-  const path = buildLocaleQuery(key);
+export async function getLocales(siteKey: string): Promise<LocaleViewModel[]> {
+  const path = buildLocaleQuery(siteKey);
 
   // strapiFetch response is treated as unknown for safety
   const raw: unknown = await strapiFetch(path);
@@ -28,14 +23,5 @@ export async function getLocales(siteKey?: string): Promise<LocaleViewModel[]> {
     throw new CmsContentNotFoundError();
   }
 
-  const locales = parseLocaleCollectionResponse(raw);
-
-  // Enforce: en is always enabled
-  for (const loc of locales) {
-    if (loc.code === 'en') {
-      loc.enabled = true;
-    }
-  }
-
-  return locales;
+  return parseLocaleCollectionResponse(raw);
 }

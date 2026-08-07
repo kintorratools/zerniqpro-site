@@ -1,7 +1,6 @@
 import { defineConfig, envField } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
-import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 
 import mdx from '@astrojs/mdx';
@@ -9,7 +8,7 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   // https://docs.astro.build/en/guides/images/#authorizing-remote-images
-  site: process.env.SITE_URL ?? 'https://zerniqpro.com',
+  site: process.env.SITE_URL ?? 'http://localhost:4321',
   image: {
     domains: ['images.unsplash.com'],
   },
@@ -26,15 +25,10 @@ export default defineConfig({
   prefetch: true,
   env: {
     schema: {
-      SITE_URL: envField.string({
-        context: 'server',
-        access: 'public',
-        default: 'https://zerniqpro.com',
-      }),
       CMS_SITE_KEY: envField.string({
         context: 'server',
-        access: 'public',
-        default: 'zerniq',
+        access: 'secret',
+        default: 'site-template',
       }),
       CMS_REQUEST_TIMEOUT_MS: envField.number({
         context: 'server',
@@ -57,17 +51,8 @@ export default defineConfig({
     imageService: 'compile',
   }),
   integrations: [
-    sitemap({
-      i18n: {
-        defaultLocale: 'en', // All urls that don't contain language prefix will be treated as default locale
-        locales: {
-          en: 'en', // The `defaultLocale` value must present in `locales` keys
-          fr: 'fr',
-        },
-      },
-    }),
     starlight({
-      title: 'ScrewFast Docs',
+      title: 'Documentation',
       // https://github.com/withastro/starlight/blob/main/packages/starlight/CHANGELOG.md
       // If no Astro and Starlight i18n configurations are provided, the built-in default locale is used in Starlight and a matching Astro i18n configuration is generated/used.
       // If only a Starlight i18n configuration is provided, an equivalent Astro i18n configuration is generated/used.
@@ -80,10 +65,8 @@ export default defineConfig({
         },
         de: { label: 'Deutsch', lang: 'de' },
         es: { label: 'Español', lang: 'es' },
-        fa: { label: 'Persian', lang: 'fa', dir: 'rtl' },
         fr: { label: 'Français', lang: 'fr' },
-        ja: { label: '日本語', lang: 'ja' },
-        'zh-cn': { label: '简体中文', lang: 'zh-CN' },
+        'pt-BR': { label: 'Português (Brasil)', lang: 'pt-BR' },
       },
       // https://starlight.astro.build/guides/sidebar/
       sidebar: [
@@ -92,10 +75,8 @@ export default defineConfig({
           translations: {
             de: 'Schnellstartanleitungen',
             es: 'Guías de Inicio Rápido',
-            fa: 'راهنمای شروع سریع',
             fr: 'Guides de Démarrage Rapide',
-            ja: 'クイックスタートガイド',
-            'zh-cn': '快速入门指南',
+            'pt-BR': 'Guias de Início Rápido',
           },
           items: [{ autogenerate: { directory: 'guides' } }],
         },
@@ -105,10 +86,8 @@ export default defineConfig({
           translations: {
             de: 'Werkzeuge & Ausrüstung',
             es: 'Herramientas y Equipo',
-            fa: 'ابزار و تجهیزات',
             fr: 'Outils et Équipement',
-            ja: 'ツールと機材',
-            'zh-cn': '工具与设备',
+            'pt-BR': 'Ferramentas e Equipamentos',
           },
           items: [
             { label: 'Tool Guides', link: 'tools/tool-guides/' },
@@ -120,10 +99,8 @@ export default defineConfig({
           translations: {
             de: 'Baudienstleistungen',
             es: 'Servicios de Construcción',
-            fa: 'خدمات ساخت‌وساز',
             fr: 'Services de Construction',
-            ja: '建設サービス',
-            'zh-cn': '施工服务',
+            'pt-BR': 'Serviços de Construção',
           },
           items: [{ autogenerate: { directory: 'construction' } }],
         },
@@ -132,13 +109,7 @@ export default defineConfig({
           items: [{ autogenerate: { directory: 'advanced' } }],
         },
       ],
-      social: [
-        {
-          icon: 'github',
-          label: 'GitHub',
-          href: 'https://github.com/mearashadowfax/ScrewFast',
-        },
-      ],
+      social: [],
       disable404Route: true,
       customCss: ['./src/assets/styles/starlight.css'],
       favicon: '/favicon.ico',
@@ -149,22 +120,6 @@ export default defineConfig({
           './src/components/ui/starlight/MobileMenuFooter.astro',
         ThemeSelect: './src/components/ui/starlight/ThemeSelect.astro',
       },
-      head: [
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image',
-            content: 'https://screwfast.uk' + '/social.webp',
-          },
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'twitter:image',
-            content: 'https://screwfast.uk' + '/social.webp',
-          },
-        },
-      ],
     }),
     mdx(),
   ],

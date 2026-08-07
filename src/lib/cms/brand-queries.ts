@@ -3,11 +3,11 @@
  * Filters by site key; only requests needed fields.
  * Never uses populate=*.
  */
-export function buildBrandQuery(siteKey: string): string {
+export function buildBrandQuery(brandKey: string): string {
   const params = new URLSearchParams();
 
-  // Filter by site key
-  params.set('filters[site][key][$eq]', siteKey);
+  // Filter by brand key
+  params.set('filters[key][$eq]', brandKey);
 
   // Limit to one result and only published entries
   params.set('pagination[pageSize]', '1');

@@ -21,7 +21,7 @@ const { product } = Astro.props;
 
 const pageTitle: string = `${product.data.title} | ${SITE.title}`;
 const metaDescription = product.data.description;
-const ogTitle = `${product.data.title} | Hardware Tools | ScrewFast`;
+const ogTitle = `${product.data.title} | Hardware Tools | Acme`;
 const productSlug = product.data.title.toLowerCase().replace(/\s+/g, '-');
 ---
 
@@ -37,7 +37,7 @@ const productSlug = product.data.title.toLowerCase().replace(/\s+/g, '-');
     description: product.data.description,
     brand: {
       '@type': 'Brand',
-      name: 'ScrewFast',
+      name: 'Acme',
     },
   }}
 >

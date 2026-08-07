@@ -43,5 +43,8 @@ jobs:
       - name: Brand & i18n tests
         run: pnpm test:brand-i18n
 
+      - name: Generic template scan
+        run: pnpm test:generic
+
       - name: Smoke tests
         run: pnpm test:smoke

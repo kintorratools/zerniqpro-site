@@ -27,6 +27,54 @@ const MOCK_BRAND = {
   publishedAt: '2025-06-01T00:00:00.000Z',
 };
 
+const MOCK_LOCALES = [
+  {
+    id: 1,
+    documentId: 'loc-en',
+    code: 'en',
+    name: 'English',
+    enabled: true,
+    isDefault: true,
+    direction: 'ltr',
+  },
+  {
+    id: 2,
+    documentId: 'loc-es',
+    code: 'es',
+    name: 'Español',
+    enabled: true,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 3,
+    documentId: 'loc-de',
+    code: 'de',
+    name: 'Deutsch',
+    enabled: false,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 4,
+    documentId: 'loc-fr',
+    code: 'fr',
+    name: 'Français',
+    enabled: true,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 5,
+    documentId: 'loc-pt',
+    code: 'pt-BR',
+    name: 'Português (Brasil)',
+    enabled: false,
+    isDefault: false,
+    direction: 'ltr',
+  },
+];
+
 const VALID_SITE = {
   id: 1,
   documentId: 'abc123',
@@ -137,7 +185,7 @@ function startMockStrapi() {
 
       if (req.method === 'GET' && url.pathname === '/api/brands') {
         // Verify brand query params
-        if (url.searchParams.get('filters[site][key][$eq]') !== 'zerniq') {
+        if (url.searchParams.get('filters[key][$eq]') !== 'zerniq') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -149,6 +197,18 @@ function startMockStrapi() {
           JSON.stringify({
             data: [MOCK_BRAND],
             meta: { pagination: { total: 1 } },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/locales') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            data: MOCK_LOCALES,
+            meta: { pagination: { total: 5 } },
           })
         );
         return;

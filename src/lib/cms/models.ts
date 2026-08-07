@@ -38,9 +38,5 @@ export interface SiteViewModel {
     title: string;
     description: string;
   };
-  brand?: {
-    key: string;
-    name: string;
-    domain: string;
-  };
+  brandKey: string;
 }

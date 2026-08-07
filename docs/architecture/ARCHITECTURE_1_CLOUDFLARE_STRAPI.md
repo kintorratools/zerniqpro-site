@@ -14,13 +14,13 @@
 
 ## Multi-Site Architecture
 
-The `CMS_SITE_KEY` environment variable determines which site content to fetch from Strapi. This allows a single Strapi instance to serve multiple storefronts (e.g., different brands, different product lines, regional variants) via separate Cloudflare Workers deployments.
+The `CMS_SITE_KEY` environment variable is the **only** deployment variable that selects which site content to fetch from Strapi. This single key determines all site-specific behavior — page routing, locale availability, and content filtering. All brand identity (name, domain, logo, colors, SEO metadata, social links) is resolved at runtime from Strapi via the Brand entity linked to the selected Site. This allows a single Strapi instance to serve multiple storefronts (e.g., different brands, different product lines, regional variants) via separate Cloudflare Workers deployments, each with its own `CMS_SITE_KEY`.
 
 ```
 Strapi (single instance)
-├── siteKey: "zerniq-na"      → Worker A (North America product line)
-├── siteKey: "zerniq-eu"      → Worker B (EU product line)
-├── siteKey: "another-brand"  → Worker C (different brand)
+├── CMS_SITE_KEY: "zerniq"     → Worker A (Zerniq brand, North America)
+├── CMS_SITE_KEY: "screwfast"  → Worker B (ScrewFast brand, UK)
+├── CMS_SITE_KEY: "aussie"     → Worker C (AussieSteel brand, AU)
 ```
 
 ## Progressive Migration Path
@@ -87,7 +87,7 @@ Strapi (single instance)
 - Existing `/products/[id]` static pages remain unchanged
 - Product JSON-LD, canonical URLs, and SEO metadata verified
 
-### Phase 4 (current): Brand / Site / i18n Foundation
+### Phase 4 (completed): Brand / Site / i18n Foundation
 
 - Brand entity separated from Site: Brand holds logo, favicon, colors, domain, social links
 - Site references Brand via relation (documentId, key); no longer holds branding directly
@@ -95,6 +95,17 @@ Strapi (single instance)
 - Runtime config layer: `getRuntimeConfig()` aggregates Brand + Site + Locales
 - i18n tools: `getEnabledLocales()`, `isLocaleEnabled()`, `getDefaultLocale()`
 - Brand/i18n integration test via wrangler dev
+
+### Phase 4.1 (current): Brand Query Refactor & Generic Template Scan
+
+- `CMS_SITE_KEY` is the only deployment-level variable; all brand identity comes from Strapi
+- Brand queried by its own `key` field (`filters[key][$eq]`) — no longer filtered by `filters[site][key][$eq]`
+- Runtime flow: fetch Site first → extract `brandKey` → parallel `getBrand(brandKey)` + `getLocales(siteKey)`
+- `SiteViewModel` carries `brandKey` as the relation source (not inline brand data)
+- All five locale codes (en, es, de, fr, pt-BR) are fixed in schema; CMS controls enable/disable only
+- English (en) always required: must exist, be enabled, be the default locale
+- `getLocales()` returns all locale records (including disabled); `getEnabledLocales()` filters for display
+- Generic template scan script (`test:generic`) detects brand-specific hardcoded strings in source
 
 ### Phase 5: Full Migration
 

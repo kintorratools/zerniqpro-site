@@ -6,13 +6,11 @@ import { CmsContentNotFoundError } from './errors';
 import type { BrandViewModel } from './brand-models';
 
 /**
- * Fetch the brand configuration from Strapi for the given site key.
- * Falls back to `getCmsConfig().siteKey` if no argument is provided.
+ * Fetch the brand configuration from Strapi for the given brand key.
  */
-export async function getBrand(siteKey?: string): Promise<BrandViewModel> {
+export async function getBrand(brandKey: string): Promise<BrandViewModel> {
   const config = getCmsConfig();
-  const key = siteKey ?? config.siteKey;
-  const path = buildBrandQuery(key);
+  const path = buildBrandQuery(brandKey);
 
   // strapiFetch response is treated as unknown for safety
   const raw: unknown = await strapiFetch(path);

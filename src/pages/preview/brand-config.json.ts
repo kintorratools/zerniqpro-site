@@ -41,7 +41,7 @@ export async function GET() {
         key: config.site.key,
         name: config.site.name,
         defaultLocale: config.site.defaultLocale,
-        brand: config.site.brand,
+        brandKey: config.site.brandKey,
       },
       locales: enabledLocales,
       defaultLocale: defaultLocale.code,

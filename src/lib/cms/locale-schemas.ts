@@ -24,11 +24,69 @@ const strapiCollectionLocaleSchema = z
     data: z.array(localeRecordSchema),
   })
   .superRefine((val, ctx) => {
+    // 1. Must have exactly 5 entries (all 5 codes present)
+    if (val.data.length !== 5) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Expected exactly 5 locales, got ${val.data.length}`,
+        path: ['data'],
+      });
+    }
+
+    // 2. No duplicate codes
+    const codes = val.data.map(r => r.code);
+    const dupes = codes.filter((c, i) => codes.indexOf(c) !== i);
+    if (dupes.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Duplicate locale codes found: ${[...new Set(dupes)].join(', ')}`,
+        path: ['data'],
+      });
+    }
+
+    // 3. en must exist
+    const enLocale = val.data.find(r => r.code === 'en');
+    if (!enLocale) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'English locale (en) is required but not found',
+        path: ['data'],
+      });
+    }
+
+    // 4. en.enabled === true
+    if (enLocale && !enLocale.enabled) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'English locale (en) must be enabled',
+        path: ['data'],
+      });
+    }
+
+    // 5. en.isDefault === true
+    if (enLocale && !enLocale.isDefault) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'English locale (en) must be the default locale',
+        path: ['data'],
+      });
+    }
+
+    // 6. Exactly one isDefault === true
     const defaults = val.data.filter(r => r.isDefault);
     if (defaults.length !== 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: `Expected exactly one default locale, got ${defaults.length}`,
+        path: ['data'],
+      });
+    }
+
+    // 7. Default locale must have enabled === true
+    if (defaults.length === 1 && !defaults[0].enabled) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'The default locale must be enabled',
         path: ['data'],
       });
     }

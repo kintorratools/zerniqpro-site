@@ -13,14 +13,14 @@ export interface RuntimeConfig {
 
 /**
  * Aggregate site, brand, and locale configuration.
- * Fetches all three concurrently via Promise.all.
+ * Fetches site first, then brand and locales in parallel.
  * Used by Navbar, Footer, Meta, Schema, and other global components.
  */
 export async function getRuntimeConfig(): Promise<RuntimeConfig> {
-  const [site, brand, locales] = await Promise.all([
-    getSiteConfig(),
-    getBrand(),
-    getLocales(),
+  const site = await getSiteConfig();
+  const [brand, locales] = await Promise.all([
+    getBrand(site.brandKey),
+    getLocales(site.key),
   ]);
 
   return { site, brand, locales };
