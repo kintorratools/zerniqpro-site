@@ -1,7 +1,4 @@
-import {
-  CMS_REQUEST_TIMEOUT_MS,
-  getSecret,
-} from 'astro:env/server';
+import { CMS_REQUEST_TIMEOUT_MS, getSecret } from 'astro:env/server';
 import type { CmsConfig } from './types';
 
 export function getCmsConfig(): CmsConfig {
