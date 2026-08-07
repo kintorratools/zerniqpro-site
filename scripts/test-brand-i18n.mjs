@@ -124,9 +124,7 @@ function startMockStrapi() {
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
         }
-      } else if (
-        url.searchParams.get('filters[site][key][$eq]') !== 'zerniq'
-      ) {
+      } else if (url.searchParams.get('filters[site][key][$eq]') !== 'zerniq') {
         res.writeHead(400);
         res.end(JSON.stringify({ error: { status: 400 } }));
         return;
