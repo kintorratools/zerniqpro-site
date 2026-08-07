@@ -46,5 +46,8 @@ jobs:
       - name: Generic template scan
         run: pnpm test:generic
 
+      - name: Global runtime tests
+        run: pnpm test:global-runtime
+
       - name: Smoke tests
         run: pnpm test:smoke

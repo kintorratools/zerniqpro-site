@@ -3,12 +3,12 @@
 import Meta from '@components/Meta.astro';
 import Navbar from '@components/sections/navbar&footer/Navbar.astro';
 import FooterSection from '@components/sections/navbar&footer/FooterSection.astro';
-import { SITE } from '@data/constants';
+import { getRuntimeConfig } from '@lib/runtime/site-runtime';
 import '@styles/global.css';
 
 // Setting expected props
 const {
-  title = SITE.title,
+  title = '',
   meta,
   structuredData,
   lang = 'en',
@@ -17,11 +17,37 @@ const {
   hideFooter = false,
 } = Astro.props;
 
+// During build-time prerendering (SSG), STRAPI_URL may not be set.
+// Fall back to empty defaults so static pages still render.
+let runtime;
+try {
+  runtime = await getRuntimeConfig();
+} catch {
+  runtime = {
+    site: {
+      key: 'site-template',
+      name: '',
+      defaultLocale: 'en',
+      seo: { title: '', description: '' },
+      brandKey: '',
+    },
+    brand: {
+      key: 'site-template',
+      name: '',
+      domain: 'https://example.com',
+      seo: { title: '', description: '' },
+    },
+    locales: [],
+    navigation: { items: [] },
+    footer: { columns: [], copyright: '', legalLinks: [], socialLinks: [] },
+  };
+}
+
 // Interface to type-check the properties
 interface Props {
   title?: string;
   meta?: string;
-  structuredData?: object;
+  structuredData?: Record<string, unknown>;
   lang?: string;
   customDescription?: string | null;
   customOgTitle?: string | null;
@@ -37,9 +63,12 @@ interface Props {
       structuredData={structuredData}
       customDescription={customDescription}
       customOgTitle={customOgTitle}
+      brand={runtime.brand}
+      site={runtime.site}
+      locales={runtime.locales}
     />
     {/* Define the title of the page */}
-    <title>{title}</title>
+    <title>{title || runtime.brand.name}</title>
     <script is:inline>
       // Script to handle dark mode. It will check if the theme is stored in localStorage or if dark theme is preferred by system settings
       if (
@@ -75,12 +104,16 @@ interface Props {
     <div
       class="mx-auto w-full max-w-(--breakpoint-2xl) grow px-4 sm:px-6 lg:px-8"
     >
-      <Navbar />
+      <Navbar items={runtime.navigation.items} />
       <main id="main-content">
         <slot />
       </main>
     </div>
-    {!hideFooter && <FooterSection />}
+    {
+      !hideFooter && (
+        <FooterSection footer={runtime.footer} brand={runtime.brand} />
+      )
+    }
     <script>
       // https://preline.co
       import 'preline';

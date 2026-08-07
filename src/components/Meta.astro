@@ -1,38 +1,48 @@
 ---
 import { getImage } from 'astro:assets';
-import { OG, SEO, SITE } from '@data/constants';
+import { OG } from '@data/constants';
 import faviconSvgSrc from '@images/icon.svg';
 import faviconSrc from '@images/icon.png';
+import type { BrandViewModel } from '@lib/cms/brand-models';
+import type { SiteViewModel } from '@lib/cms/models';
+import type { LocaleViewModel } from '@lib/cms/locale-models';
+import type { SEOConfig } from '@lib/cms/seo-models';
+import { resolveGlobalSeo } from '@lib/cms/seo';
+import { buildHreflangLinks } from '@lib/i18n/routes';
 
-// Default properties for the Meta component. These values are used if props are not provided.
-// 'meta' sets a default description meta tag to describe the page content.
-// 'structuredData' defines default structured data in JSON-LD format to enhance search engine understanding of the page (for SEO purposes).
-const defaultProps = {
-  meta: SITE.description,
-  structuredData: SEO.structuredData,
-  customDescription: null,
-  customOgTitle: null,
-};
+interface Props {
+  meta?: string;
+  structuredData?: Record<string, unknown>;
+  customDescription?: string | null;
+  customOgTitle?: string | null;
+  brand?: BrandViewModel;
+  site?: SiteViewModel;
+  locales?: LocaleViewModel[];
+}
 
-// Extract props with default values assigned from defaultProps. Values can be overridden when the component is used.
-// For example:
-// <MainLayout title="Custom Title" meta="Custom description." />
 const {
-  meta = defaultProps.meta,
-  structuredData = defaultProps.structuredData,
-  customDescription = defaultProps.customDescription,
-  customOgTitle = defaultProps.customOgTitle,
+  meta,
+  structuredData,
+  customDescription = null,
+  customOgTitle = null,
+  brand,
+  site,
+  locales,
 } = Astro.props;
 
-// Use custom description if provided, otherwise use default meta
-const description = customDescription || meta;
-// Use custom OG title if provided, otherwise use default OG title
-const ogTitle = customOgTitle || OG.title;
-const ogDescription = customDescription || OG.description;
+const pageSeo: Partial<SEOConfig> = {
+  title: customOgTitle || undefined,
+  description: customDescription || meta || undefined,
+};
+const runtime = brand && site ? { brand, site } : undefined;
+const resolvedSeo = resolveGlobalSeo(pageSeo, runtime);
 
-// Define the metadata for your website and individual pages
-const siteURL = `${Astro.site}`; // Set the website URL in astro.config.mjs
-const author = SITE.author;
+const description = resolvedSeo.description;
+const ogTitle = resolvedSeo.title;
+const ogDescription = resolvedSeo.description;
+
+const siteURL = `${Astro.site}`;
+const author = brand?.name || site?.name || '';
 const canonical = new URL(Astro.url.pathname, Astro.site || Astro.url.origin)
   .href;
 const basePath = Astro.url.pathname;
@@ -41,27 +51,52 @@ const socialImageRes = await getImage({
   width: 1200,
   height: 600,
 });
-const socialImage = Astro.url.origin + socialImageRes.src; // Get the full URL of the image (https://stackoverflow.com/a/9858694)
+const socialImage = Astro.url.origin + socialImageRes.src;
 
-const languages: { [key: string]: string } = {
-  en: '',
-  fr: 'fr',
-};
+const languages: Record<string, string> = {};
+if (locales) {
+  for (const loc of locales) {
+    if (loc.enabled) {
+      languages[loc.code] = loc.code === 'en' ? '' : loc.code;
+    }
+  }
+} else {
+  languages['en'] = '';
+  languages['fr'] = 'fr';
+}
 
 function createHref(_lang: string, prefix: string, path: string): string {
-  // Remove any existing language prefix
   const cleanPath = path.replace(/^\/(fr|en)\//, '/');
-
-  // Add the correct language prefix if needed
   const basePath = prefix ? `/${prefix}${cleanPath}` : cleanPath;
   const normalizedBasePath = basePath.replace(/\/\/+/g, '/');
-
   return `${siteURL.slice(0, -1)}${normalizedBasePath}`;
 }
 
 const fullPath: string = Astro.url.pathname;
 
-// Generate and optimize the favicon images
+const hreflangLinks =
+  locales && locales.length > 0
+    ? buildHreflangLinks(locales, fullPath, String(Astro.site || ''))
+    : [];
+
+const dynamicStructuredData = brand
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      inLanguage: 'en-US',
+      '@id': brand.domain,
+      url: brand.domain,
+      name: brand.name,
+      description: brand.seo.description || '',
+      isPartOf: {
+        '@type': 'WebSite',
+        url: brand.domain,
+        name: brand.name,
+        description: brand.seo.description || '',
+      },
+    }
+  : undefined;
+
 const faviconSvg = await getImage({
   src: faviconSvgSrc,
   format: 'svg',
@@ -79,10 +114,10 @@ const appleTouchIcon = await getImage({
   /*  Inject structured data into the page if provided. This data is formatted as JSON-LD, a method recommended by Google for structured data pass:
      https://developers.google.com/search/docs/advanced/structured-data/intro-structured-data */
 }{
-  structuredData && (
+  (dynamicStructuredData || structuredData) && (
     <script
       type="application/ld+json"
-      set:html={JSON.stringify(structuredData)}
+      set:html={JSON.stringify(dynamicStructuredData || structuredData)}
     />
   )
 }
@@ -94,11 +129,15 @@ const appleTouchIcon = await getImage({
 <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 <link rel="canonical" href={canonical} />
 {
-  Object.entries(languages).map(([lang, prefix]) => {
-    const cleanPath = fullPath.replace(/^\/(fr|en)\//, '/');
-    const href = createHref(lang, prefix, cleanPath);
-    return <link rel="alternate" hreflang={lang} href={href} />;
-  })
+  hreflangLinks.length > 0
+    ? hreflangLinks.map(({ lang, href }) => (
+        <link rel="alternate" hreflang={lang} href={href} />
+      ))
+    : Object.entries(languages).map(([lang, prefix]) => {
+        const cleanPath = fullPath.replace(/^\/(fr|en)\//, '/');
+        const href = createHref(lang, prefix, cleanPath);
+        return <link rel="alternate" hreflang={lang} href={href} />;
+      })
 }
 
 {/* Facebook Meta Tags */}
@@ -109,7 +148,7 @@ const appleTouchIcon = await getImage({
 <meta property="og:url" content={canonical} />
 <meta property="og:type" content="website" />
 <meta property="og:title" content={ogTitle} />
-<meta property="og:site_name" content={SITE.title} />
+<meta property="og:site_name" content={brand?.name || site?.name || ''} />
 <meta property="og:description" content={ogDescription} />
 <meta property="og:image" content={socialImage} />
 <meta content="1200" property="og:image:width" />
@@ -120,7 +159,9 @@ const appleTouchIcon = await getImage({
 <meta name="twitter:card" content="summary_large_image" />
 <meta
   property="twitter:domain"
-  content={Astro.site?.hostname ?? 'example.com'}
+  content={brand?.domain
+    ? new URL(brand.domain).hostname
+    : (Astro.site?.hostname ?? 'example.com')}
 />
 <meta property="twitter:url" content={canonical} />
 <meta name="twitter:title" content={ogTitle} />
