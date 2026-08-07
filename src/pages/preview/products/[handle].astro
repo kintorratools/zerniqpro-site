@@ -3,6 +3,7 @@ export const prerender = false;
 
 import { getCmsConfig } from '@lib/cms/config';
 import { getSiteConfig } from '@lib/cms/site';
+import { getBrand } from '@lib/cms/brand';
 import { getProductByHandle } from '@lib/cms/product';
 import {
   CmsTimeoutError,
@@ -30,10 +31,12 @@ if (!config.configured) {
 }
 
 let site;
+let brand;
 let product;
 
 try {
   site = await getSiteConfig();
+  brand = await getBrand();
 } catch (e) {
   if (e instanceof CmsTimeoutError) {
     return errorResponse(
@@ -76,7 +79,7 @@ try {
 
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
-const canonical = `${site.domain}/products/${handle}/`;
+const canonical = `${brand.domain}/products/${handle}/`;
 const pageTitle = `${product.seo.title} | ${site.name}`;
 
 const jsonLdString = JSON.stringify({
@@ -86,7 +89,7 @@ const jsonLdString = JSON.stringify({
   description: product.summary,
   brand: {
     '@type': 'Brand',
-    name: site.name,
+    name: brand.name,
   },
 });
 ---

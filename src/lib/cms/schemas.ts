@@ -2,34 +2,8 @@ import { z } from 'astro/zod';
 import type { SiteRecord, SiteViewModel } from './models';
 import { CmsValidationError } from './errors';
 
-/** Accept only #RGB, #RGBA, #RRGGBB, #RRGGBBAA */
-const hexColor = z
-  .string()
-  .regex(
-    /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/,
-    'must be a hex color (#RGB, #RGBA, #RRGGBB, or #RRGGBBAA)'
-  );
-
-/** URL that must use http or https protocol */
-const urlField = z
-  .string()
-  .url()
-  .refine(
-    val => {
-      try {
-        const u = new URL(val);
-        return u.protocol === 'http:' || u.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    },
-    { message: 'must be an http or https URL' }
-  );
-
 /** Strapi may return null for optional components or fields */
 const nullableString = z.string().trim().nullable().optional();
-const nullableUrl = urlField.nullable().optional();
-const nullableHex = hexColor.nullable().optional();
 
 /** Raw Strapi 5 flat entity shape — no attributes wrapper */
 const siteRecordSchema = z.object({
@@ -37,7 +11,6 @@ const siteRecordSchema = z.object({
   documentId: z.string(),
   key: z.string().trim().min(1),
   name: z.string().trim().min(1),
-  domain: urlField,
   defaultLocale: z.string().trim().min(1),
   defaultSeo: z
     .object({
@@ -46,12 +19,10 @@ const siteRecordSchema = z.object({
     })
     .nullable()
     .optional(),
-  branding: z
+  brand: z
     .object({
-      logoUrl: nullableUrl,
-      faviconUrl: nullableUrl,
-      primaryColor: nullableHex,
-      accentColor: nullableHex,
+      documentId: z.string(),
+      key: z.string().trim().min(1),
     })
     .nullable()
     .optional(),
@@ -79,24 +50,16 @@ function toViewModel(record: SiteRecord): SiteViewModel {
     nullToUndefined(record.defaultSeo?.description)?.trim() ||
     `Official website for ${record.name}.`;
 
-  // Branding: normalize null/undefined at component and field level
-  const rawBranding = nullToUndefined(record.branding);
-  const branding = rawBranding
-    ? {
-        logoUrl: nullToUndefined(rawBranding.logoUrl),
-        faviconUrl: nullToUndefined(rawBranding.faviconUrl),
-        primaryColor: nullToUndefined(rawBranding.primaryColor),
-        accentColor: nullToUndefined(rawBranding.accentColor),
-      }
-    : undefined;
+  // Brand: normalize null/undefined; keep only key for now
+  // name and domain come from the Brand entity (fetched separately)
+  const brand = nullToUndefined(record.brand);
 
   return {
     key: record.key,
     name: record.name,
-    domain: record.domain,
     defaultLocale: record.defaultLocale,
     seo: { title: seoTitle, description: seoDescription },
-    branding,
+    brand: brand ? { key: brand.key, name: '', domain: '' } : undefined,
   };
 }
 

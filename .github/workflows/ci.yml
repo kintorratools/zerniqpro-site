@@ -40,5 +40,8 @@ jobs:
       - name: Product SSR tests
         run: pnpm test:product
 
+      - name: Brand & i18n tests
+        run: pnpm test:brand-i18n
+
       - name: Smoke tests
         run: pnpm test:smoke

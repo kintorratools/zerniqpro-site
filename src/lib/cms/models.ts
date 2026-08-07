@@ -12,17 +12,14 @@ export interface SiteRecord {
   documentId: string;
   key: string;
   name: string;
-  domain: string;
   defaultLocale: string;
   defaultSeo?: {
     title?: string | null;
     description?: string | null;
   } | null;
-  branding?: {
-    logoUrl?: string | null;
-    faviconUrl?: string | null;
-    primaryColor?: string | null;
-    accentColor?: string | null;
+  brand?: {
+    documentId: string;
+    key: string;
   } | null;
   createdAt?: string;
   updatedAt?: string;
@@ -36,16 +33,14 @@ export interface SiteRecord {
 export interface SiteViewModel {
   key: string;
   name: string;
-  domain: string;
   defaultLocale: string;
   seo: {
     title: string;
     description: string;
   };
-  branding?: {
-    logoUrl?: string;
-    faviconUrl?: string;
-    primaryColor?: string;
-    accentColor?: string;
+  brand?: {
+    key: string;
+    name: string;
+    domain: string;
   };
 }

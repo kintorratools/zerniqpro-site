@@ -12,22 +12,34 @@ const MOCK_HOST = '127.0.0.1';
 
 /* ---------- Mock Strapi data ---------- */
 
+const MOCK_BRAND = {
+  id: 1,
+  documentId: 'brand-001',
+  key: 'zerniq',
+  name: 'ZERNIQ',
+  domain: 'https://zerniqpro.com',
+  defaultSeo: {
+    title: 'ZERNIQ Tools',
+    description: 'Professional power tools for North America',
+  },
+  createdAt: '2025-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  publishedAt: '2025-06-01T00:00:00.000Z',
+};
+
 const VALID_SITE = {
   id: 1,
   documentId: 'abc123',
   key: 'zerniq',
   name: 'ZERNIQ',
-  domain: 'https://zerniqpro.com',
   defaultLocale: 'en',
   defaultSeo: {
     title: 'ZERNIQ Tools',
     description: 'Professional power tools for North America',
   },
-  branding: {
-    logoUrl: 'https://zerniqpro.com/logo.png',
-    faviconUrl: 'https://zerniqpro.com/favicon.ico',
-    primaryColor: '#ff6600',
-    accentColor: '#1e293b',
+  brand: {
+    documentId: 'brand-001',
+    key: 'zerniq',
   },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -120,6 +132,25 @@ function startMockStrapi() {
       if ((req.headers['accept'] ?? '') !== 'application/json') {
         res.writeHead(406);
         res.end(JSON.stringify({ error: { status: 406 } }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/brands') {
+        // Verify brand query params
+        if (url.searchParams.get('filters[site][key][$eq]') !== 'zerniq') {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            data: [MOCK_BRAND],
+            meta: { pagination: { total: 1 } },
+          })
+        );
         return;
       }
 

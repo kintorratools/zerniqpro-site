@@ -15,17 +15,14 @@ const VALID_SITE = {
   documentId: 'abc123',
   key: 'zerniq',
   name: 'ZERNIQ',
-  domain: 'https://zerniqpro.com',
   defaultLocale: 'en',
   defaultSeo: {
     title: 'ZERNIQ Tools',
     description: 'Professional power tools for North America',
   },
-  branding: {
-    logoUrl: 'https://zerniqpro.com/logo.png',
-    faviconUrl: 'https://zerniqpro.com/favicon.ico',
-    primaryColor: '#ff6600',
-    accentColor: '#1e293b',
+  brand: {
+    documentId: 'brand-001',
+    key: 'zerniq',
   },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -38,21 +35,12 @@ const TOKEN_DATA = {
     data: [VALID_SITE],
     meta: { pagination: { total: 1 } },
   },
-  'test-token-invalid-hex': {
-    data: [
-      {
-        ...VALID_SITE,
-        branding: { ...VALID_SITE.branding, primaryColor: '#12345' },
-      },
-    ],
-    meta: { pagination: { total: 1 } },
-  },
-  'test-token-invalid-proto': {
-    data: [{ ...VALID_SITE, domain: 'ftp://example.com' }],
+  'test-token-invalid-brand': {
+    data: [{ ...VALID_SITE, brand: { documentId: '', key: '' } }],
     meta: { pagination: { total: 1 } },
   },
   'test-token-nullable': {
-    data: [{ ...VALID_SITE, defaultSeo: null, branding: null }],
+    data: [{ ...VALID_SITE, defaultSeo: null, brand: null }],
     meta: { pagination: { total: 1 } },
   },
   'test-token-nullable-inner': {
@@ -60,12 +48,7 @@ const TOKEN_DATA = {
       {
         ...VALID_SITE,
         defaultSeo: { title: null, description: null },
-        branding: {
-          logoUrl: null,
-          faviconUrl: null,
-          primaryColor: null,
-          accentColor: null,
-        },
+        brand: null,
       },
     ],
     meta: { pagination: { total: 1 } },
@@ -127,7 +110,7 @@ function startMockStrapi() {
       }
       if (
         url.searchParams.get('populate[defaultSeo]') !== '*' ||
-        url.searchParams.get('populate[branding]') !== '*'
+        url.searchParams.get('populate[brand]') !== '*'
       ) {
         res.writeHead(400);
         res.end(JSON.stringify({ error: { status: 400 } }));
@@ -136,13 +119,7 @@ function startMockStrapi() {
       const f0 = url.searchParams.get('fields[0]');
       const f1 = url.searchParams.get('fields[1]');
       const f2 = url.searchParams.get('fields[2]');
-      const f3 = url.searchParams.get('fields[3]');
-      if (
-        f0 !== 'key' ||
-        f1 !== 'name' ||
-        f2 !== 'domain' ||
-        f3 !== 'defaultLocale'
-      ) {
+      if (f0 !== 'key' || f1 !== 'name' || f2 !== 'defaultLocale') {
         res.writeHead(400);
         res.end(JSON.stringify({ error: { status: 400 } }));
         return;
@@ -268,7 +245,7 @@ async function testValidSite(workerUrl) {
   check(body.cmsReachable === true, 'cmsReachable=true');
   check(body.site.key === 'zerniq', 'site.key=zerniq');
   check(body.site.name === 'ZERNIQ', 'site.name=ZERNIQ');
-  check(body.site.domain === 'https://zerniqpro.com', 'site.domain correct');
+  check(body.site?.brand?.key === 'zerniq', 'site.brand.key correct');
   check(body.site.defaultLocale === 'en', 'site.defaultLocale=en');
 
   const cc = res.headers.get('cache-control') ?? '';
@@ -284,8 +261,8 @@ async function testValidSite(workerUrl) {
   check(!raw.includes('test-token'), 'no token in response');
 }
 
-async function testInvalidHex(workerUrl) {
-  console.log('\n--- [invalid-hex] #12345 → 502 ---');
+async function testInvalidBrand(workerUrl) {
+  console.log('\n--- [invalid-brand] empty brand key → 502 ---');
   const res = await fetch(`${workerUrl}/api/cms-probe.json`);
   const body = await res.json();
 
@@ -294,27 +271,12 @@ async function testInvalidHex(workerUrl) {
   check(body.cmsReachable === false, 'cmsReachable=false');
 
   const raw = JSON.stringify(body);
-  check(!raw.includes('#12345'), 'no invalid value in response');
-  check(!raw.includes('test-token'), 'no token in response');
-}
-
-async function testInvalidProtocol(workerUrl) {
-  console.log('\n--- [invalid-proto] ftp:// → 502 ---');
-  const res = await fetch(`${workerUrl}/api/cms-probe.json`);
-  const body = await res.json();
-
-  check(res.status === 502, `status 502 (got ${res.status})`);
-  check(body.status === 'error', `status="error" (got ${body.status})`);
-  check(body.cmsReachable === false, 'cmsReachable=false');
-
-  const raw = JSON.stringify(body);
-  check(!raw.includes('ftp'), 'no ftp in response');
   check(!raw.includes('test-token'), 'no token in response');
 }
 
 async function testNullableOuter(workerUrl) {
   console.log(
-    '\n--- [nullable] defaultSeo=null, branding=null → 200 with defaults ---'
+    '\n--- [nullable] defaultSeo=null, brand=null → 200 with defaults ---'
   );
   const res = await fetch(`${workerUrl}/api/cms-probe.json`);
   const body = await res.json();
@@ -324,7 +286,7 @@ async function testNullableOuter(workerUrl) {
   check(body.cmsReachable === true, 'cmsReachable=true');
   check(body.site?.key === 'zerniq', 'site.key=zerniq');
   check(body.site?.name === 'ZERNIQ', 'site.name=ZERNIQ');
-  check(body.site?.branding === undefined, 'branding is absent');
+  check(body.site?.brand === undefined, 'brand is absent when null');
   // Null→undefined normalization confirmed by 200 (no schema rejection)
   console.log('  PASS: null defaults accepted (normalized in ViewModel)');
 }
@@ -413,11 +375,10 @@ async function main() {
 
   try {
     await runScenario('valid', 'test-token', testValidSite);
-    await runScenario('invalid-hex', 'test-token-invalid-hex', testInvalidHex);
     await runScenario(
-      'invalid-proto',
-      'test-token-invalid-proto',
-      testInvalidProtocol
+      'invalid-brand',
+      'test-token-invalid-brand',
+      testInvalidBrand
     );
     await runScenario(
       'nullable-outer',

@@ -78,7 +78,7 @@ Strapi (single instance)
 - Boundary tests: invalid hex → 502, invalid protocol → 502, nullable fields → 200 with safe defaults
 - `.dev.vars` is never created or modified by the test
 
-### Phase 3 (current): Shadow SSR & Product Contract
+### Phase 3 (completed): Shadow SSR & Product Contract
 
 - Product Contract established: `ProductRecord` → `ProductViewModel` with Zod validation
 - Dynamic zone block types: text, feature-grid, specifications
@@ -87,7 +87,16 @@ Strapi (single instance)
 - Existing `/products/[id]` static pages remain unchanged
 - Product JSON-LD, canonical URLs, and SEO metadata verified
 
-### Phase 4: Full Migration
+### Phase 4 (current): Brand / Site / i18n Foundation
+
+- Brand entity separated from Site: Brand holds logo, favicon, colors, domain, social links
+- Site references Brand via relation (documentId, key); no longer holds branding directly
+- Locale system: CMS-controlled multi-language (en, es, de, fr, pt-BR)
+- Runtime config layer: `getRuntimeConfig()` aggregates Brand + Site + Locales
+- i18n tools: `getEnabledLocales()`, `isLocaleEnabled()`, `getDefaultLocale()`
+- Brand/i18n integration test via wrangler dev
+
+### Phase 5: Full Migration
 
 - All content managed in Strapi
 - Static fallback removed
@@ -130,14 +139,26 @@ Secrets (`STRAPI_URL`, `STRAPI_API_TOKEN`) are accessed via `getSecret()` from `
 
 ```
 src/lib/cms/
-├── config.ts   — getCmsConfig() reads env via getSecret() for secrets
-├── client.ts   — strapiFetch<T>() wrapper with origin guard
-├── errors.ts   — Typed CMS errors (never expose URL, token, or response body)
-├── types.ts    — Strapi 5 response structure, CmsConfig
-├── models.ts   — SiteRecord (Strapi 5 flat entity) and SiteViewModel (frontend contract)
-├── schemas.ts  — Zod validation via astro/zod (SiteRecord → SiteViewModel)
-├── queries.ts  — buildSiteQuery(siteKey) returns relative Strapi API path
-└── site.ts     — getSiteConfig() fetches and validates site config from Strapi
+├── config.ts          — getCmsConfig() reads env via getSecret() for secrets
+├── client.ts          — strapiFetch<T>() wrapper with origin guard
+├── errors.ts          — Typed CMS errors (never expose URL, token, or response body)
+├── types.ts           — Strapi 5 response structure, CmsConfig
+├── models.ts          — SiteRecord (Strapi 5 flat entity) and SiteViewModel (frontend contract)
+├── schemas.ts         — Zod validation via astro/zod (SiteRecord → SiteViewModel)
+├── queries.ts         — buildSiteQuery(siteKey) returns relative Strapi API path
+├── site.ts            — getSiteConfig() fetches and validates site config from Strapi
+├── brand-models.ts    — BrandRecord and BrandViewModel
+├── brand-schemas.ts   — Brand Zod validation
+├── brand-queries.ts   — buildBrandQuery()
+├── brand.ts           — getBrand()
+├── locale-models.ts   — LocaleRecord and LocaleViewModel
+├── locale-schemas.ts  — Locale Zod validation
+├── locale-queries.ts  — buildLocaleQuery()
+├── locale.ts          — getLocales()
+├── product-models.ts  — ProductRecord and ProductViewModel
+├── product-schemas.ts — Product Zod validation
+├── product-queries.ts — buildProductQuery()
+└── product.ts         — getProductByHandle()
 ```
 
 ### Security: `strapiFetch()` Origin Guard
@@ -154,6 +175,7 @@ src/lib/cms/
 - `pnpm worker:dry-run` — Wrangler dry-run validates Worker entry
 - `pnpm test:cms` — CMS integration test against mock Strapi server
 - `pnpm test:product` — Product SSR integration test via wrangler dev
+- `pnpm test:brand-i18n` — Brand & i18n integration test via wrangler dev
 - `pnpm test:smoke` — HTTP smoke test against `astro preview`
 
 ## This Phase Does NOT Include
