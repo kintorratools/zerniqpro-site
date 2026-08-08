@@ -148,7 +148,8 @@ check(
 
 // Verify CmsMediaView has url and alt properties
 check(
-  typeof validCmsMediaView.url === 'string' && typeof validCmsMediaView.alt === 'string',
+  typeof validCmsMediaView.url === 'string' &&
+    typeof validCmsMediaView.alt === 'string',
   'CmsMediaView shape: { url: string, alt: string }'
 );
 
@@ -267,7 +268,7 @@ assertDeepEqual(
   'CMS featuresGeneral.image has url → use CMS'
 );
 
-const ftResult2 = (null)?.url ? null : featureImageBaseline;
+const ftResult2 = null?.url ? null : featureImageBaseline;
 assertEqual(
   ftResult2,
   featureImageBaseline,
@@ -432,7 +433,10 @@ assertDeepEqual(
 console.log('\n═══ Test 10: Testimonial avatar CMS/fallback ═══');
 
 // Logic from index.astro: t.avatar?.url ?? ''
-const cmsAvatar = { url: 'http://127.0.0.1:1337/uploads/testimonial-avatar.jpg', alt: 'Author' };
+const cmsAvatar = {
+  url: 'http://127.0.0.1:1337/uploads/testimonial-avatar.jpg',
+  alt: 'Author',
+};
 const avatarSrc1 = cmsAvatar?.url ?? '';
 assertEqual(
   avatarSrc1,
@@ -442,19 +446,11 @@ assertEqual(
 
 const nullAvatar = null;
 const avatarSrc2 = nullAvatar?.url ?? '';
-assertEqual(
-  avatarSrc2,
-  '',
-  'CMS avatar null → avatarSrc = ""'
-);
+assertEqual(avatarSrc2, '', 'CMS avatar null → avatarSrc = ""');
 
 const noUrlAvatar = { alt: 'Author' };
 const avatarSrc3 = noUrlAvatar?.url ?? '';
-assertEqual(
-  avatarSrc3,
-  '',
-  'CMS avatar has no url → avatarSrc = ""'
-);
+assertEqual(avatarSrc3, '', 'CMS avatar has no url → avatarSrc = ""');
 
 // ────────────────────────────────────────────────────────────
 // Test 11: Partner logo CMS/SVG fallback
@@ -475,7 +471,15 @@ const partnersData = [
 
 // CMS partner has logo with url
 const cmsPartners = [
-  { name: 'CMS First', url: '/cms-url', alt: '', logo: { url: 'http://127.0.0.1:1337/uploads/partner-logo.svg', alt: 'CMS Logo' } },
+  {
+    name: 'CMS First',
+    url: '/cms-url',
+    alt: '',
+    logo: {
+      url: 'http://127.0.0.1:1337/uploads/partner-logo.svg',
+      alt: 'CMS Logo',
+    },
+  },
 ];
 
 // Partners always use the SVG icon from partnersData
@@ -507,7 +511,15 @@ assertEqual(
 );
 
 // CMS partner has logo with url — the logo field is available in the ViewModel
-const cmsPartnerWithLogo = { name: 'CmsPartner', url: '#', alt: '', logo: { url: 'http://127.0.0.1:1337/uploads/cms-partner.svg', alt: 'CMS Partner Logo' } };
+const cmsPartnerWithLogo = {
+  name: 'CmsPartner',
+  url: '#',
+  alt: '',
+  logo: {
+    url: 'http://127.0.0.1:1337/uploads/cms-partner.svg',
+    alt: 'CMS Partner Logo',
+  },
+};
 const logoUrl = cmsPartnerWithLogo.logo?.url;
 check(
   logoUrl === 'http://127.0.0.1:1337/uploads/cms-partner.svg',
@@ -535,15 +547,9 @@ const viewWithDimensions = {
 };
 
 // CmsMediaView can carry width/height
-check(
-  viewWithDimensions.width === 1920,
-  'CmsMediaView.width = 1920'
-);
+check(viewWithDimensions.width === 1920, 'CmsMediaView.width = 1920');
 
-check(
-  viewWithDimensions.height === 1080,
-  'CmsMediaView.height = 1080'
-);
+check(viewWithDimensions.height === 1080, 'CmsMediaView.height = 1080');
 
 // Width/height are optional — not present on a plain view
 const plainView = { url: '/uploads/test.jpg', alt: 'Test' };
@@ -576,13 +582,11 @@ assertEqual(
 );
 
 // Verify class prop is a string (not mutated or wrapped)
-check(
-  typeof themeClasses === 'string',
-  'class prop is a plain string'
-);
+check(typeof themeClasses === 'string', 'class prop is a plain string');
 
 // Ensure a typical Tailwind set of classes is preserved
-const tailwindClasses = 'w-full h-auto object-cover rounded-lg shadow-md dark:shadow-gray-900';
+const tailwindClasses =
+  'w-full h-auto object-cover rounded-lg shadow-md dark:shadow-gray-900';
 check(
   typeof tailwindClasses === 'string' && tailwindClasses.includes('rounded-lg'),
   'Tailwind class string preserved as-is'
@@ -613,7 +617,11 @@ check(expectedSections.length === 10, '10 sections total');
 assertEqual(expectedSections[0], 'announcement', 'Section 1: announcement');
 assertEqual(expectedSections[1], 'hero', 'Section 2: hero');
 assertEqual(expectedSections[2], 'clients', 'Section 3: clients');
-assertEqual(expectedSections[3], 'featuresGeneral', 'Section 4: featuresGeneral');
+assertEqual(
+  expectedSections[3],
+  'featuresGeneral',
+  'Section 4: featuresGeneral'
+);
 assertEqual(expectedSections[4], 'featuresNavs', 'Section 5: featuresNavs');
 assertEqual(expectedSections[5], 'testimonials', 'Section 6: testimonials');
 assertEqual(expectedSections[6], 'pricing', 'Section 7: pricing');
@@ -638,7 +646,10 @@ console.log('\n═══ Test 15: No token enters media URL ═══');
 // to media URLs. We verify by scanning that resolveMediaUrl does not append any
 // query string with token-like parameters.
 
-const resolvedUrl1 = resolveMediaUrl('/uploads/hero.jpg', 'http://127.0.0.1:1337');
+const resolvedUrl1 = resolveMediaUrl(
+  '/uploads/hero.jpg',
+  'http://127.0.0.1:1337'
+);
 check(
   !resolvedUrl1.toLowerCase().includes('token'),
   'resolved URL does NOT contain "token"'
@@ -661,14 +672,20 @@ check(
 );
 
 // Also test with absolute URL
-const resolvedUrl2 = resolveMediaUrl('https://cdn.example.com/img.jpg', 'http://127.0.0.1:1337');
+const resolvedUrl2 = resolveMediaUrl(
+  'https://cdn.example.com/img.jpg',
+  'http://127.0.0.1:1337'
+);
 check(
   !resolvedUrl2.toLowerCase().includes('token'),
   'absolute resolved URL does NOT contain "token"'
 );
 
 // Also test that resolveCmsMediaUrl alone does not add tokens
-const resolvedOnly = resolveCmsMediaUrl('/uploads/hero.jpg', 'http://127.0.0.1:1337');
+const resolvedOnly = resolveCmsMediaUrl(
+  '/uploads/hero.jpg',
+  'http://127.0.0.1:1337'
+);
 check(
   !resolvedOnly.toLowerCase().includes('token'),
   'resolveCmsMediaUrl result does NOT contain "token"'
