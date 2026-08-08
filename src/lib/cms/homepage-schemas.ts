@@ -1,6 +1,8 @@
 import { z } from 'astro/zod';
 import type { HomepageViewModel } from './homepage-models';
 import { CmsValidationError, CmsContentNotFoundError } from './errors';
+import { toCmsMediaView } from './media';
+import type { CmsMedia, CmsMediaView } from './media';
 
 /** Accept empty string, null, or a valid string */
 const nullableString = z.string().trim().nullable().optional();
@@ -8,17 +10,34 @@ const nullableString = z.string().trim().nullable().optional();
 /** Accept strings; HTML escape is applied at render time via escapeCmsText() */
 const safeString = z.string().trim().nullable().optional();
 
-/** Media field shape from Strapi */
-const mediaSchema = z
-  .object({
-    url: z.string().optional(),
-    alt: z.preprocess(
-      val => (val === null ? undefined : val),
-      z.string().optional()
-    ),
-  })
-  .nullable()
-  .optional();
+/** Media field shape from Strapi 5 — liberal preprocessor that extracts the fields we need */
+const mediaSchema = z.preprocess(
+  (val: unknown): CmsMedia | null | undefined => {
+    if (val === null || val === undefined || typeof val !== 'object')
+      return val as null | undefined;
+    const obj = val as Record<string, unknown>;
+    return {
+      url: typeof obj.url === 'string' ? obj.url : undefined,
+      alternativeText:
+        typeof obj.alternativeText === 'string'
+          ? obj.alternativeText
+          : undefined,
+      width: typeof obj.width === 'number' ? obj.width : undefined,
+      height: typeof obj.height === 'number' ? obj.height : undefined,
+      mime: typeof obj.mime === 'string' ? obj.mime : undefined,
+    };
+  },
+  z
+    .object({
+      url: z.string().optional(),
+      alternativeText: z.string().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      mime: z.string().optional(),
+    })
+    .nullable()
+    .optional()
+);
 
 // ── Sub-component schemas ──
 
@@ -219,10 +238,10 @@ function toHomepageViewModel(
       starCount: record.hero?.starCount ?? 4,
       reviewsText: nullToUndefined(record.hero?.reviewsText)?.trim() || '',
       imageAlt: nullToUndefined(record.hero?.imageAlt) || '',
-      image: record.hero?.image ?? null,
-      avatars: (record.hero?.avatars ?? []).filter(
-        (a): a is NonNullable<typeof a> => a != null
-      ),
+      image: toCmsMediaView(record.hero?.image ?? null, record.hero?.imageAlt),
+      avatars: (record.hero?.avatars ?? [])
+        .map(a => toCmsMediaView(a, null))
+        .filter((v): v is CmsMediaView => v !== null),
     },
     clients: {
       title: nullToUndefined(record.clients?.title)?.trim() || '',
@@ -231,14 +250,17 @@ function toHomepageViewModel(
         name: p.name || '',
         url: p.url || '#',
         alt: p.alt || '',
-        logo: p.logo ?? null,
+        logo: toCmsMediaView(p.logo ?? null, p.alt),
       })),
     },
     featuresGeneral: {
       title: nullToUndefined(record.featuresGeneral?.title)?.trim() || '',
       subTitle: nullToUndefined(record.featuresGeneral?.subTitle)?.trim() || '',
       imageAlt: nullToUndefined(record.featuresGeneral?.imageAlt) || '',
-      image: record.featuresGeneral?.image ?? null,
+      image: toCmsMediaView(
+        record.featuresGeneral?.image ?? null,
+        record.featuresGeneral?.imageAlt
+      ),
       items: record.featuresGeneral?.items ?? [],
     },
     featuresNavs: {
@@ -253,7 +275,7 @@ function toHomepageViewModel(
         content: t.content,
         iconKey: t.iconKey,
         imageAlt: t.imageAlt || '',
-        image: t.image ?? null,
+        image: toCmsMediaView(t.image ?? null, t.imageAlt),
       })),
     },
     testimonials: {
@@ -263,7 +285,7 @@ function toHomepageViewModel(
         content: t.content,
         author: t.author,
         role: t.role,
-        avatar: t.avatar ?? null,
+        avatar: toCmsMediaView(t.avatar ?? null, null),
       })),
       statistics: record.testimonials?.statistics ?? [],
     },

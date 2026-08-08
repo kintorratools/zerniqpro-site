@@ -15,18 +15,21 @@ export function buildHomepageQuery(siteKey: string, locale: string): string {
   parts.push('status=published');
   parts.push('pagination[pageSize]=1');
 
-  // Explicitly populate only the fixed homepage components.
+  // Phase 7C-A: Explicit nested populate for all media and repeatable component fields.
   // Strapi 5 auto-populates sub-components; only media/relation fields need nested [populate].
-  // Media nested populate is deferred to Phase 7C (CMS_MEDIA_RUNTIME=DEFERRED_TO_7C).
-  // Basic component populate is sufficient for all text/CTA/list fields.
+  // Never use populate=* — every field is explicitly listed here.
+  parts.push('populate[hero][populate][image]=true');
+  parts.push('populate[hero][populate][avatars]=true');
+  parts.push('populate[clients][populate][partners][populate][logo]=true');
+  parts.push('populate[featuresGeneral][populate][image]=true');
+  parts.push('populate[featuresGeneral][populate][items]=true');
+  parts.push('populate[featuresNavs][populate][tabs][populate][image]=true');
+  parts.push('populate[testimonials][populate][items][populate][avatar]=true');
+  parts.push('populate[testimonials][populate][statistics]=true');
+  parts.push('populate[pricing][populate][starterKit]=true');
+  parts.push('populate[pricing][populate][professionalToolbox]=true');
+  parts.push('populate[faq][populate][items]=true');
   parts.push('populate[announcement]=true');
-  parts.push('populate[hero]=true');
-  parts.push('populate[clients]=true');
-  parts.push('populate[featuresGeneral]=true');
-  parts.push('populate[featuresNavs]=true');
-  parts.push('populate[testimonials]=true');
-  parts.push('populate[pricing]=true');
-  parts.push('populate[faq]=true');
   parts.push('populate[bottomCta]=true');
   parts.push('populate[seo]=true');
 

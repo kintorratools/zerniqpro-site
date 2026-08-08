@@ -1,10 +1,12 @@
+import type { CmsMedia, CmsMediaView } from './media';
+
 // ── Sub-component types ──
 
 export interface Partner {
   name: string;
   url: string;
   alt: string;
-  logo?: { url?: string; alt?: string } | null;
+  logo?: CmsMedia | null;
 }
 
 export interface FeatureItem {
@@ -18,14 +20,14 @@ export interface FeatureTab {
   content: string;
   iconKey: string;
   imageAlt: string;
-  image?: { url?: string; alt?: string } | null;
+  image?: CmsMedia | null;
 }
 
 export interface TestimonialItem {
   content: string;
   author: string;
   role: string;
-  avatar?: { url?: string; alt?: string } | null;
+  avatar?: CmsMedia | null;
 }
 
 export interface Statistic {
@@ -71,8 +73,8 @@ export interface HeroSection {
   starCount: number;
   reviewsText: string;
   imageAlt: string;
-  image?: { url?: string; alt?: string } | null;
-  avatars: { url?: string; alt?: string }[];
+  image?: CmsMediaView | null;
+  avatars: CmsMediaView[];
 }
 
 export interface ClientsSection {
@@ -85,7 +87,7 @@ export interface FeaturesGeneralSection {
   title: string;
   subTitle: string;
   imageAlt: string;
-  image?: { url?: string; alt?: string } | null;
+  image?: CmsMediaView | null;
   items: FeatureItem[];
 }
 

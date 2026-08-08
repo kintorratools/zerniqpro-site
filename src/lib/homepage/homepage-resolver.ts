@@ -51,6 +51,49 @@ function resolveList<T>(
 }
 
 /**
+ * Resolve a single media field: CMS non-null with non-empty url → CMS, else → baseline.
+ */
+function resolveMedia<T extends { url?: string } | null | undefined>(
+  cmsMedia: T,
+  baselineMedia: T
+): T {
+  if (cmsMedia && cmsMedia.url && cmsMedia.url.trim() !== '') {
+    return cmsMedia;
+  }
+  return baselineMedia;
+}
+
+/**
+ * Resolve a repeatable list with per-item media fallback.
+ * When CMS list has items but their media fields are empty,
+ * merge CMS text content with baseline media images.
+ *
+ * @param cmsList - CMS items (may have text but empty media)
+ * @param baselineList - baseline items (with full content including media)
+ * @param mediaKeys - keys in each item that are media fields (e.g., ['avatar'], ['image'])
+ * @param mergeFn - function to merge a single CMS item with its baseline counterpart
+ */
+function resolveListWithMedia<T>(
+  cmsList: T[] | null | undefined,
+  baselineList: T[],
+  _mediaKeys: (keyof T)[],
+  mergeFn: (cmsItem: T, baselineItem: T) => T
+): T[] {
+  if (!cmsList || cmsList.length === 0) {
+    return baselineList;
+  }
+
+  // For each CMS item, try to find matching baseline item (by index) and merge media
+  return cmsList.map((cmsItem, index) => {
+    const baselineItem = baselineList[index];
+    if (!baselineItem) {
+      return cmsItem;
+    }
+    return mergeFn(cmsItem, baselineItem);
+  });
+}
+
+/**
  * Merge CMS Homepage data with Theme baseline.
  * Every field follows: CMS non-empty → CMS; CMS empty/null → baseline.
  * Sections never disappear — empty fields fall back to baseline values.
@@ -121,7 +164,15 @@ export function resolveHomepageContent(
     clients: {
       title: resolveString(cms.clients?.title, baseline.clients.title),
       subTitle: resolveString(cms.clients?.subTitle, baseline.clients.subTitle),
-      partners: resolveList(cms.clients?.partners, baseline.clients.partners),
+      partners: resolveListWithMedia(
+        cms.clients?.partners,
+        baseline.clients.partners,
+        ['logo'],
+        (cmsItem, baselineItem) => ({
+          ...cmsItem,
+          logo: resolveMedia(cmsItem.logo, baselineItem.logo),
+        })
+      ),
     },
     featuresGeneral: {
       title: resolveString(
@@ -155,7 +206,15 @@ export function resolveHomepageContent(
         cms.featuresNavs?.titleAfter,
         baseline.featuresNavs.titleAfter
       ),
-      tabs: resolveList(cms.featuresNavs?.tabs, baseline.featuresNavs.tabs),
+      tabs: resolveListWithMedia(
+        cms.featuresNavs?.tabs,
+        baseline.featuresNavs.tabs,
+        ['image'],
+        (cmsItem, baselineItem) => ({
+          ...cmsItem,
+          image: resolveMedia(cmsItem.image, baselineItem.image),
+        })
+      ),
     },
     testimonials: {
       title: resolveString(
@@ -166,7 +225,15 @@ export function resolveHomepageContent(
         cms.testimonials?.subTitle,
         baseline.testimonials.subTitle
       ),
-      items: resolveList(cms.testimonials?.items, baseline.testimonials.items),
+      items: resolveListWithMedia(
+        cms.testimonials?.items,
+        baseline.testimonials.items,
+        ['avatar'],
+        (cmsItem, baselineItem) => ({
+          ...cmsItem,
+          avatar: resolveMedia(cmsItem.avatar, baselineItem.avatar),
+        })
+      ),
       statistics: resolveList(
         cms.testimonials?.statistics,
         baseline.testimonials.statistics
