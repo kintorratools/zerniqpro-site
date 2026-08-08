@@ -1,9 +1,13 @@
 /**
  * Unified test process management for Wrangler dev workers.
  *
- * Manages spawning, readiness polling, and safe process-tree termination
+ * Manages spawning, readiness polling, and safe process termination
  * of Wrangler dev workers started by test scripts. Works on both Windows
- * (Node.js) and POSIX.
+ * and POSIX (Linux/macOS).
+ *
+ * Spawn behavior (matching the proven pre-7C-C pattern):
+ *   - Windows: shell:true for .cmd/.bat, shell:false for direct binaries
+ *   - POSIX:   no detached, no shell (same as old inline spawn)
  *
  * @example
  * import { startWorker } from '../lib/test-process.mjs';
@@ -42,9 +46,8 @@ const IS_WIN = process.platform === 'win32';
 /**
  * Start a Wrangler dev worker process and wait for it to become ready.
  *
- * Spawns the child process with `detached: true` so that:
- * - On Windows: the process tree can be killed via `taskkill /T`
- * - On POSIX: the entire process group can be signalled via `process.kill(-pid)`
+ * Spawns the child process with the same spawn options as the proven
+ * pre-7C-C pattern (shell:true on Windows for .cmd/.bat only, no detached).
  *
  * Polls `http://127.0.0.1:{port}{readyPath}` every 500ms until the server
  * responds (any HTTP status) or the timeout is reached.
@@ -68,11 +71,12 @@ export async function startWorker(options) {
     cwd,
   } = options;
 
+  // Only set shell:true on Windows when the command is a .cmd/.bat file.
+  // Spawning node directly with shell:true would mangle -e arguments.
+  const needsShell = IS_WIN && /\.(cmd|bat)$/i.test(cmd);
   const spawnOpts = {
     stdio: ['ignore', 'pipe', 'pipe'],
-    ...(IS_WIN
-      ? { shell: true } // Windows needs shell for .cmd/.bat files
-      : { detached: true }), // POSIX: process group for kill(-pid)
+    ...(needsShell ? { shell: true } : {}),
   };
   if (cwd) {
     spawnOpts.cwd = cwd;
@@ -154,7 +158,7 @@ export async function withWorker(options, fn) {
  * Kill the entire process tree rooted at `pid`.
  *
  * - Windows: `taskkill /PID <pid> /T /F` — kills the tree, never `taskkill /IM node.exe`
- * - POSIX:   `process.kill(-pid, 'SIGTERM')` — signals the process group
+ * - POSIX:   `process.kill(pid, 'SIGTERM')` — signals the process directly
  *
  * @param {number} pid
  */
@@ -167,7 +171,7 @@ async function killProcessTree(pid) {
     });
   } else {
     try {
-      process.kill(-pid, 'SIGTERM');
+      process.kill(pid, 'SIGTERM');
     } catch {
       // Process may have already exited — that's fine
     }

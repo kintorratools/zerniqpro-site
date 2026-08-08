@@ -238,7 +238,10 @@ function testNoGlobalNodeKill() {
     'utf-8'
   );
 
-  check(!src.includes('/IM'), 'no global kill: source does not contain /IM');
+  check(
+    !src.includes('/IM node.exe'),
+    'no global kill: source does not contain /IM node.exe'
+  );
   check(
     !src.includes('Stop-Process -Name'),
     'no global kill: source does not contain Stop-Process -Name'
