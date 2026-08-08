@@ -8,7 +8,7 @@ interface Props {
   content: string;
   author: string;
   role: string;
-  avatarSrc: string;
+  avatarSrc?: string;
 }
 ---
 
@@ -24,13 +24,23 @@ interface Props {
   <div class="mt-6">
     <div class="flex items-center">
       <div class="shrink-0">
-        <Image
-          class="h-8 w-8 rounded-full"
-          src={avatarSrc}
-          alt={`${author} photo`}
-          loading="lazy"
-          inferSize
-        />
+        {
+          avatarSrc ? (
+            <Image
+              class="h-8 w-8 rounded-full"
+              src={avatarSrc}
+              alt={`${author} photo`}
+              loading="lazy"
+              inferSize
+            />
+          ) : (
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700">
+              <span class="text-xs leading-none font-medium text-neutral-500 dark:text-neutral-400">
+                {author.charAt(0)}
+              </span>
+            </span>
+          )
+        }
       </div>
       <div class="ms-4 grow">
         <div class="font-bold text-neutral-800 dark:text-neutral-200">

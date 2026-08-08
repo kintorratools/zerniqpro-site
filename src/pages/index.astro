@@ -11,17 +11,113 @@ import PricingSection from '@components/sections/pricing/PricingSection.astro';
 import FAQ from '@components/sections/misc/FAQ.astro';
 import AnnouncementBanner from '@components/ui/banners/AnnouncementBanner.astro';
 import heroImage from '@images/hero-image.avif';
-import faqs from '@data/faqs.json';
-import features from '@data/features.json';
-import pricing from '@data/pricing.json';
 import featureImage from '@images/features-image.avif';
 import construction from '@images/construction-image.avif';
 import tools from '@images/automated-tools.avif';
 import dashboard from '@images/dashboard-image.avif';
 import { partnersData } from '@/data_files/constants';
+import { getHomepage } from '@lib/cms/homepage';
+import { HOMEPAGE_BASELINE } from '@lib/homepage/homepage-baseline';
+import { resolveHomepageContent } from '@lib/homepage/homepage-resolver';
+import { escapeCmsText } from '@lib/homepage/html-escape';
+import { getRuntimeConfig } from '@lib/runtime/site-runtime';
+import { resolveGlobalSeo } from '@lib/cms/seo';
 
 export const prerender = false;
 
+// ── Fetch CMS Homepage + merge with baseline ──
+
+let runtime;
+try {
+  runtime = await getRuntimeConfig();
+} catch {
+  runtime = null;
+}
+
+const siteKey = runtime?.site?.key ?? 'store-us';
+const locale = runtime?.site?.defaultLocale ?? 'en';
+
+let cmsHomepage = null;
+let cmsWarning = null;
+try {
+  cmsHomepage = await getHomepage(siteKey, locale);
+} catch (e) {
+  cmsWarning = `[Homepage] CMS fetch failed, using baseline: ${e instanceof Error ? e.message : 'unknown error'}`;
+  console.warn(cmsWarning);
+}
+
+const merged = resolveHomepageContent(cmsHomepage, HOMEPAGE_BASELINE);
+
+// If CMS returned null (not found / not configured), log warning
+if (!cmsHomepage && !cmsWarning) {
+  console.warn('[Homepage] No published CMS homepage found, using baseline');
+}
+
+// ── SEO resolution ──
+const pageSeo = {
+  title: merged.seo.title || undefined,
+  description: merged.seo.description || undefined,
+};
+const globalSeo = runtime
+  ? resolveGlobalSeo(pageSeo, runtime)
+  : {
+      title: merged.seo.title || '',
+      description: merged.seo.description || '',
+    };
+
+// ── Build component props from merged data ──
+
+// Hero: build title with highlight span
+const heroTitle = `${escapeCmsText(merged.hero.titleBefore)}<span class="text-yellow-500 dark:text-yellow-400">${escapeCmsText(merged.hero.highlightText)}</span>${escapeCmsText(merged.hero.titleAfter)}`;
+
+// FeaturesNavs: build title with highlight span
+const featuresNavsTitle = `${escapeCmsText(merged.featuresNavs.titleBefore)}<span class="text-yellow-500 dark:text-yellow-400">${escapeCmsText(merged.featuresNavs.highlightText)}</span>${escapeCmsText(merged.featuresNavs.titleAfter)}`;
+
+// FeaturesNavs: map CMS tabs to component shape, using local images
+const localTabImages = [tools, dashboard, construction];
+const tabs = merged.featuresNavs.tabs.map((tab, i) => ({
+  heading: tab.heading,
+  content: tab.content,
+  svg: tab.iconKey,
+  src: localTabImages[i] ?? construction,
+  alt: tab.imageAlt || '',
+  ...(i === 0 ? { first: true } : {}),
+  ...(i === 1 ? { second: true } : {}),
+}));
+
+// Testimonials: map CMS data to component shape
+const testimonials = merged.testimonials.items.map(t => ({
+  content: t.content,
+  author: t.author,
+  role: t.role,
+  avatarSrc: t.avatar?.url ?? '',
+}));
+
+// Clients: merge CMS partner names/urls with partnersData SVG icons
+const partners = partnersData.map((p, i) => {
+  const cmsPartner = merged.clients.partners[i];
+  return {
+    icon: p.icon,
+    name: cmsPartner?.name || p.name,
+    href: cmsPartner?.url || p.href,
+  };
+});
+
+// FAQ: build title with <br /> separator
+const faqTitle = `${escapeCmsText(merged.faq.titleLine1)}<br />${escapeCmsText(merged.faq.titleLine2)}`;
+
+// Pricing: map to PricingSection expected shape
+const pricingData = {
+  title: merged.pricing.title,
+  subTitle: merged.pricing.subTitle,
+  badge: merged.pricing.badge,
+  thirdOption: merged.pricing.thirdOption,
+  btnText: merged.pricing.btnText,
+  starterKit: merged.pricing.starterKit,
+  professionalToolbox: merged.pricing.professionalToolbox,
+};
+
+// Avatar URLs for hero (local fallback — CMS_MEDIA_RUNTIME=DEFERRED_TO_7C)
 const avatarSrcs: Array<string> = [
   'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
   'https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
@@ -30,120 +126,63 @@ const avatarSrcs: Array<string> = [
 ];
 ---
 
-<MainLayout>
+<MainLayout
+  title={globalSeo.title}
+  customDescription={globalSeo.description}
+  customOgTitle={globalSeo.title}
+>
   <AnnouncementBanner
     btnId="dismiss-button"
-    btnTitle="Explore Acme on GitHub"
-    url="https://github.com"
+    btnTitle={merged.announcement.buttonLabel}
+    url={merged.announcement.url}
   />
 
   <HeroSection
-    title=`Equip Your Projects with <span
-        class="text-yellow-500 dark:text-yellow-400">Acme</span>`
-    subTitle="Top-quality hardware tools and expert construction services for every project need."
-    primaryBtn="Start Exploring"
-    primaryBtnURL="/products"
-    secondaryBtn="Contact Sales Team"
-    secondaryBtnURL="/contact"
-    withReview={true}
+    title={heroTitle}
+    subTitle={merged.hero.subTitle}
+    primaryBtn={merged.hero.primaryButtonLabel}
+    primaryBtnURL={merged.hero.primaryButtonUrl}
+    secondaryBtn={merged.hero.secondaryButtonLabel}
+    secondaryBtnURL={merged.hero.secondaryButtonUrl}
+    withReview={merged.hero.withReview}
     avatars={avatarSrcs}
-    rating=`<span class="font-bold">4.8</span> / 5`
-    starCount={4}
-    reviews=`From Over <span class="font-bold">12.8k</span> Reviews`
+    rating={`<span class="font-bold">${escapeCmsText(merged.hero.ratingText)}</span>`}
+    starCount={merged.hero.starCount}
+    reviews={`<span class="font-bold">${escapeCmsText(merged.hero.reviewsText)}</span>`}
     src={heroImage}
-    alt="Stack of Acme product boxes containing assorted hardware tools"
+    alt={merged.hero.imageAlt}
   />
 
   <ClientsSection
-    title="Trusted by Industry Leaders"
-    subTitle="Experience the reliability chosen by industry giants."
-    partners={partnersData}
+    title={merged.clients.title}
+    subTitle={merged.clients.subTitle}
+    partners={partners}
   />
 
   <FeaturesGeneral
-    title="Meeting Industry Demands"
-    subTitle="At Acme, we tackle the unique challenges encountered in the hardware and construction sectors. From cutting-edge tools to expert services, we're dedicated to helping you overcome obstacles and achieve your goals."
+    title={merged.featuresGeneral.title}
+    subTitle={merged.featuresGeneral.subTitle}
     src={featureImage}
-    alt="Acme products in floating boxes"
-    features={features}
+    alt={merged.featuresGeneral.imageAlt}
+    features={merged.featuresGeneral.items}
   />
 
-  <FeaturesNavs
-    title=`Customize <span class="text-yellow-500 dark:text-yellow-400">Acme</span>'s offerings to perfectly suit your hardware and construction needs.`
-    tabs={[
-      {
-        heading: 'Cutting-Edge Tools',
-        content:
-          "Empower your projects with Acme's cutting-edge tools. Experience enhanced efficiency in construction management with our sophisticated automated solutions.",
-        svg: 'tools',
-        src: tools,
-        alt: 'Yellow and black heavy equipment on brown grass field',
-        first: true,
-      },
-      {
-        heading: 'Intuitive Dashboards',
-        content:
-          "Navigate with ease using Acme's intuitive dashboards. Set up and oversee your projects seamlessly, with user-friendly interfaces designed for quick and effective workflow management.",
-        svg: 'dashboard',
-        src: dashboard,
-        alt: 'A screenshot or graphic representation of the intuitive dashboard',
-        second: true,
-      },
-      {
-        heading: 'Robust Features',
-        content:
-          "Minimize complexity, maximize productivity. Acme's robust features are engineered to streamline your construction process, delivering results that stand out for their excellence.",
-        svg: 'house',
-        src: construction,
-        alt: 'Gray metal building frame near tower crane during daytime',
-      },
-    ]}
-  />
+  <FeaturesNavs title={featuresNavsTitle} tabs={tabs} />
 
   <TestimonialsSection
-    title="Fast-Track Your Projects"
-    subTitle="At Acme, we ensure a swift start with instant account setup. Experience the speed of construction redefined."
-    ;
-    testimonials={[
-      {
-        content:
-          'Acme dramatically boosted our project efficiency. Setup was instant, and their rapid response times are phenomenal. Truly a game-changer in hardware and construction support!',
-        author: 'Samantha Ruiz',
-        role: 'Chief Operating Officer | ConstructIt Inc.',
-        avatarSrc:
-          'https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
-      },
-    ]}
-    statistics={[
-      {
-        count: '70k+',
-        description:
-          'customers equipped – from DIY to major construction firms',
-      },
-      {
-        count: '35%',
-        description:
-          'uptick in project efficiency with Acme tools and services',
-      },
-      {
-        count: '15.3%',
-        description:
-          'reduction in maintenance costs reported by long-term clients',
-      },
-      {
-        count: '2x',
-        description: 'quicker assembly using innovative fastening solutions',
-      },
-    ]}
+    title={merged.testimonials.title}
+    subTitle={merged.testimonials.subTitle}
+    testimonials={testimonials}
+    statistics={merged.testimonials.statistics}
   />
 
-  <PricingSection pricing={pricing} />
+  <PricingSection pricing={pricingData} />
 
-  <FAQ title="Frequently<br />asked questions" faqs={faqs} />
+  <FAQ title={faqTitle} faqs={{ faqs: merged.faq.items }} />
 
   <HeroSectionAlt
-    title="Let's Build Together"
-    subTitle="Acme is an open-source template, meticulously crafted with Astro, Tailwind CSS, and Preline UI frameworks."
-    url="https://github.com"
+    title={merged.bottomCta.title}
+    subTitle={merged.bottomCta.subTitle}
+    url={merged.bottomCta.url}
   />
 </MainLayout>
