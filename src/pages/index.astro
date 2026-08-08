@@ -79,8 +79,8 @@ const tabs = merged.featuresNavs.tabs.map((tab, i) => ({
   heading: tab.heading,
   content: tab.content,
   svg: tab.iconKey,
-  src: tab.image?.url ? tab.image : (localTabImages[i] ?? construction),
-  alt: tab.imageAlt || '',
+  src: tab.image?.url || (localTabImages[i] ?? construction),
+  alt: tab.image?.alt || tab.imageAlt || '',
   ...(i === 0 ? { first: true } : {}),
   ...(i === 1 ? { second: true } : {}),
 }));
@@ -151,8 +151,8 @@ const avatarSrcs: Array<any> =
     rating={`<span class="font-bold">${escapeCmsText(merged.hero.ratingText)}</span>`}
     starCount={merged.hero.starCount}
     reviews={`<span class="font-bold">${escapeCmsText(merged.hero.reviewsText)}</span>`}
-    src={merged.hero.image?.url ? merged.hero.image : heroImage}
-    alt={merged.hero.imageAlt}
+    src={merged.hero.image?.url ? merged.hero.image.url : heroImage}
+    alt={merged.hero.image?.alt || merged.hero.imageAlt}
   />
 
   <ClientsSection
@@ -165,9 +165,9 @@ const avatarSrcs: Array<any> =
     title={merged.featuresGeneral.title}
     subTitle={merged.featuresGeneral.subTitle}
     src={merged.featuresGeneral.image?.url
-      ? merged.featuresGeneral.image
+      ? merged.featuresGeneral.image.url
       : featureImage}
-    alt={merged.featuresGeneral.imageAlt}
+    alt={merged.featuresGeneral.image?.alt || merged.featuresGeneral.imageAlt}
     features={merged.featuresGeneral.items}
   />
 

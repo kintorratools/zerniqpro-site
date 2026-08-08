@@ -157,7 +157,7 @@ export async function withWorker(options, fn) {
 /**
  * Kill the entire process tree rooted at `pid`.
  *
- * - Windows: `taskkill /PID <pid> /T /F` — kills the tree, never `taskkill /IM node.exe`
+ * - Windows: `taskkill /PID <pid> /T /F` — kills the tree, never kills by image name
  * - POSIX:   `process.kill(pid, 'SIGTERM')` — signals the process directly
  *
  * @param {number} pid

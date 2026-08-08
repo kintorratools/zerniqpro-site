@@ -153,6 +153,33 @@ const MOCK_FOOTER = {
   publishedAt: '2025-06-01T00:00:00.000Z',
 };
 
+/* ---------- Mock Strapi HTTP server (failure mode) ---------- */
+
+function startFailureStrapi() {
+  return new Promise((resolve, reject) => {
+    const server = createServer((_req, res) => {
+      res.writeHead(503);
+      res.end(
+        JSON.stringify({
+          error: {
+            status: 503,
+            name: 'ServiceUnavailable',
+            message: 'Simulated CMS failure',
+          },
+        })
+      );
+    });
+
+    server.listen(0, MOCK_HOST, () => {
+      const port = server.address().port;
+      console.log(`Mock Strapi (failure) on ${MOCK_HOST}:${port}`);
+      resolve({ server, port });
+    });
+
+    server.on('error', reject);
+  });
+}
+
 /* ---------- Mock Strapi HTTP server (parameterized) ---------- */
 
 function startMockStrapi(options = {}) {
@@ -510,43 +537,50 @@ async function main() {
     if (mockServer) mockServer.close();
   }
 
-  // 3. Scenario 2: CMS failure — worker without mock Strapi
-  // Point STRAPI_URL to a non-existent server so all CMS calls fail
+  // 3. Scenario 2: CMS failure — worker with 503-returning mock Strapi
+  // All CMS endpoints return 503, triggering fallback in runtime config and homepage
   await sleep(2000);
   scenarioErrors = [];
 
   {
-    const deadUrl = `http://${MOCK_HOST}:19999`; // no server on this port
-    const wp = await findFreePort();
-    const wu = `http://127.0.0.1:${wp}`;
-    console.log(
-      `\n[Scenario 2] Starting wrangler dev on port ${wp} (no CMS)...`
-    );
+    let failServer;
+    try {
+      const { server, port: failPort } = await startFailureStrapi();
+      failServer = server;
+      const failUrl = `http://${MOCK_HOST}:${failPort}`;
+      const wp = await findFreePort();
+      const wu = `http://127.0.0.1:${wp}`;
+      console.log(
+        `\n[Scenario 2] Starting wrangler dev on port ${wp} (CMS 503)...`
+      );
 
-    workerProc = await startWorker({
-      cmd: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
-      args: [
-        'exec',
-        'wrangler',
-        'dev',
-        '--config',
-        'dist-out/server/wrangler.json',
-        '--ip',
-        '127.0.0.1',
-        '--port',
-        String(wp),
-        '--var',
-        `STRAPI_URL:${deadUrl}`,
-        '--var',
-        'STRAPI_API_TOKEN:test-token',
-        '--var',
-        'CMS_SITE_KEY:store-us',
-      ],
-      port: wp,
-    });
-    await testCmsFailureFallback(wu);
+      workerProc = await startWorker({
+        cmd: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+        args: [
+          'exec',
+          'wrangler',
+          'dev',
+          '--config',
+          'dist-out/server/wrangler.json',
+          '--ip',
+          '127.0.0.1',
+          '--port',
+          String(wp),
+          '--var',
+          `STRAPI_URL:${failUrl}`,
+          '--var',
+          'STRAPI_API_TOKEN:test-token',
+          '--var',
+          'CMS_SITE_KEY:store-us',
+        ],
+        port: wp,
+      });
+      await testCmsFailureFallback(wu);
 
-    await workerProc.stop();
+      await workerProc.stop();
+    } finally {
+      if (failServer) failServer.close();
+    }
   }
 
   // Clean up
