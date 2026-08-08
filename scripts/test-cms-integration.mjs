@@ -91,8 +91,22 @@ const VALID_BRAND_RESPONSE = {
 /** Mock locale data */
 const VALID_LOCALES = {
   data: [
-    { id: 1, documentId: 'loc-en', code: 'en', name: 'English', enabled: true, isDefault: true },
-    { id: 2, documentId: 'loc-de', code: 'de', name: 'Deutsch', enabled: true, isDefault: false },
+    {
+      id: 1,
+      documentId: 'loc-en',
+      code: 'en',
+      name: 'English',
+      enabled: true,
+      isDefault: true,
+    },
+    {
+      id: 2,
+      documentId: 'loc-de',
+      code: 'de',
+      name: 'Deutsch',
+      enabled: true,
+      isDefault: false,
+    },
   ],
   meta: { pagination: { total: 2 } },
 };
@@ -154,7 +168,12 @@ function startMockStrapi() {
         const f1 = url.searchParams.get('fields[1]');
         const f2 = url.searchParams.get('fields[2]');
         const f3 = url.searchParams.get('fields[3]');
-        if (f0 !== 'key' || f1 !== 'name' || f2 !== 'domain' || f3 !== 'defaultLocale') {
+        if (
+          f0 !== 'key' ||
+          f1 !== 'name' ||
+          f2 !== 'domain' ||
+          f3 !== 'defaultLocale'
+        ) {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -172,14 +191,21 @@ function startMockStrapi() {
         if (token === 'test-token-invalid-brand') {
           res.setHeader('Content-Type', 'application/json');
           res.writeHead(200);
-          res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+          res.end(
+            JSON.stringify({ data: [], meta: { pagination: { total: 0 } } })
+          );
           return;
         }
         // For nullable scenarios, return empty brand
-        if (token === 'test-token-nullable' || token === 'test-token-nullable-inner') {
+        if (
+          token === 'test-token-nullable' ||
+          token === 'test-token-nullable-inner'
+        ) {
           res.setHeader('Content-Type', 'application/json');
           res.writeHead(200);
-          res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+          res.end(
+            JSON.stringify({ data: [], meta: { pagination: { total: 0 } } })
+          );
           return;
         }
         res.setHeader('Content-Type', 'application/json');
@@ -200,7 +226,9 @@ function startMockStrapi() {
       if (req.method === 'GET' && pathname === '/api/navigations') {
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
-        res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+        res.end(
+          JSON.stringify({ data: [], meta: { pagination: { total: 0 } } })
+        );
         return;
       }
 
@@ -208,7 +236,9 @@ function startMockStrapi() {
       if (req.method === 'GET' && pathname === '/api/footers') {
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
-        res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+        res.end(
+          JSON.stringify({ data: [], meta: { pagination: { total: 0 } } })
+        );
         return;
       }
 
