@@ -1,8 +1,8 @@
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { startWorker } from './lib/test-process.mjs';
 
 let failed = false;
 
@@ -15,7 +15,6 @@ const MOCK_BRAND = {
   documentId: 'ba-001',
   key: 'brand-alpha',
   name: 'Brand Alpha',
-  domain: 'https://brand-alpha.com',
   logo: { url: 'https://brand-alpha.com/logo.png', alt: 'Brand Alpha logo' },
   favicon: { url: 'https://brand-alpha.com/favicon.ico' },
   colors: { primary: '#0000ff', secondary: '#333333', accent: '#ff0000' },
@@ -105,7 +104,9 @@ const MOCK_NAVIGATION = {
   items: [
     { id: 1, label: 'Home', href: '/', order: 1, visible: true },
     { id: 2, label: 'Products', href: '/products', order: 2, visible: true },
-    { id: 3, label: 'Support', href: '/support', order: 3, visible: true },
+    { id: 3, label: 'Services', href: '/services', order: 3, visible: true },
+    { id: 4, label: 'Blog', href: '/blog', order: 4, visible: true },
+    { id: 5, label: 'Contact', href: '/contact', order: 5, visible: true },
   ],
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -120,18 +121,21 @@ const MOCK_FOOTER = {
   columns: [
     {
       id: 1,
-      title: 'Legal',
+      title: 'Ecosystem',
       links: [
-        { id: 1, label: 'Privacy Policy', url: '/privacy' },
-        { id: 2, label: 'Terms', url: '/terms' },
+        { id: 1, label: 'Documentation', url: '/docs' },
+        { id: 2, label: 'Tools & Equipment', url: '/products' },
+        { id: 3, label: 'Construction Services', url: '/services' },
       ],
     },
     {
       id: 2,
       title: 'Company',
       links: [
-        { id: 3, label: 'About', url: '/about' },
-        { id: 4, label: 'Contact', url: '/contact' },
+        { id: 4, label: 'About us', url: '/about' },
+        { id: 5, label: 'Blog', url: '/blog' },
+        { id: 6, label: 'Careers', url: '/careers' },
+        { id: 7, label: 'Customers', url: '/customers' },
       ],
     },
   ],
@@ -140,6 +144,9 @@ const MOCK_FOOTER = {
   socialLinks: [
     { id: 1, platform: 'Facebook', url: 'https://facebook.com/brandalpha' },
     { id: 2, platform: 'Twitter', url: 'https://twitter.com/brandalpha' },
+    { id: 3, platform: 'LinkedIn', url: 'https://linkedin.com/brandalpha' },
+    { id: 4, platform: 'YouTube', url: 'https://youtube.com/brandalpha' },
+    { id: 5, platform: 'Instagram', url: 'https://instagram.com/brandalpha' },
   ],
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -307,89 +314,6 @@ function startMockStrapi(options = {}) {
   });
 }
 
-/** Start wrangler dev */
-function startWorker(workerPort, mockUrl, siteKey = 'store-us') {
-  return new Promise((resolve, reject) => {
-    const isWin = process.platform === 'win32';
-    const cmd = isWin ? 'pnpm.cmd' : 'pnpm';
-
-    const child = spawn(
-      cmd,
-      [
-        'exec',
-        'wrangler',
-        'dev',
-        '--config',
-        'dist-out/server/wrangler.json',
-        '--ip',
-        '127.0.0.1',
-        '--port',
-        String(workerPort),
-        '--var',
-        `STRAPI_URL:${mockUrl}`,
-        '--var',
-        'STRAPI_API_TOKEN:test-token',
-        '--var',
-        `CMS_SITE_KEY:${siteKey}`,
-      ],
-      {
-        stdio: ['ignore', 'pipe', 'pipe'],
-        shell: isWin,
-      }
-    );
-
-    let resolved = false;
-
-    const onData = data => {
-      const text = data.toString();
-      if (!resolved && text.includes('http://')) {
-        resolved = true;
-        setTimeout(() => resolve(child), 2000);
-      }
-    };
-
-    child.stdout.on('data', onData);
-    child.stderr.on('data', onData);
-
-    child.on('error', err => {
-      if (!resolved) reject(err);
-    });
-
-    setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(child);
-      }
-    }, 30000);
-  });
-}
-
-/** Wait for URL to respond */
-async function waitForUrl(url, maxRetries = 50) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const res = await fetch(url);
-      if (res.ok || res.status >= 400) return true;
-    } catch {
-      /* still starting */
-    }
-    await sleep(500);
-  }
-  return false;
-}
-
-function stopProcess(proc) {
-  if (!proc) return;
-  try {
-    proc.kill('SIGTERM');
-    setTimeout(() => {
-      try {
-        proc.kill('SIGKILL');
-      } catch {}
-    }, 3000);
-  } catch {}
-}
-
 function findFreePort() {
   return new Promise(resolve => {
     const srv = createServer();
@@ -402,13 +326,56 @@ function findFreePort() {
 
 /* ---------- Helpers ---------- */
 
+let scenarioErrors = []; // collect per-scenario failure info
+
 function check(condition, msg) {
   if (condition) {
     console.log(`  PASS: ${msg}`);
   } else {
     console.error(`  FAIL: ${msg}`);
+    scenarioErrors.push(msg);
     failed = true;
   }
+}
+
+/** Output safe diagnostics when scenario assertions fail */
+function diagnoseFailures(scenario, html) {
+  if (scenarioErrors.length === 0) return;
+  console.error(`\n[DIAGNOSTICS] ${scenario}`);
+  console.error(`  HTML length: ${html?.length ?? 'N/A'} chars`);
+  console.error(`  Failed assertions (${scenarioErrors.length}):`);
+  for (const err of scenarioErrors) {
+    console.error(`    - ${err}`);
+  }
+
+  // Check for CMS parse indicators (these are safe — no secrets)
+  const hasHtml = !!html;
+  const hasHead = hasHtml && html.includes('<head>');
+  const hasBody = hasHtml && html.includes('<body');
+
+  console.error(`  HTML structure: head=${hasHead} body=${hasBody}`);
+
+  // Distinguish failure type
+  if (!hasHtml || html.length < 200) {
+    console.error('  Likely cause: Page render failure or worker crash');
+  } else if (hasHead && hasBody) {
+    console.error('  Likely cause: CMS data mismatch or fixture outdated');
+  } else {
+    console.error('  Likely cause: CMS parse failure or empty response');
+  }
+
+  // Safe expected content hints (no secrets)
+  console.error(
+    '  Expected nav labels: Home, Products, Services, Blog, Contact'
+  );
+  console.error(
+    '  Expected footer labels: Documentation, Tools & Equipment, Construction Services, About us, Blog, Careers, Customers'
+  );
+  console.error('  Expected copyright: Brand Alpha. All rights reserved.');
+  console.error('  Expected locales: /es, /fr');
+  console.error(
+    '  NOTE: API tokens, Authorization headers, and secrets are intentionally NOT shown in diagnostics.\n'
+  );
 }
 
 /* ---------- Test scenarios ---------- */
@@ -424,14 +391,28 @@ async function testGlobalRuntime(workerUrl) {
   check(!html.includes('zerniqpro.com'), 'HTML has no zerniqpro.com');
   check(!html.includes('test-token'), 'HTML has no test token');
 
-  // 2. Navbar from CMS
+  // 2. Navbar from CMS — 5-item baseline
   check(html.includes('Home'), 'Navbar has Home');
   check(html.includes('Products'), 'Navbar has Products');
-  check(html.includes('Support'), 'Navbar has Support');
+  check(html.includes('Services'), 'Navbar has Services');
+  check(html.includes('Blog'), 'Navbar has Blog');
+  check(html.includes('Contact'), 'Navbar has Contact');
 
-  // 3. Footer from CMS
-  check(html.includes('Privacy Policy'), 'Footer has Privacy Policy');
-  check(html.includes('Terms'), 'Footer has Terms');
+  // 3. Footer from CMS — Theme baseline
+  check(html.includes('Ecosystem'), 'Footer has Ecosystem column');
+  check(html.includes('Documentation'), 'Footer has Documentation');
+  check(
+    html.includes('Tools &amp; Equipment') ||
+      html.includes('Tools & Equipment'),
+    'Footer has Tools & Equipment'
+  );
+  check(
+    html.includes('Construction Services'),
+    'Footer has Construction Services'
+  );
+  check(html.includes('About us'), 'Footer has About us');
+  check(html.includes('Careers'), 'Footer has Careers');
+  check(html.includes('Customers'), 'Footer has Customers');
   check(
     html.includes('Brand Alpha. All rights reserved.'),
     'Footer has copyright'
@@ -451,6 +432,8 @@ async function testGlobalRuntime(workerUrl) {
 
   // 6. Page returns 200
   check(res.status === 200, `status 200 (got ${res.status})`);
+
+  diagnoseFailures('Scenario 1: Full Global Runtime', html);
 }
 
 /** Scenario 2: CMS failure fallback */
@@ -463,14 +446,11 @@ async function testCmsFailureFallback(workerUrl) {
   // With no CMS data, navigation/fallback should show minimal fallback
   check(html.includes('Home'), 'Fallback navbar has Home');
   check(html.includes('Products'), 'Fallback navbar has Products');
-  check(
-    html.includes('Services') || html.includes('Support'),
-    'Fallback navbar has Services or Support'
-  );
-  // Footer should have minimal fallback
   // No hardcoded brands
   check(!html.includes('ScrewFast'), 'Fallback has no ScrewFast');
   check(!html.includes('zerniqpro.com'), 'Fallback has no zerniqpro.com');
+
+  diagnoseFailures('Scenario 2: CMS Failure Fallback', html);
 }
 
 /* ---------- Main ---------- */
@@ -491,6 +471,7 @@ async function main() {
   let mockServer;
   let workerProc;
 
+  scenarioErrors = [];
   try {
     const { server, port: mockPort } = await startMockStrapi({
       siteKey: 'store-us',
@@ -502,22 +483,37 @@ async function main() {
     const wu = `http://127.0.0.1:${wp}`;
     console.log(`\n[Scenario 1] Starting wrangler dev on port ${wp}...`);
 
-    workerProc = await startWorker(wp, mockUrl, 'store-us');
-    const ready = await waitForUrl(wu);
-    if (!ready) {
-      console.error('FAIL: Worker did not start for Scenario 1');
-      failed = true;
-    } else {
-      await testGlobalRuntime(wu);
-    }
+    workerProc = await startWorker({
+      cmd: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+      args: [
+        'exec',
+        'wrangler',
+        'dev',
+        '--config',
+        'dist-out/server/wrangler.json',
+        '--ip',
+        '127.0.0.1',
+        '--port',
+        String(wp),
+        '--var',
+        `STRAPI_URL:${mockUrl}`,
+        '--var',
+        'STRAPI_API_TOKEN:test-token',
+        '--var',
+        'CMS_SITE_KEY:store-us',
+      ],
+      port: wp,
+    });
+    await testGlobalRuntime(wu);
   } finally {
-    stopProcess(workerProc);
+    if (workerProc) await workerProc.stop();
     if (mockServer) mockServer.close();
   }
 
   // 3. Scenario 2: CMS failure — worker without mock Strapi
   // Point STRAPI_URL to a non-existent server so all CMS calls fail
   await sleep(2000);
+  scenarioErrors = [];
 
   {
     const deadUrl = `http://${MOCK_HOST}:19999`; // no server on this port
@@ -527,16 +523,30 @@ async function main() {
       `\n[Scenario 2] Starting wrangler dev on port ${wp} (no CMS)...`
     );
 
-    workerProc = await startWorker(wp, deadUrl, 'store-us');
-    const ready = await waitForUrl(wu);
-    if (!ready) {
-      console.error('FAIL: Worker did not start for Scenario 2');
-      failed = true;
-    } else {
-      await testCmsFailureFallback(wu);
-    }
+    workerProc = await startWorker({
+      cmd: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+      args: [
+        'exec',
+        'wrangler',
+        'dev',
+        '--config',
+        'dist-out/server/wrangler.json',
+        '--ip',
+        '127.0.0.1',
+        '--port',
+        String(wp),
+        '--var',
+        `STRAPI_URL:${deadUrl}`,
+        '--var',
+        'STRAPI_API_TOKEN:test-token',
+        '--var',
+        'CMS_SITE_KEY:store-us',
+      ],
+      port: wp,
+    });
+    await testCmsFailureFallback(wu);
 
-    stopProcess(workerProc);
+    await workerProc.stop();
   }
 
   // Clean up

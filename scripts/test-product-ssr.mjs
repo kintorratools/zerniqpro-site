@@ -1,11 +1,10 @@
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
-import { setTimeout as sleep } from 'node:timers/promises';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { startWorker } from './lib/test-process.mjs';
 
 let mockServer;
-let workerProcess;
+let worker;
 let failed = false;
 
 const MOCK_HOST = '127.0.0.1';
@@ -315,89 +314,6 @@ function startMockStrapi() {
   });
 }
 
-/** Start wrangler dev */
-function startWorker(workerPort, mockUrl) {
-  return new Promise((resolve, reject) => {
-    const isWin = process.platform === 'win32';
-    const cmd = isWin ? 'pnpm.cmd' : 'pnpm';
-
-    const child = spawn(
-      cmd,
-      [
-        'exec',
-        'wrangler',
-        'dev',
-        '--config',
-        'dist-out/server/wrangler.json',
-        '--ip',
-        '127.0.0.1',
-        '--port',
-        String(workerPort),
-        '--var',
-        `STRAPI_URL:${mockUrl}`,
-        '--var',
-        'STRAPI_API_TOKEN:test-token',
-        '--var',
-        'CMS_SITE_KEY:store-us',
-      ],
-      {
-        stdio: ['ignore', 'pipe', 'pipe'],
-        shell: isWin,
-      }
-    );
-
-    let resolved = false;
-
-    const onData = data => {
-      const text = data.toString();
-      if (!resolved && text.includes('http://')) {
-        resolved = true;
-        setTimeout(() => resolve(child), 2000);
-      }
-    };
-
-    child.stdout.on('data', onData);
-    child.stderr.on('data', onData);
-
-    child.on('error', err => {
-      if (!resolved) reject(err);
-    });
-
-    setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        resolve(child);
-      }
-    }, 30000);
-  });
-}
-
-/** Wait for URL to respond */
-async function waitForUrl(url, maxRetries = 50) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const res = await fetch(url);
-      if (res.ok || res.status >= 400) return true;
-    } catch {
-      /* still starting */
-    }
-    await sleep(500);
-  }
-  return false;
-}
-
-function stopProcess(proc) {
-  if (!proc) return;
-  try {
-    proc.kill('SIGTERM');
-    setTimeout(() => {
-      try {
-        proc.kill('SIGKILL');
-      } catch {}
-    }, 3000);
-  } catch {}
-}
-
 function findFreePort() {
   return new Promise(resolve => {
     const srv = createServer();
@@ -543,19 +459,33 @@ async function main() {
     const wu = `http://127.0.0.1:${wp}`;
     console.log(`\nStarting wrangler dev on port ${wp}...`);
 
-    workerProcess = await startWorker(wp, mockUrl);
-    const ready = await waitForUrl(wu);
-    if (!ready) {
-      console.error('FAIL: Worker did not start');
-      failed = true;
-      return;
-    }
+    worker = await startWorker({
+      cmd: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
+      args: [
+        'exec',
+        'wrangler',
+        'dev',
+        '--config',
+        'dist-out/server/wrangler.json',
+        '--ip',
+        '127.0.0.1',
+        '--port',
+        String(wp),
+        '--var',
+        `STRAPI_URL:${mockUrl}`,
+        '--var',
+        'STRAPI_API_TOKEN:test-token',
+        '--var',
+        'CMS_SITE_KEY:store-us',
+      ],
+      port: wp,
+    });
 
     await testValidProduct(wu);
     await testNonExistentProduct(wu);
     await testInvalidProduct(wu);
   } finally {
-    stopProcess(workerProcess);
+    if (worker) await worker.stop();
     mockServer.close();
     console.log('\nTest resources cleaned up.');
   }

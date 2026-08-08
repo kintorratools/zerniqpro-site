@@ -19,6 +19,7 @@
     "test:brand-i18n": "node scripts/test-brand-i18n.mjs",
     "test:generic": "node scripts/test-generic-template.mjs",
     "test:global-runtime": "node scripts/test-global-runtime.mjs",
+    "test:runtime-hygiene": "node scripts/test-runtime-hygiene.mjs",
     "test:theme-preservation": "node scripts/test-theme-preservation.mjs",
     "test:homepage-runtime": "node scripts/test-homepage-runtime.mjs",
     "test:homepage-media": "node scripts/test-homepage-media.mjs",

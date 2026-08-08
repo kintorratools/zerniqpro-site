@@ -49,6 +49,9 @@ jobs:
       - name: Global runtime tests
         run: pnpm test:global-runtime
 
+      - name: Runtime hygiene tests
+        run: pnpm test:runtime-hygiene
+
       - name: Theme preservation tests
         run: pnpm test:theme-preservation
 
