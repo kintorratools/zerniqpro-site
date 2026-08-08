@@ -114,8 +114,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         imageAlt: 'Yellow and black heavy equipment on brown grass field',
         image: {
           url: String(tools),
-          alternativeText:
-            'Yellow and black heavy equipment on brown grass field',
+          alt: 'Yellow and black heavy equipment on brown grass field',
         },
       },
       {
@@ -127,8 +126,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
           'A screenshot or graphic representation of the intuitive dashboard',
         image: {
           url: String(dashboard),
-          alternativeText:
-            'A screenshot or graphic representation of the intuitive dashboard',
+          alt: 'A screenshot or graphic representation of the intuitive dashboard',
         },
       },
       {
@@ -139,8 +137,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         imageAlt: 'Gray metal building frame near tower crane during daytime',
         image: {
           url: String(construction),
-          alternativeText:
-            'Gray metal building frame near tower crane during daytime',
+          alt: 'Gray metal building frame near tower crane during daytime',
         },
       },
     ],
@@ -157,6 +154,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         role: 'Chief Operating Officer | ConstructIt Inc.',
         avatar: {
           url: 'https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
+          alt: '',
         },
       },
     ],

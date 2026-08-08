@@ -1,4 +1,4 @@
-import type { CmsMedia, CmsMediaView } from './media';
+import type { CmsMediaView } from './media';
 
 // ── Sub-component types ──
 
@@ -6,7 +6,7 @@ export interface Partner {
   name: string;
   url: string;
   alt: string;
-  logo?: CmsMedia | null;
+  logo?: CmsMediaView | null;
 }
 
 export interface FeatureItem {
@@ -20,14 +20,14 @@ export interface FeatureTab {
   content: string;
   iconKey: string;
   imageAlt: string;
-  image?: CmsMedia | null;
+  image?: CmsMediaView | null;
 }
 
 export interface TestimonialItem {
   content: string;
   author: string;
   role: string;
-  avatar?: CmsMedia | null;
+  avatar?: CmsMediaView | null;
 }
 
 export interface Statistic {
@@ -74,7 +74,7 @@ export interface HeroSection {
   reviewsText: string;
   imageAlt: string;
   image?: CmsMediaView | null;
-  avatars: CmsMediaView[];
+  avatars: (CmsMediaView | null)[];
 }
 
 export interface ClientsSection {

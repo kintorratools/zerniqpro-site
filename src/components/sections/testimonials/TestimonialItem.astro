@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import ThemeImage from '@components/ui/media/ThemeImage.astro';
 import Icon from '../../ui/icons/Icon.astro';
 
 const { content, author, role, avatarSrc } = Astro.props;
@@ -26,12 +26,13 @@ interface Props {
       <div class="shrink-0">
         {
           avatarSrc ? (
-            <Image
+            <ThemeImage
               class="h-8 w-8 rounded-full"
               src={avatarSrc}
               alt={`${author} photo`}
+              width={32}
+              height={32}
               loading="lazy"
-              inferSize
             />
           ) : (
             <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700">

@@ -1,0 +1,53 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: any; // ImageMetadata | string — local import or remote URL
+  alt: string;
+  class?: string; // 调用方传入原 class，组件不添加默认视觉 class
+  width?: number; // remote 时必填，优先 CMS metadata
+  height?: number; // remote 时必填
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'auto' | 'high' | 'low';
+  format?: string; // 可选，如 'avif'
+}
+
+const {
+  src,
+  alt,
+  class: className,
+  width,
+  height,
+  loading,
+  fetchpriority,
+  format,
+} = Astro.props;
+---
+
+{
+  typeof src === 'string' ? (
+    <img
+      src={src}
+      alt={alt}
+      class={className}
+      width={width}
+      height={height}
+      loading={loading}
+      fetchpriority={fetchpriority}
+      draggable="false"
+      decoding="async"
+    />
+  ) : (
+    <Image
+      src={src}
+      alt={alt}
+      class={className}
+      width={width}
+      height={height}
+      loading={loading}
+      fetchpriority={fetchpriority}
+      format={format}
+      draggable={'false'}
+    />
+  )
+}

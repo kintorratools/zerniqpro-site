@@ -1,6 +1,6 @@
 ---
 // Import the necessary dependencies
-import { Image } from 'astro:assets';
+import ThemeImage from '@components/ui/media/ThemeImage.astro';
 import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
 import SecondaryCTA from '@components/ui/buttons/SecondaryCTA.astro';
 import ReviewComponent from '@components/ui/blocks/ReviewComponent.astro';
@@ -97,16 +97,15 @@ interface Props {
     <div class="aspect-[4067/2576] w-full overflow-hidden">
       {
         src && alt && (
-          <Image
+          <ThemeImage
             src={src}
             alt={alt}
             class="h-full w-full scale-110 object-cover object-center"
-            draggable={'false'}
-            loading="eager"
-            fetchpriority="high"
             width={812}
             height={515}
-            format={'avif'}
+            loading="eager"
+            fetchpriority="high"
+            format="avif"
           />
         )
       }

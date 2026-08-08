@@ -1,6 +1,6 @@
 ---
 // Import the Image component from astro:assets
-import { Image } from 'astro:assets';
+import ThemeImage from '@components/ui/media/ThemeImage.astro';
 
 // Destructure the component properties from Astro.props
 const { id, aria, src, alt, first, second } = Astro.props;
@@ -43,12 +43,5 @@ This is the full example:
 {/* Container for tab content that controls visibility and accessibility */}
 <div id={id} role="tabpanel" class={firstClass} aria-labelledby={aria}>
   <!-- Astro Image component to display the image with dynamic classes based on the 'second' property -->
-  <Image
-    src={src}
-    alt={alt}
-    class={secondClass}
-    draggable={'false'}
-    format={'avif'}
-    loading="lazy"
-  />
+  <ThemeImage src={src} alt={alt} class={secondClass} loading="lazy" />
 </div>
