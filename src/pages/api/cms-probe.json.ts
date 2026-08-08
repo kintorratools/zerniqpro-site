@@ -40,6 +40,7 @@ export async function GET() {
       site: {
         key: site.key,
         name: site.name,
+        domain: site.domain,
         defaultLocale: site.defaultLocale,
         brandKey: site.brandKey,
       },

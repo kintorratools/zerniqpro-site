@@ -5,12 +5,29 @@ import { CmsValidationError } from './errors';
 /** Strapi may return null for optional components or fields */
 const nullableString = z.string().trim().nullable().optional();
 
+/** URL that must use http or https protocol */
+const urlField = z
+  .string()
+  .url()
+  .refine(
+    val => {
+      try {
+        const u = new URL(val);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'must be an http or https URL' }
+  );
+
 /** Raw Strapi 5 flat entity shape — no attributes wrapper */
 const siteRecordSchema = z.object({
   id: z.number(),
   documentId: z.string(),
   key: z.string().trim().min(1),
   name: z.string().trim().min(1),
+  domain: urlField,
   defaultLocale: z.string().trim().min(1),
   defaultSeo: z
     .object({
@@ -47,8 +64,7 @@ function toViewModel(record: SiteRecord): SiteViewModel {
   const seoTitle =
     nullToUndefined(record.defaultSeo?.title)?.trim() || record.name;
   const seoDescription =
-    nullToUndefined(record.defaultSeo?.description)?.trim() ||
-    `Official website for ${record.name}.`;
+    nullToUndefined(record.defaultSeo?.description)?.trim() || '';
 
   if (!record.brand || !record.brand.key?.trim()) {
     throw new CmsValidationError();
@@ -57,6 +73,7 @@ function toViewModel(record: SiteRecord): SiteViewModel {
   return {
     key: record.key,
     name: record.name,
+    domain: record.domain.replace(/\/$/, ''),
     defaultLocale: record.defaultLocale,
     seo: { title: seoTitle, description: seoDescription },
     brandKey: record.brand.key.trim(),

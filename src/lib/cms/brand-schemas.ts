@@ -95,7 +95,6 @@ const brandRecordSchema = z.object({
   key: keySchema,
   name: z.string().trim().min(1),
   legalName: nullableString,
-  domain: urlField,
   logo: logoSchema,
   favicon: faviconSchema,
   colors: colorsSchema,
@@ -122,8 +121,7 @@ function toViewModel(record: BrandRecord): BrandViewModel {
   const seoTitle =
     nullToUndefined(record.defaultSeo?.title)?.trim() || record.name;
   const seoDescription =
-    nullToUndefined(record.defaultSeo?.description)?.trim() ||
-    `Official website for ${record.name}.`;
+    nullToUndefined(record.defaultSeo?.description)?.trim() || '';
 
   // SEO ogImage: normalize null/undefined
   const rawOgImage = nullToUndefined(record.defaultSeo?.ogImage);
@@ -179,7 +177,6 @@ function toViewModel(record: BrandRecord): BrandViewModel {
   return {
     key: record.key,
     name: record.name,
-    domain: record.domain,
     logo,
     favicon,
     colors,

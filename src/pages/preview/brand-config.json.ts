@@ -34,12 +34,12 @@ export async function GET() {
       brand: {
         key: config.brand.key,
         name: config.brand.name,
-        domain: config.brand.domain,
         seo: config.brand.seo,
       },
       site: {
         key: config.site.key,
         name: config.site.name,
+        domain: config.site.domain,
         defaultLocale: config.site.defaultLocale,
         brandKey: config.site.brandKey,
       },

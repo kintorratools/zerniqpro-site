@@ -76,7 +76,7 @@ try {
 
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
-const canonical = `${runtime.brand.domain}/products/${handle}/`;
+const canonical = `${runtime.site.domain}/products/${handle}/`;
 const pageTitle = `${product.seo.title} | ${runtime.site.name}`;
 
 const jsonLdString = JSON.stringify({

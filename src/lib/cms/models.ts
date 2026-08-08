@@ -12,6 +12,7 @@ export interface SiteRecord {
   documentId: string;
   key: string;
   name: string;
+  domain: string;
   defaultLocale: string;
   defaultSeo?: {
     title?: string | null;
@@ -33,6 +34,7 @@ export interface SiteRecord {
 export interface SiteViewModel {
   key: string;
   name: string;
+  domain: string;
   defaultLocale: string;
   seo: {
     title: string;

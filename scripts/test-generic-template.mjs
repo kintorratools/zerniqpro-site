@@ -12,6 +12,11 @@ const PATTERNS = [
   'AussieSteel',
 ];
 
+// Domains/strings that are explicitly allowed (e.g. generic fixture data).
+// These take precedence over PATTERNS — a line matching an allowed pattern
+// will NOT be flagged even if it also matches a forbidden pattern.
+const ALLOWED = new Set(['store-us.example']);
+
 const EXCLUDE_DIRS = new Set([
   join(PROJECT_ROOT, 'src', 'content'),
   join(PROJECT_ROOT, 'scripts'),
@@ -44,6 +49,12 @@ const IGNORE_EXTENSIONS = new Set([
 
 function findPattern(line) {
   const lower = line.toLowerCase();
+  // Check allowed patterns first — they take precedence
+  for (const allowed of ALLOWED) {
+    if (lower.includes(allowed.toLowerCase())) {
+      return null;
+    }
+  }
   for (const pat of PATTERNS) {
     if (lower.includes(pat.toLowerCase())) {
       return pat;

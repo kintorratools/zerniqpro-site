@@ -13,18 +13,17 @@ const MOCK_HOST = '127.0.0.1';
 const MOCK_BRAND = {
   id: 1,
   documentId: 'brand-001',
-  key: 'zerniq',
-  name: 'ZERNIQ',
-  domain: 'https://zerniqpro.com',
-  logo: { url: 'https://zerniqpro.com/logo.png', alt: 'ZERNIQ logo' },
-  favicon: { url: 'https://zerniqpro.com/favicon.ico' },
+  key: 'brand-alpha',
+  name: 'Store US',
+  logo: { url: 'https://store-us.example/logo.png', alt: 'Store US logo' },
+  favicon: { url: 'https://store-us.example/favicon.ico' },
   colors: { primary: '#ff6600', secondary: '#1e293b', accent: '#3b82f6' },
   defaultSeo: {
-    title: 'ZERNIQ Tools',
+    title: 'Store US Tools',
     description: 'Professional power tools for North America',
-    ogImage: { url: 'https://zerniqpro.com/og.png', alt: 'ZERNIQ' },
+    ogImage: { url: 'https://store-us.example/og.png', alt: 'Store US' },
   },
-  socialLinks: [{ platform: 'twitter', url: 'https://twitter.com/zerniq' }],
+  socialLinks: [{ platform: 'twitter', url: 'https://twitter.com/store-us' }],
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   publishedAt: '2025-06-01T00:00:00.000Z',
@@ -33,14 +32,15 @@ const MOCK_BRAND = {
 const MOCK_SITE = {
   id: 1,
   documentId: 'abc123',
-  key: 'zerniq',
-  name: 'ZERNIQ Site',
+  key: 'store-us',
+  name: 'Store US Site',
+  domain: 'https://store-us.example',
   defaultLocale: 'en',
   defaultSeo: {
-    title: 'ZERNIQ Tools',
+    title: 'Store US Tools',
     description: 'Professional power tools for North America',
   },
-  brand: { documentId: 'brand-001', key: 'zerniq' },
+  brand: { documentId: 'brand-001', key: 'brand-alpha' },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   publishedAt: '2025-06-01T00:00:00.000Z',
@@ -101,7 +101,6 @@ const MOCK_BRAND_DIFF = {
   documentId: 'ba-001',
   key: 'brand-alpha',
   name: 'Brand Alpha',
-  domain: 'https://brand-alpha.com',
   logo: { url: 'https://brand-alpha.com/logo.png', alt: 'Brand Alpha logo' },
   favicon: { url: 'https://brand-alpha.com/favicon.ico' },
   colors: { primary: '#0000ff', secondary: '#333333', accent: '#ff0000' },
@@ -123,6 +122,7 @@ const MOCK_SITE_DIFF = {
   documentId: 'xyz789',
   key: 'store-us',
   name: 'US Store',
+  domain: 'https://store-us.example',
   defaultLocale: 'en',
   defaultSeo: {
     title: 'US Store',
@@ -189,7 +189,7 @@ const MOCK_LOCALES_DIFF = [
  * @param {object} [options.brand]       - brand data to serve (default: MOCK_BRAND)
  * @param {object} [options.site]        - site data to serve (default: MOCK_SITE)
  * @param {object[]} [options.locales]   - locales data to serve (default: MOCK_LOCALES)
- * @param {string} [options.siteKey]     - expected site key in query (default: 'zerniq')
+ * @param {string} [options.siteKey]     - expected site key in query (default: 'store-us')
  * @param {boolean} [options.validateBrandWithKey] - if true, validate brand by filters[key][$eq]
  * @param {(url: URL) => void} [options.onBrandRequest] - callback when brand is requested
  */
@@ -198,7 +198,7 @@ function startMockStrapi(options = {}) {
     brand = MOCK_BRAND,
     site = MOCK_SITE,
     locales = MOCK_LOCALES,
-    siteKey = 'zerniq',
+    siteKey = 'store-us',
     validateBrandWithKey = false,
     onBrandRequest = null,
   } = options;
@@ -349,7 +349,7 @@ function startMockStrapi(options = {}) {
 }
 
 /** Start wrangler dev */
-function startWorker(workerPort, mockUrl, siteKey = 'zerniq') {
+function startWorker(workerPort, mockUrl, siteKey = 'store-us') {
   return new Promise((resolve, reject) => {
     const isWin = process.platform === 'win32';
     const cmd = isWin ? 'pnpm.cmd' : 'pnpm';
@@ -461,16 +461,16 @@ async function testBrandAndLocales(workerUrl) {
 
   check(res.status === 200, `status 200 (got ${res.status})`);
   check(body.status === 'ok', `status="ok"`);
-  check(body.brand.key === 'zerniq', 'brand.key=zerniq');
-  check(body.brand.name === 'ZERNIQ', 'brand.name=ZERNIQ');
-  check(body.brand.domain === 'https://zerniqpro.com', 'brand.domain correct');
-  check(body.brand.seo.title === 'ZERNIQ Tools', 'brand.seo.title correct');
+  check(body.brand.key === 'brand-alpha', 'brand.key=brand-alpha');
+  check(body.brand.name === 'Store US', 'brand.name=Store US');
+  check(body.brand.seo.title === 'Store US Tools', 'brand.seo.title correct');
   check(
     body.brand.seo.description.includes('Professional power tools'),
     'brand.seo.description includes "Professional power tools"'
   );
-  check(body.site.key === 'zerniq', 'site.key=zerniq');
-  check(body.site.brandKey === 'zerniq', 'site.brandKey=zerniq');
+  check(body.site.key === 'store-us', 'site.key=store-us');
+  check(body.site.domain === 'https://store-us.example', 'site.domain correct');
+  check(body.site.brandKey === 'brand-alpha', 'site.brandKey=brand-alpha');
 
   // Locale checks
   check(Array.isArray(body.locales), 'locales is an array');
@@ -521,10 +521,6 @@ async function testSiteBrandKeyDifferent(workerUrl, capturedRef) {
   // Response assertions
   check(body.brand.key === 'brand-alpha', 'brand.key=brand-alpha');
   check(body.brand.name === 'Brand Alpha', 'brand.name=Brand Alpha');
-  check(
-    body.brand.domain === 'https://brand-alpha.com',
-    'brand.domain=brand-alpha.com'
-  );
   check(body.site.key === 'store-us', 'site.key=store-us');
   check(body.site.brandKey === 'brand-alpha', 'site.brandKey=brand-alpha');
 
@@ -572,7 +568,7 @@ async function runLocaleTest(testName, localeData) {
 
   const { server, port: mockPort } = await startMockStrapi({
     locales: localeData,
-    siteKey: 'zerniq',
+    siteKey: 'store-us',
   });
   const mockUrl = `http://${MOCK_HOST}:${mockPort}`;
 
@@ -582,7 +578,7 @@ async function runLocaleTest(testName, localeData) {
     const wu = `http://127.0.0.1:${wp}`;
     console.log(`  Starting wrangler dev on port ${wp}...`);
 
-    workerProc = await startWorker(wp, mockUrl, 'zerniq');
+    workerProc = await startWorker(wp, mockUrl, 'store-us');
     const ready = await waitForUrl(wu);
     if (!ready) {
       console.error(`  FAIL: Worker did not start`);
@@ -666,7 +662,7 @@ async function main() {
   // 2. Main test: same brand key = site key
   {
     const { server, port: mockPort } = await startMockStrapi({
-      siteKey: 'zerniq',
+      siteKey: 'store-us',
     });
     const mockUrl = `http://${MOCK_HOST}:${mockPort}`;
 
@@ -676,7 +672,7 @@ async function main() {
       const wu = `http://127.0.0.1:${wp}`;
       console.log(`\nStarting wrangler dev on port ${wp}...`);
 
-      workerProc = await startWorker(wp, mockUrl, 'zerniq');
+      workerProc = await startWorker(wp, mockUrl, 'store-us');
       const ready = await waitForUrl(wu);
       if (!ready) {
         console.error('FAIL: Worker did not start');

@@ -15,11 +15,10 @@ const MOCK_HOST = '127.0.0.1';
 const MOCK_BRAND = {
   id: 1,
   documentId: 'brand-001',
-  key: 'zerniq',
-  name: 'ZERNIQ',
-  domain: 'https://zerniqpro.com',
+  key: 'brand-alpha',
+  name: 'Store US',
   defaultSeo: {
-    title: 'ZERNIQ Tools',
+    title: 'Store US Tools',
     description: 'Professional power tools for North America',
   },
   createdAt: '2025-01-01T00:00:00.000Z',
@@ -78,16 +77,17 @@ const MOCK_LOCALES = [
 const VALID_SITE = {
   id: 1,
   documentId: 'abc123',
-  key: 'zerniq',
-  name: 'ZERNIQ',
+  key: 'store-us',
+  name: 'Store US',
+  domain: 'https://store-us.example',
   defaultLocale: 'en',
   defaultSeo: {
-    title: 'ZERNIQ Tools',
+    title: 'Store US Tools',
     description: 'Professional power tools for North America',
   },
   brand: {
     documentId: 'brand-001',
-    key: 'zerniq',
+    key: 'brand-alpha',
   },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -108,7 +108,7 @@ const VALID_PRODUCT = {
     eyebrow: 'New Release',
     heading: 'Next-Gen DTF Printing',
     description: 'Faster, sharper, more reliable',
-    imageUrl: 'https://zerniqpro.com/images/xp600-hero.png',
+    imageUrl: 'https://store-us.example/images/xp600-hero.png',
     imageAlt: 'XP600 DTF Printer in action',
   },
   sections: [
@@ -185,7 +185,7 @@ function startMockStrapi() {
 
       if (req.method === 'GET' && url.pathname === '/api/brands') {
         // Verify brand query params
-        if (url.searchParams.get('filters[key][$eq]') !== 'zerniq') {
+        if (url.searchParams.get('filters[key][$eq]') !== 'brand-alpha') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -216,7 +216,7 @@ function startMockStrapi() {
 
       if (req.method === 'GET' && url.pathname === '/api/sites') {
         // Verify site query params
-        if (url.searchParams.get('filters[key][$eq]') !== 'zerniq') {
+        if (url.searchParams.get('filters[key][$eq]') !== 'store-us') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -245,7 +245,7 @@ function startMockStrapi() {
 
       if (req.method === 'GET' && url.pathname === '/api/products') {
         // Verify product query params
-        if (url.searchParams.get('filters[site][key][$eq]') !== 'zerniq') {
+        if (url.searchParams.get('filters[site][key][$eq]') !== 'store-us') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -338,7 +338,7 @@ function startWorker(workerPort, mockUrl) {
         '--var',
         'STRAPI_API_TOKEN:test-token',
         '--var',
-        'CMS_SITE_KEY:zerniq',
+        'CMS_SITE_KEY:store-us',
       ],
       {
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -427,7 +427,7 @@ async function testValidProduct(workerUrl) {
   check(h1Count === 1, `exactly one <h1> (found ${h1Count})`);
   check(html.includes('<title>'), 'HTML contains <title>');
   check(html.includes('XP600 DTF Printer'), 'title includes product name');
-  check(html.includes('ZERNIQ'), 'title includes site name');
+  check(html.includes('Store US'), 'title includes site name');
   check(
     html.includes('<meta name="description"'),
     'HTML contains meta description'
@@ -435,14 +435,14 @@ async function testValidProduct(workerUrl) {
 
   // Canonical
   check(
-    html.includes('https://zerniqpro.com/products/xp600-dtf-printer/'),
+    html.includes('https://store-us.example/products/xp600-dtf-printer/'),
     'canonical URL correct'
   );
 
   // JSON-LD
   check(html.includes('application/ld+json'), 'JSON-LD present');
   check(html.includes('"@type":"Product"'), 'JSON-LD @type=Product');
-  check(html.includes('"ZERNIQ"'), 'JSON-LD brand=ZERNIQ');
+  check(html.includes('"Store US"'), 'JSON-LD brand=Store US');
 
   // No Offer / price / inventory
   check(!html.includes('"Offer"'), 'no Offer in JSON-LD');

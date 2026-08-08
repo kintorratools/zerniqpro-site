@@ -10,19 +10,25 @@ let failed = false;
 
 const MOCK_HOST = '127.0.0.1';
 
+const SITE_KEY = 'store-us';
+const SITE_NAME = 'Store US';
+const BRAND_KEY = 'brand-alpha';
+const DOMAIN = 'https://store-us.example';
+
 const VALID_SITE = {
   id: 1,
   documentId: 'abc123',
-  key: 'zerniq',
-  name: 'ZERNIQ',
+  key: SITE_KEY,
+  name: SITE_NAME,
+  domain: DOMAIN,
   defaultLocale: 'en',
   defaultSeo: {
-    title: 'ZERNIQ Tools',
+    title: 'Store US Tools',
     description: 'Professional power tools for North America',
   },
   brand: {
     documentId: 'brand-001',
-    key: 'zerniq',
+    key: BRAND_KEY,
   },
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -59,75 +65,155 @@ const TOKEN_DATA = {
   },
 };
 
+/** Mock brand data — always returns the same valid brand */
+const VALID_BRAND = {
+  id: 1,
+  documentId: 'brand-001',
+  key: BRAND_KEY,
+  name: 'Brand Alpha',
+  defaultSeo: {
+    title: 'Brand Alpha Tools',
+    description: 'Professional-grade tools for every job',
+  },
+  logo: null,
+  favicon: null,
+  socialLinks: null,
+  createdAt: '2025-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  publishedAt: '2025-06-01T00:00:00.000Z',
+};
+
+const VALID_BRAND_RESPONSE = {
+  data: [VALID_BRAND],
+  meta: { pagination: { total: 1 } },
+};
+
+/** Mock locale data */
+const VALID_LOCALES = {
+  data: [
+    { id: 1, documentId: 'loc-en', code: 'en', name: 'English', enabled: true, isDefault: true },
+    { id: 2, documentId: 'loc-de', code: 'de', name: 'Deutsch', enabled: true, isDefault: false },
+  ],
+  meta: { pagination: { total: 2 } },
+};
+
 /** Start a mock Strapi HTTP server */
 function startMockStrapi() {
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
       const url = new URL(req.url, `http://${MOCK_HOST}`);
-
-      if (req.method !== 'GET' || url.pathname !== '/api/sites') {
-        res.writeHead(404);
-        res.end(JSON.stringify({ error: { status: 404 } }));
-        return;
-      }
+      const pathname = url.pathname;
 
       // Token determines response mode
       const auth = req.headers['authorization'] ?? '';
       const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-      const mode = TOKEN_DATA[token];
-      if (!mode) {
-        res.writeHead(401);
-        res.end(JSON.stringify({ error: { status: 401 } }));
-        return;
-      }
-      if ((req.headers['accept'] ?? '') !== 'application/json') {
-        res.writeHead(406);
-        res.end(JSON.stringify({ error: { status: 406 } }));
+
+      // --- /api/sites ---
+      if (req.method === 'GET' && pathname === '/api/sites') {
+        const mode = TOKEN_DATA[token];
+        if (!mode) {
+          res.writeHead(401);
+          res.end(JSON.stringify({ error: { status: 401 } }));
+          return;
+        }
+        if ((req.headers['accept'] ?? '') !== 'application/json') {
+          res.writeHead(406);
+          res.end(JSON.stringify({ error: { status: 406 } }));
+          return;
+        }
+
+        if (url.searchParams.get('pagination[pageSize]') !== '1') {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+        if (url.searchParams.get('status') !== 'published') {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+        if (url.searchParams.get('filters[key][$eq]') !== SITE_KEY) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+        if (url.searchParams.get('populate') === '*') {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+        if (
+          url.searchParams.get('populate[defaultSeo][populate]') !== '*' ||
+          url.searchParams.get('populate[brand][populate]') !== '*'
+        ) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+        const f0 = url.searchParams.get('fields[0]');
+        const f1 = url.searchParams.get('fields[1]');
+        const f2 = url.searchParams.get('fields[2]');
+        const f3 = url.searchParams.get('fields[3]');
+        if (f0 !== 'key' || f1 !== 'name' || f2 !== 'domain' || f3 !== 'defaultLocale') {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: { status: 400 } }));
+          return;
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify(mode));
         return;
       }
 
-      // Verify query params
-      if (url.searchParams.get('pagination[pageSize]') !== '1') {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
-        return;
-      }
-      if (url.searchParams.get('status') !== 'published') {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
-        return;
-      }
-      // Verify site key filter
-      if (url.searchParams.get('filters[key][$eq]') !== 'zerniq') {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
-        return;
-      }
-      if (url.searchParams.get('populate') === '*') {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
-        return;
-      }
-      if (
-        url.searchParams.get('populate[defaultSeo]') !== '*' ||
-        url.searchParams.get('populate[brand]') !== '*'
-      ) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
-        return;
-      }
-      const f0 = url.searchParams.get('fields[0]');
-      const f1 = url.searchParams.get('fields[1]');
-      const f2 = url.searchParams.get('fields[2]');
-      if (f0 !== 'key' || f1 !== 'name' || f2 !== 'defaultLocale') {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: { status: 400 } }));
+      // --- /api/brands ---
+      if (req.method === 'GET' && pathname === '/api/brands') {
+        // For invalid-brand scenario, return empty brand
+        if (token === 'test-token-invalid-brand') {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(200);
+          res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+          return;
+        }
+        // For nullable scenarios, return empty brand
+        if (token === 'test-token-nullable' || token === 'test-token-nullable-inner') {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(200);
+          res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+          return;
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify(VALID_BRAND_RESPONSE));
         return;
       }
 
-      res.setHeader('Content-Type', 'application/json');
-      res.writeHead(200);
-      res.end(JSON.stringify(mode));
+      // --- /api/locale-configs ---
+      if (req.method === 'GET' && pathname === '/api/locale-configs') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify(VALID_LOCALES));
+        return;
+      }
+
+      // --- /api/navigations (optional, returns empty) ---
+      if (req.method === 'GET' && pathname === '/api/navigations') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+        return;
+      }
+
+      // --- /api/footers (optional, returns empty) ---
+      if (req.method === 'GET' && pathname === '/api/footers') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ data: [], meta: { pagination: { total: 0 } } }));
+        return;
+      }
+
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: { status: 404 } }));
     });
 
     server.listen(0, MOCK_HOST, () => {
@@ -163,7 +249,7 @@ function startWorker(workerPort, token, mockUrl) {
         '--var',
         'STRAPI_API_TOKEN:' + token,
         '--var',
-        'CMS_SITE_KEY:zerniq',
+        'CMS_SITE_KEY:store-us',
       ],
       {
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -243,10 +329,32 @@ async function testValidSite(workerUrl) {
   check(res.status === 200, `status 200 (got ${res.status})`);
   check(body.status === 'ok', `status="ok"`);
   check(body.cmsReachable === true, 'cmsReachable=true');
-  check(body.site.key === 'zerniq', 'site.key=zerniq');
-  check(body.site.name === 'ZERNIQ', 'site.name=ZERNIQ');
-  check(body.site?.brandKey === 'zerniq', 'site.brandKey correct');
-  check(body.site.defaultLocale === 'en', 'site.defaultLocale=en');
+
+  // site.key verified
+  check(body.site?.key === SITE_KEY, `site.key=${SITE_KEY}`);
+  // site.name verified
+  check(body.site?.name === SITE_NAME, `site.name=${SITE_NAME}`);
+  // site.domain verified
+  check(body.site?.domain === DOMAIN, `site.domain=${DOMAIN}`);
+  // SITE_DOMAIN_FIELD=PRESENT — Site has domain field
+  check(
+    body.site != null && body.site.domain === DOMAIN,
+    'SITE_DOMAIN_FIELD=PRESENT'
+  );
+  // brandKey verified (must differ from site key)
+  check(body.site?.brandKey === BRAND_KEY, `site.brandKey=${BRAND_KEY}`);
+  check(body.site?.defaultLocale === 'en', 'site.defaultLocale=en');
+
+  // BRAND_DOMAIN_FIELD=ABSENT — Brand response has no domain field
+  if (body.brand != null) {
+    check(body.brand.domain === undefined, 'BRAND_DOMAIN_FIELD=ABSENT');
+  }
+  // FABRICATED_SEO_DESCRIPTION=ABSENT — no "Official website for" in SEO
+  const raw = JSON.stringify(body);
+  check(
+    !raw.includes('Official website for'),
+    'FABRICATED_SEO_DESCRIPTION=ABSENT'
+  );
 
   const cc = res.headers.get('cache-control') ?? '';
   check(cc.includes('no-store'), 'Cache-Control: no-store');
@@ -257,7 +365,6 @@ async function testValidSite(workerUrl) {
     'X-Robots-Tag: noindex,nofollow'
   );
 
-  const raw = JSON.stringify(body);
   check(!raw.includes('test-token'), 'no token in response');
 }
 
@@ -308,7 +415,7 @@ async function testNullableTrim(workerUrl) {
   check(res.status === 200, `status 200 (got ${res.status})`);
   check(body.status === 'ok', `status="ok"`);
   check(body.cmsReachable === true, 'cmsReachable=true');
-  check(body.site?.key === 'zerniq', 'site.key=zerniq');
+  check(body.site?.key === SITE_KEY, `site.key=${SITE_KEY}`);
   console.log(
     '  PASS: whitespace trimmed to defaults (normalized in ViewModel)'
   );

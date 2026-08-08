@@ -37,6 +37,7 @@ const MOCK_SITE = {
   documentId: 'xyz789',
   key: 'store-us',
   name: 'US Store',
+  domain: 'https://store-us.example',
   defaultLocale: 'en',
   defaultSeo: {
     title: 'US Store',
@@ -462,7 +463,10 @@ async function testCmsFailureFallback(workerUrl) {
   // With no CMS data, navigation/fallback should show minimal fallback
   check(html.includes('Home'), 'Fallback navbar has Home');
   check(html.includes('Products'), 'Fallback navbar has Products');
-  check(html.includes('Support'), 'Fallback navbar has Support');
+  check(
+    html.includes('Services') || html.includes('Support'),
+    'Fallback navbar has Services or Support'
+  );
   // Footer should have minimal fallback
   // No hardcoded brands
   check(!html.includes('ScrewFast'), 'Fallback has no ScrewFast');

@@ -79,23 +79,24 @@ const hreflangLinks =
     ? buildHreflangLinks(locales, fullPath, String(Astro.site || ''))
     : [];
 
-const dynamicStructuredData = brand
-  ? {
-      '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      inLanguage: 'en-US',
-      '@id': brand.domain,
-      url: brand.domain,
-      name: brand.name,
-      description: brand.seo.description || '',
-      isPartOf: {
-        '@type': 'WebSite',
-        url: brand.domain,
+const dynamicStructuredData =
+  brand && site
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        inLanguage: 'en-US',
+        '@id': site.domain,
+        url: site.domain,
         name: brand.name,
         description: brand.seo.description || '',
-      },
-    }
-  : undefined;
+        isPartOf: {
+          '@type': 'WebSite',
+          url: site.domain,
+          name: brand.name,
+          description: brand.seo.description || '',
+        },
+      }
+    : undefined;
 
 const faviconSvg = await getImage({
   src: faviconSvgSrc,
@@ -159,8 +160,8 @@ const appleTouchIcon = await getImage({
 <meta name="twitter:card" content="summary_large_image" />
 <meta
   property="twitter:domain"
-  content={brand?.domain
-    ? new URL(brand.domain).hostname
+  content={site?.domain
+    ? new URL(site.domain).hostname
     : (Astro.site?.hostname ?? 'example.com')}
 />
 <meta property="twitter:url" content={canonical} />

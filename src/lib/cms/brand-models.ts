@@ -17,7 +17,6 @@ export interface BrandRecord {
   key: string;
   name: string;
   legalName?: string | null;
-  domain: string;
   logo?: { url?: string | null; alt?: string | null } | null;
   favicon?: { url?: string | null } | null;
   colors?: {
@@ -43,7 +42,6 @@ export interface BrandRecord {
 export interface BrandViewModel {
   key: string;
   name: string;
-  domain: string;
   logo?: { url?: string; alt?: string };
   favicon?: { url?: string };
   colors?: { primary?: string; secondary?: string; accent?: string };

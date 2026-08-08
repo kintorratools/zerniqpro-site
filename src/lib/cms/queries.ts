@@ -15,7 +15,8 @@ export function buildSiteQuery(siteKey: string): string {
   // Request only the fields used by our contract
   params.set('fields[0]', 'key');
   params.set('fields[1]', 'name');
-  params.set('fields[2]', 'defaultLocale');
+  params.set('fields[2]', 'domain');
+  params.set('fields[3]', 'defaultLocale');
 
   // Populate nested components
   params.set('populate[defaultSeo][populate]', '*');

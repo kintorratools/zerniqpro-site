@@ -384,6 +384,101 @@ if (newsletterMatch) {
   failed = true;
 }
 
+/* ---------- 7. BrandViewModel: no domain field ---------- */
+console.log('\n--- BRAND_DOMAIN_FIELD Check ---');
+
+const brandModelsPath = resolve(root, 'src', 'lib', 'cms', 'brand-models.ts');
+if (!existsSync(brandModelsPath)) {
+  check(false, 'brand-models.ts exists');
+} else {
+  const brandModelsContent = readFileSync(brandModelsPath, 'utf-8');
+  // Extract BrandViewModel interface body
+  const bvmMatch = brandModelsContent.match(
+    /export interface BrandViewModel\s*\{([\s\S]*?)\n\}/
+  );
+  if (!bvmMatch) {
+    console.error('  FAIL: Could not parse BrandViewModel interface');
+    failed = true;
+  } else {
+    const hasBrandDomain = bvmMatch[1].includes('domain');
+    if (hasBrandDomain) {
+      console.error(
+        '  FAIL: BRAND_DOMAIN_FIELD=PRESENT — BrandViewModel has domain field (should be absent)'
+      );
+      failed = true;
+    } else {
+      console.log(
+        '  PASS: BRAND_DOMAIN_FIELD=ABSENT — BrandViewModel has no domain field'
+      );
+    }
+  }
+}
+
+/* ---------- 8. SiteViewModel: domain field present ---------- */
+console.log('\n--- SITE_DOMAIN_FIELD Check ---');
+
+const modelsPath = resolve(root, 'src', 'lib', 'cms', 'models.ts');
+if (!existsSync(modelsPath)) {
+  check(false, 'models.ts exists');
+} else {
+  const modelsContent = readFileSync(modelsPath, 'utf-8');
+  // Extract SiteViewModel interface body
+  const svmMatch = modelsContent.match(
+    /export interface SiteViewModel\s*\{([\s\S]*?)\n\}/
+  );
+  if (!svmMatch) {
+    console.error('  FAIL: Could not parse SiteViewModel interface');
+    failed = true;
+  } else {
+    const hasSiteDomain = svmMatch[1].includes('domain');
+    if (hasSiteDomain) {
+      console.log(
+        '  PASS: SITE_DOMAIN_FIELD=PRESENT — SiteViewModel has domain field'
+      );
+    } else {
+      console.error(
+        '  FAIL: SITE_DOMAIN_FIELD=ABSENT — SiteViewModel missing domain field'
+      );
+      failed = true;
+    }
+  }
+}
+
+/* ---------- 9. No fabricated SEO descriptions ---------- */
+console.log('\n--- FABRICATED_SEO_DESCRIPTION Check ---');
+
+const brandSchemasPath = resolve(root, 'src', 'lib', 'cms', 'brand-schemas.ts');
+const schemasPath = resolve(root, 'src', 'lib', 'cms', 'schemas.ts');
+
+const fabricatedSeoPattern = /Official website for/i;
+
+const seoFiles = [];
+if (existsSync(brandSchemasPath)) {
+  const brandSchemasContent = readFileSync(brandSchemasPath, 'utf-8');
+  if (fabricatedSeoPattern.test(brandSchemasContent)) {
+    seoFiles.push('brand-schemas.ts');
+  }
+}
+if (existsSync(schemasPath)) {
+  const schemasContent = readFileSync(schemasPath, 'utf-8');
+  if (fabricatedSeoPattern.test(schemasContent)) {
+    seoFiles.push('schemas.ts');
+  }
+}
+
+if (seoFiles.length > 0) {
+  for (const f of seoFiles) {
+    console.error(
+      `  FAIL: FABRICATED_SEO_DESCRIPTION=PRESENT — "${f}" contains fabricated SEO description`
+    );
+  }
+  failed = true;
+} else {
+  console.log(
+    '  PASS: FABRICATED_SEO_DESCRIPTION=ABSENT — no fabricated SEO descriptions in CMS schemas'
+  );
+}
+
 /* ---------- Result ---------- */
 console.log('');
 if (failed) {
