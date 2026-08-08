@@ -153,7 +153,7 @@ function startWorker(workerPort, token, mockUrl) {
         'wrangler',
         'dev',
         '--config',
-        'dist/server/wrangler.json',
+        'dist-out/server/wrangler.json',
         '--ip',
         '127.0.0.1',
         '--port',
@@ -354,11 +354,11 @@ let mockUrl;
 async function main() {
   // 1. Verify build artifacts
   try {
-    readFileSync(resolve('dist/server/wrangler.json'));
-    console.log('Build artifact: dist/server/wrangler.json — OK');
+    readFileSync(resolve('dist-out/server/wrangler.json'));
+    console.log('Build artifact: dist-out/server/wrangler.json — OK');
   } catch {
     console.error(
-      'ERROR: dist/server/wrangler.json not found. Run pnpm build first.'
+      'ERROR: dist-out/server/wrangler.json not found. Run pnpm build first.'
     );
     process.exit(1);
   }

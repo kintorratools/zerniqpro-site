@@ -52,6 +52,14 @@ export async function GET() {
       },
     });
   } catch (e) {
+    console.error(
+      '[brand-config] Error:',
+      e instanceof Error ? e.message : String(e)
+    );
+    console.error(
+      '[brand-config] Stack:',
+      e instanceof Error ? e.stack : 'no stack'
+    );
     if (e instanceof CmsNotConfiguredError) {
       return jsonResponse(503, { status: 'unconfigured' });
     }

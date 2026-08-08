@@ -189,7 +189,10 @@ function startMockStrapi(options = {}) {
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
         }
-      } else if (req.method === 'GET' && url.pathname === '/api/locales') {
+      } else if (
+        req.method === 'GET' &&
+        url.pathname === '/api/locale-configs'
+      ) {
         if (url.searchParams.get('filters[site][key][$eq]') !== siteKey) {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
@@ -201,7 +204,7 @@ function startMockStrapi(options = {}) {
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
         }
-        if (url.searchParams.get('filters[locale][code][$eq]') !== 'en') {
+        if (url.searchParams.get('locale') !== 'en') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -212,7 +215,7 @@ function startMockStrapi(options = {}) {
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
         }
-        if (url.searchParams.get('filters[locale][code][$eq]') !== 'en') {
+        if (url.searchParams.get('locale') !== 'en') {
           res.writeHead(400);
           res.end(JSON.stringify({ error: { status: 400 } }));
           return;
@@ -250,8 +253,8 @@ function startMockStrapi(options = {}) {
         return;
       }
 
-      // Route: /api/locales
-      if (req.method === 'GET' && url.pathname === '/api/locales') {
+      // Route: /api/locale-configs
+      if (req.method === 'GET' && url.pathname === '/api/locale-configs') {
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
         res.end(
@@ -316,7 +319,7 @@ function startWorker(workerPort, mockUrl, siteKey = 'store-us') {
         'wrangler',
         'dev',
         '--config',
-        'dist/server/wrangler.json',
+        'dist-out/server/wrangler.json',
         '--ip',
         '127.0.0.1',
         '--port',
@@ -471,11 +474,11 @@ async function testCmsFailureFallback(workerUrl) {
 async function main() {
   // 1. Verify build artifacts exist
   try {
-    readFileSync(resolve('dist/server/wrangler.json'));
-    console.log('Build artifact: dist/server/wrangler.json — OK');
+    readFileSync(resolve('dist-out/server/wrangler.json'));
+    console.log('Build artifact: dist-out/server/wrangler.json — OK');
   } catch {
     console.error(
-      'ERROR: dist/server/wrangler.json not found. Run pnpm build first.'
+      'ERROR: dist-out/server/wrangler.json not found. Run pnpm build first.'
     );
     process.exit(1);
   }

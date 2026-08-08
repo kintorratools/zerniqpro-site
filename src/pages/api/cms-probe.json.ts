@@ -54,10 +54,13 @@ export async function GET() {
     }
 
     // Any other error (CmsError, CmsNotConfiguredError, CmsValidationError, etc.)
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error('[cms-probe] Error:', errorMessage);
     return probeResponse(502, {
       status: 'error',
       cmsReachable: false,
       siteKey: config.siteKey,
+      error: errorMessage,
     });
   }
 }

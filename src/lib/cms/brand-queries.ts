@@ -13,11 +13,11 @@ export function buildBrandQuery(brandKey: string): string {
   params.set('pagination[pageSize]', '1');
   params.set('status', 'published');
 
-  // Populate nested components
-  params.set('populate[defaultSeo]', '*');
-  params.set('populate[logo]', '*');
-  params.set('populate[favicon]', '*');
-  params.set('populate[socialLinks]', '*');
+  // Populate nested components (media fields use true, not *)
+  params.set('populate[defaultSeo][populate]', '*');
+  params.set('populate[logo]', 'true');
+  params.set('populate[favicon]', 'true');
+  params.set('populate[socialLinks]', 'true');
 
   return `/api/brands?${params.toString()}`;
 }

@@ -8,12 +8,14 @@ import type { ProductViewModel } from './product-models';
 /**
  * Fetch a product from Strapi by handle.
  * Site key is read from the runtime CMS config.
+ * Optional locale parameter for Strapi native i18n.
  */
 export async function getProductByHandle(
-  handle: string
+  handle: string,
+  locale?: string
 ): Promise<ProductViewModel> {
   const config = getCmsConfig();
-  const path = buildProductQuery(config.siteKey, handle);
+  const path = buildProductQuery(config.siteKey, handle, locale);
 
   // strapiFetch response is treated as unknown for safety
   const raw: unknown = await strapiFetch(path);

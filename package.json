@@ -13,13 +13,14 @@
     "astro": "astro",
     "test:smoke:http": "node scripts/smoke.mjs",
     "test:smoke": "start-server-and-test preview:worker http-get://127.0.0.1:4321 test:smoke:http",
-    "deploy": "pnpm build && wrangler deploy --config dist/server/wrangler.json",
+    "deploy": "pnpm build && wrangler deploy --config dist-out/server/wrangler.json",
     "test:cms": "node scripts/test-cms-integration.mjs",
     "test:product": "node scripts/test-product-ssr.mjs",
     "test:brand-i18n": "node scripts/test-brand-i18n.mjs",
     "test:generic": "node scripts/test-generic-template.mjs",
     "test:global-runtime": "node scripts/test-global-runtime.mjs",
-    "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist/server/wrangler.json"
+    "test:theme-preservation": "node scripts/test-theme-preservation.mjs",
+    "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist-out/server/wrangler.json"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

@@ -17,10 +17,34 @@ const { footer, brand } = Astro.props;
 const locale = getMarketingLocale(Astro.url.pathname, Astro.currentLocale);
 
 const FALLBACK_FOOTER: FooterViewModel = {
-  columns: [],
+  columns: [
+    {
+      title: 'Ecosystem',
+      links: [
+        { label: 'Documentation', url: '/welcome-to-docs/' },
+        { label: 'Tools & Equipment', url: '/products' },
+        { label: 'Construction Services', url: '/services' },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'About us', url: '#' },
+        { label: 'Blog', url: '/blog' },
+        { label: 'Careers', url: '#' },
+        { label: 'Customers', url: '#' },
+      ],
+    },
+  ],
   copyright: '',
   legalLinks: [],
-  socialLinks: [],
+  socialLinks: [
+    { platform: 'Facebook', url: '#' },
+    { platform: 'X', url: '#' },
+    { platform: 'GitHub', url: '#' },
+    { platform: 'Google', url: '#' },
+    { platform: 'Slack', url: '#' },
+  ],
 };
 const footerData =
   footer && (footer.columns.length > 0 || footer.copyright)
@@ -46,7 +70,20 @@ const newsletterDemoMessage =
     <div class="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
       <div class="col-span-full lg:col-span-1">
         {/* Brand Logo */}
-        <BrandLogo class="h-auto w-32" />
+        {
+          brand?.logo?.url ? (
+            <img
+              src={brand.logo.url}
+              alt={brand.logo.alt || brand.name || 'Logo'}
+              width="128"
+              height="40"
+              class="h-auto w-32"
+              loading="lazy"
+            />
+          ) : (
+            <BrandLogo class="h-auto w-32" />
+          )
+        }
       </div>
       {/* Footer columns from CMS */}
       {

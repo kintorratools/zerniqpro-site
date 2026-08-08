@@ -1,6 +1,26 @@
 ---
 import { languages } from '@utils/ui';
 import Icon from './icons/Icon.astro';
+import type { LocaleViewModel } from '@lib/cms/locale-models';
+
+interface Props {
+  locales?: LocaleViewModel[];
+}
+
+const { locales } = Astro.props;
+
+// If CMS locales are provided, use only enabled ones; otherwise fall back to hardcoded list
+const cmsLanguages: Record<string, string> = {};
+if (locales && locales.length > 0) {
+  for (const loc of locales) {
+    if (loc.enabled) {
+      cmsLanguages[loc.code] = loc.name;
+    }
+  }
+}
+const displayLanguages =
+  Object.keys(cmsLanguages).length > 0 ? cmsLanguages : languages;
+const enabledCodes = Object.keys(displayLanguages);
 ---
 
 <div class="hs-dropdown relative inline-flex">
@@ -28,10 +48,11 @@ import Icon from './icons/Icon.astro';
   <div
     class="hs-dropdown-menu duration hs-dropdown-open:opacity-100 top-[98%]! left-[20%]! mt-2 hidden transform-none! rounded-lg bg-neutral-50 p-2 opacity-0 shadow-md transition-[opacity,margin] before:absolute before:start-0 before:-top-4 before:h-4 before:w-full after:absolute after:start-0 after:-bottom-4 after:h-4 after:w-full md:top-[80%]! md:left-[90%]! dark:divide-neutral-700 dark:border dark:border-neutral-700 dark:bg-neutral-800"
     aria-labelledby="hs-dropdown-default"
+    data-enabled-locales={JSON.stringify(enabledCodes)}
   >
     {
       // Map through the list of languages, creating a link for each language
-      Object.entries(languages).map(([lang, label]) => (
+      Object.entries(displayLanguages).map(([lang, label]) => (
         <a
           class="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-100 focus:bg-neutral-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
           href={`/${lang === 'en' ? '' : lang}`}
@@ -44,10 +65,12 @@ import Icon from './icons/Icon.astro';
 </div>
 
 <script>
-  // Type alias for supported languages
-  type TLanguage = 'en' | 'fr';
-  // array of supported languages
-  const languages: TLanguage[] = ['en', 'fr'];
+  // Enabled language codes from CMS (server-rendered data attribute)
+  const enabledCodes: string[] = JSON.parse(
+    document
+      .querySelector('[data-enabled-locales]')
+      ?.getAttribute('data-enabled-locales') || '["en","fr"]'
+  );
 
   document.addEventListener('DOMContentLoaded', function () {
     // Only target language picker links
@@ -57,10 +80,7 @@ import Icon from './icons/Icon.astro';
 
     languageLinks.forEach(element => {
       const link = element as HTMLAnchorElement;
-      const lang = link
-        .getAttribute('href')
-        ?.replace('/', '')
-        .replace('/', '') as TLanguage;
+      const lang = link.getAttribute('href')?.replace('/', '').replace('/', '');
 
       link.addEventListener('click', function (event) {
         event.preventDefault();
@@ -69,7 +89,7 @@ import Icon from './icons/Icon.astro';
 
         const currentPath = url.pathname
           .split('/')
-          .filter(part => part && !languages.includes(part as TLanguage))
+          .filter(part => part && !enabledCodes.includes(part))
           .join('/');
 
         let newPath = '';

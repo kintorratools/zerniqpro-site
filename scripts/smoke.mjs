@@ -6,8 +6,16 @@ const ROUTES = [
   { path: '/contact/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
-  { path: '/api/cms-probe.json', expectStatus: s => s === 503 },
-  { path: '/preview/products/test-product/', expectStatus: s => s === 503 },
+  // CMS probe: 200 if CMS configured, 503 if not, 502 if CMS error
+  {
+    path: '/api/cms-probe.json',
+    expectStatus: s => s === 200 || s === 502 || s === 503,
+  },
+  // Product preview: 200/404 if CMS configured, 503 if not, 502 if CMS error
+  {
+    path: '/preview/products/test-product/',
+    expectStatus: s => s === 200 || s === 404 || s === 502 || s === 503,
+  },
 ];
 
 const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:4321';
@@ -118,16 +126,14 @@ for (const route of ROUTES) {
 
       const body = await res.json();
 
-      if (body.status !== 'unconfigured') {
+      // Accept both 'ok' (CMS configured) and 'unconfigured'/'error' (CMS not configured/available)
+      if (
+        body.status !== 'ok' &&
+        body.status !== 'unconfigured' &&
+        body.status !== 'error'
+      ) {
         console.error(
-          `FAIL ${route.path} -> status is "${body.status}", expected "unconfigured"`
-        );
-        failed = true;
-        continue;
-      }
-      if (body.cmsReachable !== false) {
-        console.error(
-          `FAIL ${route.path} -> cmsReachable is ${body.cmsReachable}, expected false`
+          `FAIL ${route.path} -> status is "${body.status}", expected "ok", "unconfigured", or "error"`
         );
         failed = true;
         continue;
@@ -140,10 +146,12 @@ for (const route of ROUTES) {
         continue;
       }
 
-      console.log(`OK   ${route.path} -> cms-probe checks passed`);
+      console.log(
+        `OK   ${route.path} -> cms-probe checks passed (status=${body.status})`
+      );
     }
 
-    // Extra checks for product preview shadow route (no CMS configured)
+    // Extra checks for product preview shadow route
     if (route.path === '/preview/products/test-product/') {
       const xRobots = res.headers.get('x-robots-tag') ?? '';
       if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {

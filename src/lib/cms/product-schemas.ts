@@ -24,7 +24,11 @@ const urlField = z
 
 /** Strapi may return null for optional fields */
 const nullableString = z.string().trim().nullable().optional();
-const nullableUrl = urlField.nullable().optional();
+/** Accept empty string, null, or valid URL — Strapi may return "" for empty URL fields */
+const nullableUrl = z.preprocess(
+  val => (val === '' ? null : val),
+  urlField.nullable().optional()
+);
 
 /** Handle: lowercase letters, digits, single hyphens only */
 const handleSchema = z

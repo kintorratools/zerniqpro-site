@@ -104,7 +104,11 @@ interface Props {
     <div
       class="mx-auto w-full max-w-(--breakpoint-2xl) grow px-4 sm:px-6 lg:px-8"
     >
-      <Navbar items={runtime.navigation.items} />
+      <Navbar
+        items={runtime.navigation.items}
+        locales={runtime.locales}
+        brand={runtime.brand}
+      />
       <main id="main-content">
         <slot />
       </main>

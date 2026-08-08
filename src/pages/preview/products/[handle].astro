@@ -54,7 +54,7 @@ try {
 }
 
 try {
-  product = await getProductByHandle(handle);
+  product = await getProductByHandle(handle, runtime.site.defaultLocale);
 } catch (e) {
   if (e instanceof CmsTimeoutError) {
     return errorResponse(

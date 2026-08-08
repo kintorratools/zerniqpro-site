@@ -6,7 +6,7 @@
 export function buildFooterQuery(siteKey: string, locale: string): string {
   const params = new URLSearchParams();
   params.set('filters[site][key][$eq]', siteKey);
-  params.set('filters[locale][code][$eq]', locale);
+  params.set('locale', locale);
   params.set('pagination[pageSize]', '1');
   params.set('status', 'published');
   params.set('populate[columns]', '*');

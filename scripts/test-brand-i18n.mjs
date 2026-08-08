@@ -247,7 +247,7 @@ function startMockStrapi(options = {}) {
         }
       } else if (
         req.method === 'GET' &&
-        url.pathname !== '/api/locales' &&
+        url.pathname !== '/api/locale-configs' &&
         url.searchParams.get('filters[site][key][$eq]') !== siteKey
       ) {
         res.writeHead(400);
@@ -279,13 +279,56 @@ function startMockStrapi(options = {}) {
         return;
       }
 
-      if (req.method === 'GET' && url.pathname === '/api/locales') {
+      if (req.method === 'GET' && url.pathname === '/api/locale-configs') {
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
         res.end(
           JSON.stringify({
             data: locales,
             meta: { pagination: { total: locales.length } },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/navigations') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            data: [
+              {
+                id: 1,
+                documentId: 'nav-001',
+                items: [
+                  { label: 'Home', href: '/', order: 1 },
+                  { label: 'Products', href: '/products', order: 2 },
+                  { label: 'Support', href: '/support', order: 3 },
+                ],
+              },
+            ],
+            meta: { pagination: { total: 1 } },
+          })
+        );
+        return;
+      }
+
+      if (req.method === 'GET' && url.pathname === '/api/footers') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            data: [
+              {
+                id: 1,
+                documentId: 'footer-001',
+                columns: [],
+                copyright: '© 2026 Generic',
+                legalLinks: [],
+                socialLinks: [],
+              },
+            ],
+            meta: { pagination: { total: 1 } },
           })
         );
         return;
@@ -318,7 +361,7 @@ function startWorker(workerPort, mockUrl, siteKey = 'zerniq') {
         'wrangler',
         'dev',
         '--config',
-        'dist/server/wrangler.json',
+        'dist-out/server/wrangler.json',
         '--ip',
         '127.0.0.1',
         '--port',
@@ -611,11 +654,11 @@ async function testLocaleDuplicate() {
 async function main() {
   // 1. Verify build artifacts
   try {
-    readFileSync(resolve('dist/server/wrangler.json'));
-    console.log('Build artifact: dist/server/wrangler.json — OK');
+    readFileSync(resolve('dist-out/server/wrangler.json'));
+    console.log('Build artifact: dist-out/server/wrangler.json — OK');
   } catch {
     console.error(
-      'ERROR: dist/server/wrangler.json not found. Run pnpm build first.'
+      'ERROR: dist-out/server/wrangler.json not found. Run pnpm build first.'
     );
     process.exit(1);
   }

@@ -4,6 +4,8 @@ import ThemeIcon from '@components/ThemeIcon.astro';
 import NavLink from '@components/ui/links/NavLink.astro';
 import BrandLogo from '@components/BrandLogo.astro';
 import LanguagePicker from '@components/ui/LanguagePicker.astro';
+import type { LocaleViewModel } from '@lib/cms/locale-models';
+import type { BrandViewModel } from '@lib/cms/brand-models';
 
 interface NavItem {
   label: string;
@@ -13,14 +15,18 @@ interface NavItem {
 
 interface Props {
   items?: NavItem[];
+  locales?: LocaleViewModel[];
+  brand?: BrandViewModel;
 }
 
-const { items } = Astro.props;
+const { items, locales, brand } = Astro.props;
 
 const FALLBACK: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'Support', href: '/support' },
+  { label: 'Services', href: '/services' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 const navItems = items && items.length > 0 ? items : FALLBACK;
@@ -41,9 +47,22 @@ const homeUrl = Astro.url.pathname.startsWith('/fr') ? '/fr' : '/';
       <a
         class="flex-none rounded-lg text-xl font-bold ring-zinc-500 outline-hidden focus-visible:ring-3 dark:ring-zinc-200 dark:focus:outline-hidden"
         href={homeUrl}
-        aria-label="Acme"
+        aria-label={brand?.name || 'Home'}
       >
-        <BrandLogo class="h-auto w-24" />
+        {
+          brand?.logo?.url ? (
+            <img
+              src={brand.logo.url}
+              alt={brand.logo.alt || brand.name || 'Logo'}
+              width="96"
+              height="40"
+              class="h-auto w-24"
+              loading="eager"
+            />
+          ) : (
+            <BrandLogo class="h-auto w-24" />
+          )
+        }
       </a>
       {/* Collapse toggle for smaller screens */}
       <div class="mr-5 ml-auto md:hidden">
@@ -101,7 +120,7 @@ const homeUrl = Astro.url.pathname.startsWith('/fr') ? '/fr' : '/';
       >
         {/* Navigation links */}
         {navItems.map(link => <NavLink url={link.href} name={link.label} />)}
-        <LanguagePicker />
+        <LanguagePicker locales={locales} />
         {/* ThemeIcon component specifically for larger screens */}
         <span class="hidden md:inline-block">
           <ThemeIcon />

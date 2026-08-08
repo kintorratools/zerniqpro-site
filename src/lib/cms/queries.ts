@@ -18,8 +18,8 @@ export function buildSiteQuery(siteKey: string): string {
   params.set('fields[2]', 'defaultLocale');
 
   // Populate nested components
-  params.set('populate[defaultSeo]', '*');
-  params.set('populate[brand]', '*');
+  params.set('populate[defaultSeo][populate]', '*');
+  params.set('populate[brand][populate]', '*');
 
   return `/api/sites?${params.toString()}`;
 }

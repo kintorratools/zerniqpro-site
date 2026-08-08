@@ -49,5 +49,8 @@ jobs:
       - name: Global runtime tests
         run: pnpm test:global-runtime
 
+      - name: Theme preservation tests
+        run: pnpm test:theme-preservation
+
       - name: Smoke tests
         run: pnpm test:smoke

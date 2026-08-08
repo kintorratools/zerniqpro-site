@@ -8,6 +8,7 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   // https://docs.astro.build/en/guides/images/#authorizing-remote-images
+  outDir: './dist-out',
   site: process.env.SITE_URL ?? 'http://localhost:4321',
   image: {
     domains: ['images.unsplash.com'],
