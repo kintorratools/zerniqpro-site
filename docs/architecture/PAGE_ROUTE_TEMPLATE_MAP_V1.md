@@ -238,25 +238,25 @@ All non-homepage pages are UNCHANGED relative to baseline `15da780b`. The homepa
 | Product Category | NOT_NEEDED | Products already have CMS schema; categories can be flat tags or filters                 |
 | Support Article  | NEEDED     | Current /blog/ and /insights/ use Astro content collections; need CMS model for articles |
 | Download         | NEEDED     | New target route `/pages/downloads/` requires Download content type                      |
+| Contact Page     | NEEDED     | New target route `/pages/contact/` requires Contact CMS model (deferred to future phase) |
 | Generic Page     | NEEDED     | /services/, future /pages/warranty/, /pages/privacy/ need reusable page model            |
 
 ### Support Article (Needed)
 
-| Field       | Type                          | Config                      |
-| ----------- | ----------------------------- | --------------------------- |
-| slug        | UID (from title)              | Required, unique per locale |
-| title       | string                        | Required, i18n localized    |
-| excerpt     | text                          | Required, i18n localized    |
-| content     | richtext                      | Required, i18n localized    |
-| cardImage   | media                         | Optional (Phase 7C-B)       |
-| tags        | json/array                    | Optional                    |
-| author      | string                        | Optional                    |
-| category    | enum: blog/insight/support    | Required                    |
-| publishedAt | datetime                      | Required                    |
-| seo         | component (seo)               | Optional                    |
-| site        | relation (many-to-one → Site) | Required                    |
+| Field     | Type                          | Config                                 |
+| --------- | ----------------------------- | -------------------------------------- |
+| slug      | string                        | Required, localized, NOT global unique |
+| title     | string                        | Required, i18n localized               |
+| excerpt   | text                          | Required, i18n localized               |
+| content   | blocks                        | Required, i18n localized               |
+| cardImage | media                         | Optional (Phase 7C-B)                  |
+| tags      | json                          | Optional                               |
+| author    | string                        | Optional                               |
+| category  | enum: blog/insight/support    | Required                               |
+| seo       | component (seo)               | Optional                               |
+| site      | relation (many-to-one → Site) | Required                               |
 
-Config: Site-scoped, native i18n, Draft & Publish, no manual locale, domain only on Site.
+Config: Site-scoped, native i18n, Draft & Publish. Slug uniqueness scope = site + locale + slug (NOT global unique). No custom publishedAt — uses Strapi Draft & Publish system field only. No manual locale field. Domain only on Site. Slug allows only lowercase letters, numbers, and hyphens.
 
 ### Download (Needed)
 
@@ -272,18 +272,13 @@ Config: Site-scoped, native i18n, Draft & Publish, no manual locale, domain only
 
 Config: Site-scoped, native i18n, Draft & Publish, slug from title.
 
-### Generic Page (Needed)
+### Generic Page (DEFERRED — No Dynamic Zone)
 
-| Field    | Type                          | Config                                                                  |
-| -------- | ----------------------------- | ----------------------------------------------------------------------- |
-| slug     | UID (from title)              | Required                                                                |
-| title    | string                        | Required, i18n localized                                                |
-| subtitle | text                          | Optional, i18n localized                                                |
-| sections | dynamic zone                  | Required (content.text, content.image-text, content.stats, content.cta) |
-| seo      | component (seo)               | Optional                                                                |
-| site     | relation (many-to-one → Site) | Required                                                                |
+**GENERIC_PAGE_MODEL=DEFERRED**. Each actual page type (Services, Warranty, Privacy, etc.) MUST first define a fixed Astro slot contract before any CMS model is created. CMS CANNOT use Dynamic Zone to determine section structure or order.
 
-Config: Site-scoped, native i18n, Draft & Publish. Sections use a RESTRICTED dynamic zone with only CMS content components (no layout/visual control). Must NOT include: cssClass, className, tailwind, layout, variant, componentPath, sectionOrder.
+The Generic Page CMS model will be created in a future phase once each concrete page's fixed slot contract is defined. At that point, the model will include only fixed Component fields — never a Dynamic Zone.
+
+Config: Site-scoped, native i18n, Draft & Publish. Must NOT include: cssClass, className, tailwind, layout, variant, componentPath, sectionOrder, Dynamic Zone.
 
 ---
 

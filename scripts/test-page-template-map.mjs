@@ -1,7 +1,7 @@
 /**
  * test-page-template-map.mjs
  * Phase 8A — Validates PAGE_ROUTE_TEMPLATE_MAP_V1.md completeness and correctness.
- * Runs 13 checks against the route-template mapping document.
+ * Runs 18 checks against the route-template mapping document.
  */
 
 import { readFileSync } from 'node:fs';
@@ -382,6 +382,99 @@ for (const entry of mappedTargets) {
   }
 }
 check('All content targets have template types', !missingTemplate);
+
+// ---------------------------------------------------------------------------
+// Test 14: Generic Page Dynamic Zone proposal removed (Phase 8B-A)
+// ---------------------------------------------------------------------------
+console.log('\nTest 14: Generic Page Dynamic Zone removed');
+const genericPageSection = mapContent.match(
+  /### Generic Page[\s\S]*?(?=### [A-Z]|## )/
+);
+// Check that Dynamic Zone is not proposed as a CMS field in the Generic Page table
+const dynamicZoneAsField =
+  genericPageSection &&
+  genericPageSection[0].includes('| sections | dynamic zone');
+check(
+  'Generic Page Dynamic Zone proposal removed',
+  !dynamicZoneAsField,
+  'Dynamic Zone still listed as field in Generic Page table — should be removed per 8B-A'
+);
+check(
+  'GENERIC_PAGE_MODEL=DEFERRED present',
+  mapContent.includes('GENERIC_PAGE_MODEL=DEFERRED'),
+  'GENERIC_PAGE_MODEL=DEFERRED not found in document'
+);
+
+// ---------------------------------------------------------------------------
+// Test 15: Contact Page gap explicitly present (Phase 8B-A)
+// ---------------------------------------------------------------------------
+console.log('\nTest 15: Contact Page gap present');
+const cmsGapSection = mapContent.match(
+  /### CMS_MODEL_GAPS[\s\S]*?(?=### [A-Z]|## )/
+);
+check(
+  'Contact Page gap exists in CMS_MODEL_GAPS',
+  !!(cmsGapSection && cmsGapSection[0].includes('Contact Page')),
+  'Contact Page gap not found in CMS_MODEL_GAPS'
+);
+check(
+  'Contact Page marked as NEEDED',
+  !!(cmsGapSection && cmsGapSection[0].match(/Contact Page.*NEEDED/)),
+  'Contact Page not marked NEEDED in CMS_MODEL_GAPS'
+);
+
+// ---------------------------------------------------------------------------
+// Test 16: Support Article no custom publishedAt (Phase 8B-A)
+// ---------------------------------------------------------------------------
+console.log('\nTest 16: Support Article no custom publishedAt');
+const supportArticleSection = mapContent.match(
+  /### Support Article[\s\S]*?(?=### [A-Z]|## )/
+);
+// Check that publishedAt does not appear as a field definition in the Support Article table
+const publishedAtAsField =
+  supportArticleSection && supportArticleSection[0].match(/\| publishedAt \|/);
+check(
+  'Support Article has no custom publishedAt field',
+  !publishedAtAsField,
+  'publishedAt appears as field in Support Article table — should use Strapi D&P system field only'
+);
+const usesStrapiDraftPublish =
+  supportArticleSection && supportArticleSection[0].includes('Draft & Publish');
+check(
+  'Support Article uses Strapi Draft & Publish system fields',
+  !!usesStrapiDraftPublish,
+  'Draft & Publish not mentioned in Support Article section'
+);
+
+// ---------------------------------------------------------------------------
+// Test 17: Support Article slug uniqueness scope (Phase 8B-A)
+// ---------------------------------------------------------------------------
+console.log('\nTest 17: Support Article slug uniqueness scope');
+check(
+  'Slug uniqueness = site+locale+slug',
+  mapContent.includes('site + locale + slug'),
+  'slug uniqueness scope not defined as site+locale+slug'
+);
+check(
+  'Slug NOT global unique',
+  mapContent.includes('NOT global unique'),
+  'slug still marked as global unique — should be site+locale+slug scoped'
+);
+
+// ---------------------------------------------------------------------------
+// Test 18: Support Article target route confirmed (Phase 8B-A)
+// ---------------------------------------------------------------------------
+console.log('\nTest 18: Support Article target route confirmed');
+check(
+  'Support detail target = /blogs/support/<article-handle>/',
+  mapContent.includes('/blogs/support/<article-handle>/'),
+  'target route /blogs/support/<article-handle>/ not found in document'
+);
+check(
+  'Support listing target = /blogs/support/',
+  mapContent.includes('/blogs/support/'),
+  'target route /blogs/support/ not found in document'
+);
 
 // ---------------------------------------------------------------------------
 // Summary
