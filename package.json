@@ -15,6 +15,7 @@
     "test:smoke": "start-server-and-test preview:worker http-get://127.0.0.1:4321 test:smoke:http",
     "deploy": "pnpm build && wrangler deploy --config dist-out/server/wrangler.json",
     "test:cms": "node scripts/test-cms-integration.mjs",
+    "test:cms-probe-contract": "node scripts/test-cms-probe-contract.mjs",
     "test:product": "node scripts/test-product-ssr.mjs",
     "test:brand-i18n": "node scripts/test-brand-i18n.mjs",
     "test:generic": "node scripts/test-generic-template.mjs",

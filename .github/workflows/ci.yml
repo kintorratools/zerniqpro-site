@@ -37,6 +37,9 @@ jobs:
       - name: CMS integration tests
         run: pnpm test:cms
 
+      - name: CMS Probe Contract Tests
+        run: pnpm test:cms-probe-contract
+
       - name: Product SSR tests
         run: pnpm test:product
 

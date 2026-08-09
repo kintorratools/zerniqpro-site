@@ -126,7 +126,7 @@ for (const route of ROUTES) {
 
       const body = await res.json();
 
-      // Accept both 'ok' (CMS configured) and 'unconfigured'/'error' (CMS not configured/available)
+      // Accept 'ok', 'unconfigured', 'error'. Timeout (status=timeout) is treated as FAIL.
       if (
         body.status !== 'ok' &&
         body.status !== 'unconfigured' &&
@@ -138,12 +138,80 @@ for (const route of ROUTES) {
         failed = true;
         continue;
       }
-      if (typeof body.siteKey !== 'string' || body.siteKey.length === 0) {
-        console.error(
-          `FAIL ${route.path} -> siteKey is not a non-empty string: "${body.siteKey}"`
-        );
-        failed = true;
-        continue;
+
+      if (body.status === 'ok') {
+        // CMS is reachable and configured — site data is nested in body.site
+        if (
+          typeof body.cmsReachable !== 'boolean' ||
+          body.cmsReachable !== true
+        ) {
+          console.error(`FAIL ${route.path} -> cmsReachable is not true`);
+          failed = true;
+          continue;
+        }
+        const s = body.site;
+        if (!s || typeof s !== 'object') {
+          console.error(`FAIL ${route.path} -> site object is missing`);
+          failed = true;
+          continue;
+        }
+        if (typeof s.key !== 'string' || s.key.length === 0) {
+          console.error(
+            `FAIL ${route.path} -> site.key is not a non-empty string: "${s.key}"`
+          );
+          failed = true;
+          continue;
+        }
+        if (typeof s.name !== 'string') {
+          console.error(
+            `FAIL ${route.path} -> site.name is not a string: "${s.name}"`
+          );
+          failed = true;
+          continue;
+        }
+        if (typeof s.domain !== 'string' || !s.domain.startsWith('http')) {
+          console.error(
+            `FAIL ${route.path} -> site.domain is not an http/https URL: "${s.domain}"`
+          );
+          failed = true;
+          continue;
+        }
+        if (
+          typeof s.defaultLocale !== 'string' ||
+          s.defaultLocale.length === 0
+        ) {
+          console.error(
+            `FAIL ${route.path} -> site.defaultLocale is not a non-empty string: "${s.defaultLocale}"`
+          );
+          failed = true;
+          continue;
+        }
+        if (typeof s.brandKey !== 'string' || s.brandKey.length === 0) {
+          console.error(
+            `FAIL ${route.path} -> site.brandKey is not a non-empty string: "${s.brandKey}"`
+          );
+          failed = true;
+          continue;
+        }
+      } else {
+        // status is 'unconfigured' or 'error' — expects top-level siteKey
+        if (
+          typeof body.cmsReachable !== 'boolean' ||
+          body.cmsReachable !== false
+        ) {
+          console.error(
+            `FAIL ${route.path} -> cmsReachable is not false for status=${body.status}`
+          );
+          failed = true;
+          continue;
+        }
+        if (typeof body.siteKey !== 'string' || body.siteKey.length === 0) {
+          console.error(
+            `FAIL ${route.path} -> siteKey is not a non-empty string: "${body.siteKey}"`
+          );
+          failed = true;
+          continue;
+        }
       }
 
       console.log(
