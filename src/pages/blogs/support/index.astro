@@ -1,0 +1,167 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import CardBlogSupport from '@components/ui/cards/CardBlogSupport.astro';
+import CardBlogRecentSupport from '@components/ui/cards/CardBlogRecentSupport.astro';
+import CardInsightSupport from '@components/ui/cards/CardInsightSupport.astro';
+import { getSupportArticles, getSupportPage } from '@lib/cms/support-resolver';
+import type { SupportArticleViewModel } from '@lib/cms/support-models';
+import { getRuntimeConfig } from '@lib/runtime/site-runtime';
+import { resolveGlobalSeo } from '@lib/cms/seo';
+import { SITE } from '@data/constants';
+
+export const prerender = false;
+
+// ── Fetch runtime config ──
+let runtime;
+try {
+  runtime = await getRuntimeConfig();
+} catch {
+  runtime = null;
+}
+
+const siteKey = runtime?.site?.key ?? 'store-us';
+const locale = 'en';
+const siteDomain = runtime?.site?.domain || SITE.url;
+
+// ── Fetch CMS Data ──
+const allArticles: SupportArticleViewModel[] = await getSupportArticles(
+  siteKey,
+  locale
+);
+const supportPage = await getSupportPage(siteKey, locale);
+
+// ── Categorize articles ──
+const blogAndSupportArticles = allArticles
+  .filter(a => a.category === 'blog' || a.category === 'support')
+  .sort((a, b) => {
+    const dateA = a.displayDate ? new Date(a.displayDate).getTime() : 0;
+    const dateB = b.displayDate ? new Date(b.displayDate).getTime() : 0;
+    return dateB - dateA;
+  });
+
+const insightArticles = allArticles.filter(a => a.category === 'insight');
+
+const mostRecentArticle =
+  blogAndSupportArticles.length > 0 ? blogAndSupportArticles[0] : null;
+const otherArticles = blogAndSupportArticles.slice(1);
+
+// ── Page content from CMS with fallbacks ──
+const title = supportPage?.title || 'Your Gateway to Construction Excellence';
+const subTitle =
+  supportPage?.subtitle ||
+  'Explore the latest news, tips, and insights from Acme to enhance your construction projects.';
+const insightsTitle = supportPage?.insightsTitle || 'Insights';
+const insightsSubtitle =
+  supportPage?.insightsSubtitle ||
+  'Stay up-to-date with the latest trends and developments in the construction industry.';
+const emptyArticlesText =
+  supportPage?.emptyArticlesText || 'No articles yet. Check back soon.';
+const emptyInsightsText =
+  supportPage?.emptyInsightsText || 'No insights yet. Check back soon.';
+
+// ── SEO ──
+const pageSeo = {
+  title: supportPage?.seo?.title || undefined,
+  description: supportPage?.seo?.description || undefined,
+};
+const globalSeo = runtime
+  ? resolveGlobalSeo(pageSeo, runtime)
+  : {
+      title: `Support | ${SITE.title}`,
+      description:
+        'Stay up-to-date with the latest trends and developments in the construction industry.',
+    };
+---
+
+<MainLayout
+  title={globalSeo.title}
+  customDescription={globalSeo.description}
+  customOgTitle={globalSeo.title}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${siteDomain}/blogs/support`,
+    url: `${siteDomain}/blogs/support`,
+    name: globalSeo.title,
+    description: globalSeo.description,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: runtime?.brand?.name || SITE.title,
+      description: runtime?.brand?.seo?.description || SITE.description,
+    },
+    inLanguage: 'en-US',
+  }}
+>
+  <section
+    class="mx-auto max-w-[85rem] space-y-8 px-4 pt-16 sm:px-6 lg:px-8 2xl:max-w-full"
+  >
+    <div class="mx-auto max-w-3xl text-left sm:text-center">
+      <h1
+        class="block text-4xl font-bold tracking-tight text-balance text-neutral-800 md:text-5xl lg:text-6xl dark:text-neutral-200"
+      >
+        {title}
+      </h1>
+
+      <p
+        class="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-400"
+      >
+        {subTitle}
+      </p>
+    </div>
+  </section>
+
+  <section
+    class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full"
+  >
+    {
+      otherArticles.length === 0 ? (
+        <p class="text-center text-neutral-600 dark:text-neutral-400">
+          {emptyArticlesText}
+        </p>
+      ) : (
+        <div class="grid gap-6 lg:grid-cols-2">
+          {otherArticles.map(article => (
+            <CardBlogSupport article={article} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  {
+    mostRecentArticle && (
+      <section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
+        <CardBlogRecentSupport article={mostRecentArticle} />
+      </section>
+    )
+  }
+
+  <section
+    class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full"
+  >
+    <div class="mx-auto mb-10 max-w-2xl text-center lg:mb-14">
+      <h2
+        class="text-2xl font-bold text-neutral-800 md:text-4xl md:leading-tight dark:text-neutral-200"
+      >
+        {insightsTitle}
+      </h2>
+      <p class="mt-1 text-pretty text-neutral-600 dark:text-neutral-400">
+        {insightsSubtitle}
+      </p>
+    </div>
+    {
+      insightArticles.length === 0 ? (
+        <p class="text-center text-neutral-600 dark:text-neutral-400">
+          {emptyInsightsText}
+        </p>
+      ) : (
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {insightArticles.map(article => (
+            <CardInsightSupport article={article} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</MainLayout>

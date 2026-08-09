@@ -1,0 +1,81 @@
+---
+import { formatDate } from '@utils/utils';
+import type { SupportArticleViewModel } from '@lib/cms/support-models';
+import fallbackImg from '@images/blog/post-1.avif';
+import fallbackAuthorImg from '@images/blog/jacob.avif';
+
+interface Props {
+  article: SupportArticleViewModel;
+  locale?: string;
+}
+
+const { article, locale = 'en' } = Astro.props;
+
+const fallbackImageSrc = fallbackImg.src;
+const fallbackAuthorSrc = fallbackAuthorImg.src;
+
+const imageSrc = article.cardImage?.url || fallbackImageSrc;
+const imageAlt = article.cardImage?.alt || article.cardImageAlt || '';
+const authorImgSrc = article.authorImage?.url || fallbackAuthorSrc;
+const authorImgAlt = article.authorImage?.alt || article.authorImageAlt || '';
+const prefix =
+  locale && locale !== 'en' ? `/${locale}/blogs/support/` : '/blogs/support/';
+const displayDate = article.displayDate
+  ? formatDate(new Date(article.displayDate))
+  : '';
+---
+
+<a
+  class="group relative block rounded-xl ring-zinc-500 outline-hidden transition duration-500 focus-visible:ring-3 dark:ring-zinc-200 dark:focus:outline-hidden"
+  href={`${prefix}${article.slug}/`}
+  data-astro-prefetch
+>
+  <div
+    class="relative h-[350px] w-full shrink-0 overflow-hidden rounded-xl before:absolute before:inset-x-0 before:z-1 before:size-full before:bg-linear-to-t before:from-neutral-900/[.7]"
+  >
+    <img
+      class="absolute start-0 top-0 size-full object-cover transition duration-500 group-hover:scale-110"
+      src={imageSrc}
+      alt={imageAlt}
+      draggable="false"
+      loading="lazy"
+    />
+  </div>
+
+  <div class="absolute inset-x-0 top-0 z-10">
+    <div class="flex h-full flex-col p-4 sm:p-6">
+      <div class="flex items-center">
+        <div class="shrink-0">
+          <img
+            class="size-[46px] rounded-full border-2 border-neutral-50"
+            src={authorImgSrc}
+            alt={authorImgAlt}
+            draggable="false"
+          />
+        </div>
+
+        <div class="ms-2.5 sm:ms-4">
+          <h4 class="font-bold text-neutral-50">
+            {article.author}
+          </h4>
+          <p class="text-xs text-neutral-50/[.8]">
+            {displayDate}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute inset-x-0 bottom-0 z-10">
+    <div class="flex h-full flex-col p-4 sm:p-6">
+      <h3
+        class="text-lg font-bold text-balance text-neutral-50 group-hover:text-neutral-50/[.8] sm:text-3xl"
+      >
+        {article.title}
+      </h3>
+      <p class="mt-2 text-pretty text-neutral-50/[.8]">
+        {article.excerpt}
+      </p>
+    </div>
+  </div>
+</a>

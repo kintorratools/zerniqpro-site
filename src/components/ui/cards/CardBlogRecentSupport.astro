@@ -1,0 +1,78 @@
+---
+import type { SupportArticleViewModel } from '@lib/cms/support-models';
+import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
+import fallbackImg from '@images/blog/post-1.avif';
+import fallbackAuthorImg from '@images/blog/jacob.avif';
+
+interface Props {
+  article: SupportArticleViewModel;
+  locale?: string;
+}
+
+const { article, locale = 'en' } = Astro.props;
+
+const fallbackImageSrc = fallbackImg.src;
+const fallbackAuthorSrc = fallbackAuthorImg.src;
+
+const imageSrc = article.cardImage?.url || fallbackImageSrc;
+const imageAlt = article.cardImage?.alt || article.cardImageAlt || '';
+const authorImgSrc = article.authorImage?.url || fallbackAuthorSrc;
+const authorImgAlt = article.authorImage?.alt || article.authorImageAlt || '';
+const prefix =
+  locale && locale !== 'en' ? `/${locale}/blogs/support/` : '/blogs/support/';
+---
+
+<div class="grid gap-8 sm:grid-cols-2 sm:items-center">
+  <div class="sm:order-2">
+    <div class="relative rounded-lg pt-[50%] sm:pt-[100%]">
+      <img
+        class="absolute start-0 top-0 size-full rounded-xl object-cover"
+        src={imageSrc}
+        alt={imageAlt}
+        draggable="false"
+        loading="lazy"
+      />
+    </div>
+  </div>
+
+  <div class="sm:order-1">
+    <h2
+      class="text-2xl font-bold tracking-tight text-balance text-neutral-800 md:text-3xl lg:text-4xl lg:leading-tight xl:text-5xl xl:leading-tight dark:text-neutral-200"
+    >
+      <a
+        class="ring-zinc-500 outline-hidden transition duration-300 hover:text-orange-400 focus-visible:ring-3 dark:text-neutral-300 dark:ring-zinc-200 dark:hover:text-neutral-50 dark:focus:outline-hidden"
+        href={`${prefix}${article.slug}/`}
+      >
+        {article.excerpt}
+      </a>
+    </h2>
+
+    <div class="mt-6 flex items-center sm:mt-10">
+      <div class="shrink-0">
+        <img
+          class="size-10 rounded-full sm:h-14 sm:w-14"
+          src={authorImgSrc}
+          alt={authorImgAlt}
+          draggable="false"
+        />
+      </div>
+
+      <div class="ms-3 sm:ms-4">
+        <p class="font-bold text-neutral-800 sm:mb-1 dark:text-neutral-200">
+          {article.author}
+        </p>
+        <p class="text-xs text-neutral-500">
+          {article.authorRole}
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <PrimaryCTA
+        url={`${prefix}${article.slug}/`}
+        title={locale === 'fr' ? 'Lire plus' : 'Read More'}
+        data-astro-prefetch
+      />
+    </div>
+  </div>
+</div>

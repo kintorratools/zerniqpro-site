@@ -1,0 +1,191 @@
+---
+import type { SafeBlock } from '@lib/cms/support-models';
+
+export interface Props {
+  blocks: SafeBlock[];
+  class?: string;
+}
+
+const { blocks, class: className } = Astro.props;
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function getBlockText(block: SafeBlock): string {
+  if (block.text) return block.text;
+  if (block.children) {
+    return block.children.map(getBlockText).join('');
+  }
+  return '';
+}
+
+function hasLeadingNewline(block: SafeBlock): boolean {
+  if (block.text && block.text.startsWith('\n')) return true;
+  if (block.children && block.children.length > 0) {
+    return hasLeadingNewline(block.children[0]);
+  }
+  return false;
+}
+
+function trimLeadingNewline(text: string | undefined): string {
+  if (!text) return '';
+  return text.replace(/^\n+/, '');
+}
+---
+
+{
+  /* SafeBlocksRenderer — renders CMS block JSON as real Astro DOM.
+     NEVER uses set:html. Every piece of content is rendered as Astro elements. */
+}
+
+<div
+  class={className ||
+    'prose prose-lg prose-neutral dark:prose-invert max-w-none text-pretty'}
+>
+  {
+    blocks.map(block => {
+      // paragraph
+      if (block.type === 'paragraph') {
+        return (
+          <p>
+            {(block.children || []).map(child => {
+              if (child.type === 'text') {
+                const trimmed = hasLeadingNewline(child)
+                  ? trimLeadingNewline(child.text)
+                  : child.text;
+                return <>{trimmed || ''}</>;
+              }
+              if (child.type === 'line-break') {
+                return <br />;
+              }
+              return null;
+            })}
+          </p>
+        );
+      }
+      // heading (h1-h6)
+      if (block.type === 'heading') {
+        const Tag = `h${block.level || 2}` as
+          'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+        const text = getBlockText(block);
+        return (
+          <Tag id={slugify(text)}>
+            {(block.children || []).map(child => {
+              if (child.type === 'text') {
+                const trimmed = hasLeadingNewline(child)
+                  ? trimLeadingNewline(child.text)
+                  : child.text;
+                return <>{trimmed || ''}</>;
+              }
+              if (child.type === 'line-break') {
+                return <br />;
+              }
+              return null;
+            })}
+          </Tag>
+        );
+      }
+      // list
+      if (block.type === 'list') {
+        const Tag = block.format === 'ordered' ? 'ol' : 'ul';
+        return (
+          <Tag class="list-disc space-y-1 pl-6">
+            {(block.children || []).map(item => {
+              if (item.type !== 'list-item') return null;
+              return (
+                <li>
+                  {(item.children || []).map(child => {
+                    if (child.type === 'text') {
+                      const trimmed = hasLeadingNewline(child)
+                        ? trimLeadingNewline(child.text)
+                        : child.text;
+                      if (child.bold && child.italic) {
+                        return (
+                          <strong>
+                            <em>{trimmed || ''}</em>
+                          </strong>
+                        );
+                      }
+                      if (child.bold) return <strong>{trimmed || ''}</strong>;
+                      if (child.italic) return <em>{trimmed || ''}</em>;
+                      return <>{trimmed || ''}</>;
+                    }
+                    if (child.type === 'link') {
+                      const linkText = getBlockText(child);
+                      return (
+                        <a
+                          href={child.url || '#'}
+                          class="text-orange-400 underline hover:text-orange-500 dark:text-orange-300 dark:hover:text-orange-400"
+                        >
+                          {linkText}
+                        </a>
+                      );
+                    }
+                    if (child.type === 'line-break') {
+                      return <br />;
+                    }
+                    return null;
+                  })}
+                </li>
+              );
+            })}
+          </Tag>
+        );
+      }
+      // image
+      if (block.type === 'image') {
+        return (
+          <figure class="my-6">
+            <img
+              src={block.url || ''}
+              alt={getBlockText(block) || ''}
+              class="rounded-xl"
+              loading="lazy"
+            />
+          </figure>
+        );
+      }
+      // quote / blockquote
+      if (block.type === 'quote') {
+        return (
+          <blockquote class="border-l-4 border-orange-400 pl-4 italic">
+            {(block.children || []).map(child => {
+              if (child.type === 'text') {
+                const trimmed = hasLeadingNewline(child)
+                  ? trimLeadingNewline(child.text)
+                  : child.text;
+                return <>{trimmed || ''}</>;
+              }
+              if (child.type === 'line-break') {
+                return <br />;
+              }
+              return null;
+            })}
+          </blockquote>
+        );
+      }
+      // code block
+      if (block.type === 'code') {
+        return (
+          <pre class="overflow-x-auto rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800">
+            <code>
+              {(block.children || []).map(child => {
+                if (child.type === 'text') return child.text || '';
+                return null;
+              })}
+            </code>
+          </pre>
+        );
+      }
+      // Default: throw in dev, skip in prod
+      if (import.meta.env.DEV) {
+        throw new Error(`Unknown block type: ${block.type}`);
+      }
+      return null;
+    })
+  }
+</div>
