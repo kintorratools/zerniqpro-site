@@ -55,6 +55,9 @@ jobs:
       - name: Runtime hygiene tests
         run: pnpm test:runtime-hygiene
 
+      - name: Page template map tests
+        run: pnpm test:page-map
+
       - name: Theme preservation tests
         run: pnpm test:theme-preservation
 
