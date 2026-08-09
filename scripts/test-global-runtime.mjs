@@ -100,7 +100,7 @@ const MOCK_NAVIGATION = {
   id: 1,
   documentId: 'nav-001',
   site: { key: 'store-us' },
-  locale: { code: 'en' },
+  locale: 'en',
   items: [
     { id: 1, label: 'Home', href: '/', order: 1, visible: true },
     { id: 2, label: 'Products', href: '/products', order: 2, visible: true },
@@ -117,7 +117,7 @@ const MOCK_FOOTER = {
   id: 1,
   documentId: 'ftr-001',
   site: { key: 'store-us' },
-  locale: { code: 'en' },
+  locale: 'en',
   columns: [
     {
       id: 1,

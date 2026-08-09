@@ -11,7 +11,7 @@ export interface NavigationRecord {
   id: number;
   documentId: string;
   site?: { key?: string } | null;
-  locale?: { code?: string } | null;
+  locale?: string | null;
   items: NavigationItemRecord[];
   createdAt?: string;
   updatedAt?: string;

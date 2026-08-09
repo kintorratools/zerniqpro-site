@@ -29,12 +29,7 @@ const navigationRecordSchema = z.object({
     })
     .nullable()
     .optional(),
-  locale: z
-    .object({
-      code: z.string().optional(),
-    })
-    .nullable()
-    .optional(),
+  locale: z.string().trim().nullable().optional(),
   items: z.array(navigationItemRecordSchema),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),

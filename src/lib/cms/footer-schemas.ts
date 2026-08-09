@@ -42,12 +42,7 @@ const footerRecordSchema = z.object({
     })
     .nullable()
     .optional(),
-  locale: z
-    .object({
-      code: z.string().optional(),
-    })
-    .nullable()
-    .optional(),
+  locale: z.string().trim().nullable().optional(),
   columns: z.array(footerColumnRecordSchema).nullable().optional(),
   copyright: nullableString,
   legalLinks: z.array(footerLinkRecordSchema).nullable().optional(),

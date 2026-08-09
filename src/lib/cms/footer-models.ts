@@ -28,7 +28,7 @@ export interface FooterRecord {
   id: number;
   documentId: string;
   site?: { key?: string } | null;
-  locale?: { code?: string } | null;
+  locale?: string | null;
   columns?: FooterColumnRecord[] | null;
   copyright?: string | null;
   legalLinks?: FooterLinkRecord[] | null;
