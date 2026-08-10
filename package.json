@@ -28,6 +28,7 @@
     "test:homepage-media": "node scripts/test-homepage-media.mjs",
     "test:homepage-media-render": "node scripts/test-homepage-media-render.mjs",
     "test:page-map": "node scripts/test-page-template-map.mjs",
+    "test:product-preservation": "node scripts/test-product-preservation.mjs",
     "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist-out/server/wrangler.json"
   },
   "dependencies": {
