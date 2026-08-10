@@ -109,18 +109,20 @@ const jsonLdString = JSON.stringify({
 
       {product.summary && <p>{product.summary}</p>}
 
-      {product.introText && (
-        <section>
-          <p>{product.introText}</p>
-          {product.mainImage?.url && (
-            <img
-              src={product.mainImage.url}
-              alt={product.mainImageAlt || ''}
-              style="max-width:100%;height:auto;aspect-ratio:16/9"
-            />
-          )}
-        </section>
-      )}
+      {
+        product.introText && (
+          <section>
+            <p>{product.introText}</p>
+            {product.mainImage?.url && (
+              <img
+                src={product.mainImage.url}
+                alt={product.mainImageAlt || ''}
+                style="max-width:100%;height:auto;aspect-ratio:16/9"
+              />
+            )}
+          </section>
+        )
+      }
 
       {
         product.descriptionItems.length > 0 && (
@@ -133,7 +135,7 @@ const jsonLdString = JSON.stringify({
               <p>{product.longDescriptionSubtitle}</p>
             )}
             <dl>
-              {product.descriptionItems.map((item) => (
+              {product.descriptionItems.map(item => (
                 <div>
                   <dt>{item.title}</dt>
                   <dd>{item.description}</dd>
@@ -151,7 +153,7 @@ const jsonLdString = JSON.stringify({
             <h2>{product.specificationsTabLabel}</h2>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
               <div>
-                {product.specificationsLeft.map((item) => (
+                {product.specificationsLeft.map(item => (
                   <div>
                     <dt>{item.title}</dt>
                     <dd>{item.description}</dd>
@@ -159,7 +161,7 @@ const jsonLdString = JSON.stringify({
                 ))}
               </div>
               <div>
-                {product.specificationsRight.map((item) => (
+                {product.specificationsRight.map(item => (
                   <div>
                     <dt>{item.title}</dt>
                     <dd>{item.description}</dd>
@@ -171,15 +173,17 @@ const jsonLdString = JSON.stringify({
         )
       }
 
-      {product.tableData && product.tableData.length > 0 && (
-        <section>
-          {product.tableData.map((row) => (
-            <div>
-              <pre>{JSON.stringify(row, null, 2)}</pre>
-            </div>
-          ))}
-        </section>
-      )}
+      {
+        product.tableData && product.tableData.length > 0 && (
+          <section>
+            {product.tableData.map(row => (
+              <div>
+                <pre>{JSON.stringify(row, null, 2)}</pre>
+              </div>
+            ))}
+          </section>
+        )
+      }
 
       {
         (product.blueprintFirst?.url || product.blueprintSecond?.url) && (
@@ -203,9 +207,11 @@ const jsonLdString = JSON.stringify({
         )
       }
 
-      {product.ctaLabel && (
-        <a href={product.ctaUrl || '#'}>{product.ctaLabel}</a>
-      )}
+      {
+        product.ctaLabel && (
+          <a href={product.ctaUrl || '#'}>{product.ctaLabel}</a>
+        )
+      }
     </main>
   </body>
 </html>

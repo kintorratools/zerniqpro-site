@@ -100,9 +100,16 @@ const VALID_PRODUCT = {
   name: 'XP600 DTF Printer',
   summary: 'Professional direct-to-film printing solution',
   displayOrder: 1,
-  introText: 'The XP600 DTF Printer delivers professional-grade direct-to-film transfers for any fabric type.',
+  introText:
+    'The XP600 DTF Printer delivers professional-grade direct-to-film transfers for any fabric type.',
   cardImage: null,
-  mainImage: { url: 'https://store-us.example/images/xp600-hero.png', alternativeText: 'XP600 DTF Printer in action', width: 1200, height: 800, mime: 'image/png' },
+  mainImage: {
+    url: 'https://store-us.example/images/xp600-hero.png',
+    alternativeText: 'XP600 DTF Printer in action',
+    width: 1200,
+    height: 800,
+    mime: 'image/png',
+  },
   mainImageAlt: 'XP600 DTF Printer in action',
   descriptionTabLabel: 'Description',
   specificationsTabLabel: 'Specifications',
@@ -112,9 +119,17 @@ const VALID_PRODUCT = {
   ctaLabel: 'Order Now',
   ctaUrl: 'https://store-us.example/order',
   descriptionItems: [
-    { id: 1, title: 'High Resolution', description: '1440 DPI printing for crisp details' },
+    {
+      id: 1,
+      title: 'High Resolution',
+      description: '1440 DPI printing for crisp details',
+    },
     { id: 2, title: 'Fast Output', description: 'Up to 3 sqm per hour' },
-    { id: 3, title: 'Versatile', description: 'Works with cotton, polyester, blends' },
+    {
+      id: 3,
+      title: 'Versatile',
+      description: 'Works with cotton, polyester, blends',
+    },
   ],
   specificationsLeft: [
     { id: 10, title: 'Print Head', description: 'XP600' },

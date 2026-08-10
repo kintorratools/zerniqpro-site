@@ -168,7 +168,11 @@ async function main() {
             frListingData = visibleFrProducts;
             check('[FR Listing] 4/4 products', true, `names OK`);
           } else {
-            check('[FR Listing] 4/4 products', false, `got ${visibleFrCount} products`);
+            check(
+              '[FR Listing] 4/4 products',
+              false,
+              `got ${visibleFrCount} products`
+            );
           }
         }
       } catch (err) {
