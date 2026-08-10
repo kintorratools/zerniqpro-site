@@ -83,8 +83,12 @@ export async function getSupportArticleBySlug(
     const cmsOrigin = getCmsConfig().baseUrl;
     if (!cmsOrigin) return article;
     return normalizeArticleMediaUrls(article, cmsOrigin);
-  } catch {
-    return null;
+  } catch (err) {
+    // CMS errors (400, 500, timeout) must NOT be mapped to 404;
+    // they should surface so the caller can distinguish "not found" from "backend error".
+    // Empty data (valid 200 with data:[]) is already handled in the try block.
+    console.error('[support-resolver] Failed to fetch article by slug:', err);
+    throw err;
   }
 }
 

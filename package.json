@@ -14,6 +14,7 @@
     "test:smoke:http": "node scripts/smoke.mjs",
     "test:smoke": "start-server-and-test preview:worker http-get://127.0.0.1:4321 test:smoke:http",
     "test:support-runtime": "node scripts/test-support-runtime.mjs",
+    "test:support-live": "node scripts/test-support-live.mjs",
     "deploy": "pnpm build && wrangler deploy --config dist-out/server/wrangler.json",
     "test:cms": "node scripts/test-cms-integration.mjs",
     "test:cms-probe-contract": "node scripts/test-cms-probe-contract.mjs",

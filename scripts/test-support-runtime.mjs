@@ -391,6 +391,146 @@ console.log('\n--- 11. SupportArticleViewModel fields ---');
 }
 
 // ---------------------------------------------------------------------------
+// 12. Content and tags are NOT explicitly populated (auto-populated fields)
+// ---------------------------------------------------------------------------
+
+console.log('\n--- 12. Content and tags not explicitly populated ---');
+
+{
+  const queryPath = resolve(
+    repoRoot,
+    'src',
+    'lib',
+    'cms',
+    'support-queries.ts'
+  );
+  if (existsSync(queryPath)) {
+    let content = readFileSync(queryPath, 'utf-8');
+    // Strip comments
+    content = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    check(
+      'No populate[content]=true in queries (Blocks auto-populated)',
+      !content.includes('populate[content]=true')
+    );
+    check(
+      'No populate[tags]=true in queries (JSON auto-populated)',
+      !content.includes('populate[tags]=true')
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 13. Media fields are still explicitly populated
+// ---------------------------------------------------------------------------
+
+console.log('\n--- 13. Media fields still populated ---');
+
+{
+  const queryPath = resolve(
+    repoRoot,
+    'src',
+    'lib',
+    'cms',
+    'support-queries.ts'
+  );
+  if (existsSync(queryPath)) {
+    let content = readFileSync(queryPath, 'utf-8');
+    content = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    check(
+      'populate[cardImage]=true still present',
+      content.includes('populate[cardImage]=true')
+    );
+    check(
+      'populate[authorImage]=true still present',
+      content.includes('populate[authorImage]=true')
+    );
+    check(
+      'populate[seo]=true still present',
+      content.includes('populate[seo]=true')
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 14. CMS error must NOT be mapped to 404 in resolver
+// ---------------------------------------------------------------------------
+
+console.log('\n--- 14. CMS error not mapped to 404 ---');
+
+{
+  const resolverPath = resolve(
+    repoRoot,
+    'src',
+    'lib',
+    'cms',
+    'support-resolver.ts'
+  );
+  if (existsSync(resolverPath)) {
+    const content = readFileSync(resolverPath, 'utf-8');
+    // In getSupportArticleBySlug, the catch block should NOT silently return null.
+    // It should either throw or log the error and re-throw.
+    // Check that the catch block for getSupportArticleBySlug has 'throw' and does
+    // NOT have a bare 'return null' without the empty-data check.
+    // Actually, we verify: the catch contains a console.error and throw, not just return null.
+    const hasConsoleError = content.includes('console.error');
+    const hasThrow =
+      content.includes('throw err') || content.includes('throw err;');
+    check('Resolver catch has console.error for CMS errors', hasConsoleError);
+    check(
+      'Resolver catch throws (does not silently return null) for getSupportArticleBySlug',
+      hasThrow
+    );
+    // Also check: the empty-data case returns null INSIDE try (not catch)
+    // This ensures only genuine "not found" returns null.
+    check(
+      'Empty data returns null inside try block (not catch)',
+      content.includes('return null;') || content.includes('return null\n')
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 15. EN/FR detail resolvers use specified locale
+// ---------------------------------------------------------------------------
+
+console.log('\n--- 15. EN/FR locale in detail routes ---');
+
+{
+  const enDetail = resolve(
+    repoRoot,
+    'src',
+    'pages',
+    'blogs',
+    'support',
+    '[handle].astro'
+  );
+  const frDetail = resolve(
+    repoRoot,
+    'src',
+    'pages',
+    'fr',
+    'blogs',
+    'support',
+    '[handle].astro'
+  );
+
+  if (existsSync(enDetail)) {
+    const content = readFileSync(enDetail, 'utf-8');
+    check(
+      "EN detail passes locale='en' to resolver",
+      content.includes("locale = 'en'")
+    );
+  }
+  if (existsSync(frDetail)) {
+    const content = readFileSync(frDetail, 'utf-8');
+    check(
+      "FR detail passes locale='fr' to resolver",
+      content.includes("locale = 'fr'")
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 

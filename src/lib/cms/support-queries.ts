@@ -18,11 +18,10 @@ export function buildSupportArticlesQuery(
   parts.push('pagination[pageSize]=100');
 
   // Populate media and nested fields explicitly
+  // content (Blocks) and tags (JSON) are auto-populated by Strapi 5 — do NOT explicitly populate
   parts.push('populate[cardImage]=true');
   parts.push('populate[authorImage]=true');
-  parts.push('populate[content]=true');
   parts.push('populate[seo]=true');
-  parts.push('populate[tags]=true');
 
   return `/api/support-articles?${parts.join('&')}`;
 }
@@ -43,11 +42,10 @@ export function buildSupportArticleBySlugQuery(
   parts.push('status=published');
   parts.push('pagination[pageSize]=1');
 
+  // content (Blocks) and tags (JSON) are auto-populated by Strapi 5
   parts.push('populate[cardImage]=true');
   parts.push('populate[authorImage]=true');
-  parts.push('populate[content]=true');
   parts.push('populate[seo]=true');
-  parts.push('populate[tags]=true');
 
   return `/api/support-articles?${parts.join('&')}`;
 }
