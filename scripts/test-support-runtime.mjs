@@ -70,9 +70,9 @@ for (const file of newFiles) {
   let content = readFileSync(fullPath, 'utf-8');
   // Strip JS/TS comments (// and /* */) and Astro comments ({/* */})
   content = content
-    .replace(/\/\/.*$/gm, '')               // single-line JS comments
-    .replace(/\/\*[\s\S]*?\*\//g, '')       // multi-line JS comments
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');  // Astro comment blocks
+    .replace(/\/\/.*$/gm, '') // single-line JS comments
+    .replace(/\/\*[\s\S]*?\*\//g, '') // multi-line JS comments
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, ''); // Astro comment blocks
   const hasSetHtml = content.includes('set:html');
   check(`No set:html in ${file}`, !hasSetHtml);
 }
@@ -106,14 +106,21 @@ for (const file of cmsFiles) {
 console.log('\n--- 4. No populate=* in queries ---');
 
 {
-  const queryPath = resolve(repoRoot, 'src', 'lib', 'cms', 'support-queries.ts');
+  const queryPath = resolve(
+    repoRoot,
+    'src',
+    'lib',
+    'cms',
+    'support-queries.ts'
+  );
   if (existsSync(queryPath)) {
     let content = readFileSync(queryPath, 'utf-8');
     // Strip comments so we only check actual code
-    content = content
-      .replace(/\/\/.*$/gm, '')
-      .replace(/\/\*[\s\S]*?\*\//g, '');
-    check('No populate=* in support-queries.ts', !content.includes('populate=*'));
+    content = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    check(
+      'No populate=* in support-queries.ts',
+      !content.includes('populate=*')
+    );
   }
 }
 
@@ -133,11 +140,17 @@ console.log('\n--- 5. Category template mapping ---');
   );
   if (existsSync(resolverPath)) {
     const content = readFileSync(resolverPath, 'utf-8');
-    check('getTemplateForCategory function exists', content.includes('getTemplateForCategory'));
-    check("Category 'insight' maps to 'insight'", content.includes("'insight'"));
+    check(
+      'getTemplateForCategory function exists',
+      content.includes('getTemplateForCategory')
+    );
+    check(
+      "Category 'insight' maps to 'insight'",
+      content.includes("'insight'")
+    );
     check(
       "Category 'blog'/'support' maps to 'blog'",
-      content.includes('return \'blog\'') || content.includes('return "blog"')
+      content.includes("return 'blog'") || content.includes('return "blog"')
     );
   }
 }

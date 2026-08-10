@@ -58,6 +58,18 @@ jobs:
       - name: Page template map tests
         run: pnpm test:page-map
 
+      - name: Homepage runtime tests
+        run: pnpm test:homepage-runtime
+
+      - name: Homepage media contract tests
+        run: pnpm test:homepage-media
+
+      - name: Homepage media render tests
+        run: pnpm test:homepage-media-render
+
+      - name: Support runtime tests
+        run: pnpm test:support-runtime
+
       - name: Theme preservation tests
         run: pnpm test:theme-preservation
 
