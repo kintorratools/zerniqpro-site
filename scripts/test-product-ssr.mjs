@@ -99,48 +99,39 @@ const VALID_PRODUCT = {
   handle: 'xp600-dtf-printer',
   name: 'XP600 DTF Printer',
   summary: 'Professional direct-to-film printing solution',
+  displayOrder: 1,
+  introText: 'The XP600 DTF Printer delivers professional-grade direct-to-film transfers for any fabric type.',
+  cardImage: null,
+  mainImage: { url: 'https://store-us.example/images/xp600-hero.png', alternativeText: 'XP600 DTF Printer in action', width: 1200, height: 800, mime: 'image/png' },
+  mainImageAlt: 'XP600 DTF Printer in action',
+  descriptionTabLabel: 'Description',
+  specificationsTabLabel: 'Specifications',
+  blueprintsTabLabel: 'Blueprints',
+  longDescriptionTitle: 'Overview',
+  longDescriptionSubtitle: 'Professional DTF Printing',
+  ctaLabel: 'Order Now',
+  ctaUrl: 'https://store-us.example/order',
+  descriptionItems: [
+    { id: 1, title: 'High Resolution', description: '1440 DPI printing for crisp details' },
+    { id: 2, title: 'Fast Output', description: 'Up to 3 sqm per hour' },
+    { id: 3, title: 'Versatile', description: 'Works with cotton, polyester, blends' },
+  ],
+  specificationsLeft: [
+    { id: 10, title: 'Print Head', description: 'XP600' },
+    { id: 11, title: 'Max Width', description: '60cm' },
+    { id: 12, title: 'Ink Type', description: 'DTF Pigment' },
+  ],
+  specificationsRight: [],
+  tableData: null,
+  blueprintFirst: null,
+  blueprintFirstAlt: '',
+  blueprintSecond: null,
+  blueprintSecondAlt: '',
   seo: {
+    id: 1,
     title: 'XP600 DTF Printer — Shop Now',
     description: 'High-quality DTF printing with XP600 print heads',
   },
-  hero: {
-    eyebrow: 'New Release',
-    heading: 'Next-Gen DTF Printing',
-    description: 'Faster, sharper, more reliable',
-    imageUrl: 'https://store-us.example/images/xp600-hero.png',
-    imageAlt: 'XP600 DTF Printer in action',
-  },
-  sections: [
-    {
-      __component: 'content.text',
-      heading: 'Overview',
-      body: 'The XP600 DTF Printer delivers professional-grade direct-to-film transfers for any fabric type.',
-    },
-    {
-      __component: 'content.feature-grid',
-      heading: 'Key Features',
-      items: [
-        {
-          title: 'High Resolution',
-          description: '1440 DPI printing for crisp details',
-        },
-        { title: 'Fast Output', description: 'Up to 3 sqm per hour' },
-        {
-          title: 'Versatile',
-          description: 'Works with cotton, polyester, blends',
-        },
-      ],
-    },
-    {
-      __component: 'content.specifications',
-      heading: 'Technical Specifications',
-      rows: [
-        { label: 'Print Head', value: 'XP600' },
-        { label: 'Max Width', value: '60cm' },
-        { label: 'Ink Type', value: 'DTF Pigment' },
-      ],
-    },
-  ],
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   publishedAt: '2025-06-01T00:00:00.000Z',
@@ -150,14 +141,29 @@ const INVALID_PRODUCT = {
   id: 2,
   documentId: 'prod-002',
   handle: 'bad-product',
-  name: 'Bad Product',
-  summary: 'This product has invalid data',
-  sections: [
-    {
-      __component: 'content.unknown',
-      heading: 'Bad',
-    },
-  ],
+  name: '',
+  summary: '',
+  displayOrder: null,
+  introText: null,
+  cardImage: null,
+  mainImage: null,
+  mainImageAlt: null,
+  descriptionTabLabel: null,
+  specificationsTabLabel: null,
+  blueprintsTabLabel: null,
+  longDescriptionTitle: null,
+  longDescriptionSubtitle: null,
+  ctaLabel: null,
+  ctaUrl: null,
+  descriptionItems: null,
+  specificationsLeft: null,
+  specificationsRight: null,
+  tableData: null,
+  blueprintFirst: null,
+  blueprintFirstAlt: null,
+  blueprintSecond: null,
+  blueprintSecondAlt: null,
+  seo: null,
   createdAt: '2025-01-01T00:00:00.000Z',
 };
 
@@ -365,13 +371,12 @@ async function testValidProduct(workerUrl) {
   check(!html.includes('"price"'), 'no price in JSON-LD');
   check(!html.includes('"offers"'), 'no offers in JSON-LD');
 
-  // Three blocks rendered
-  check(html.includes('Overview'), 'text block heading rendered');
-  check(html.includes('Key Features'), 'feature-grid block heading rendered');
-  check(
-    html.includes('Technical Specifications'),
-    'specifications block rendered'
-  );
+  // Fixed field sections rendered
+  check(html.includes('Overview'), 'long description title rendered');
+  check(html.includes('Description'), 'description tab label rendered');
+  check(html.includes('Specifications'), 'specifications tab label rendered');
+  check(html.includes('High Resolution'), 'description item rendered');
+  check(html.includes('Print Head'), 'specification item rendered');
 
   // Headers
   const xr = res.headers.get('x-robots-tag') ?? '';

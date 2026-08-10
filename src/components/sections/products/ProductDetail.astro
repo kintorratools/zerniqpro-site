@@ -1,15 +1,32 @@
 ---
 import ProductTabBtn from '@components/ui/buttons/ProductTabBtn.astro';
 import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
-import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import type { ProductViewModel } from '@/lib/cms/product-models';
 
 interface Props {
-  product: CollectionEntry<'products'>;
+  product: ProductViewModel;
   lang?: 'en' | 'fr';
 }
 
 const { product } = Astro.props;
+
+const tabs = [
+  {
+    title: product.descriptionTabLabel,
+    id: 'tabs-with-card-1',
+    dataTab: '#tabs-with-card-1',
+  },
+  {
+    title: product.specificationsTabLabel,
+    id: 'tabs-with-card-2',
+    dataTab: '#tabs-with-card-2',
+  },
+  {
+    title: product.blueprintsTabLabel,
+    id: 'tabs-with-card-3',
+    dataTab: '#tabs-with-card-3',
+  },
+];
 ---
 
 <div
@@ -26,7 +43,7 @@ const { product } = Astro.props;
       id="fadeText"
       class="mb-8 max-w-prose font-light text-pretty text-neutral-700 sm:text-xl dark:text-neutral-300"
     >
-      {product.data.main.content}
+      {product.introText}
     </p>
   </div>
   <div
@@ -36,20 +53,19 @@ const { product } = Astro.props;
       <h1
         class="block text-4xl font-bold tracking-tighter text-neutral-800 sm:text-5xl md:text-6xl lg:text-7xl dark:text-neutral-200"
       >
-        {product.data.title}
+        {product.name}
       </h1>
       <p class="text-lg text-neutral-600 dark:text-neutral-400">
-        {product.data.description}
+        {product.summary}
       </p>
     </div>
     <div class="overflow-hidden">
-      <Image
+      <img
         id="fadeInMoveRight"
-        src={product.data.main.imgMain}
+        src={product.mainImage?.url}
         class="w-[600px] will-change-transform"
-        alt={product.data.main.imgAlt}
-        format={'avif'}
-        loading={'eager'}
+        alt={product.mainImageAlt}
+        loading="eager"
       />
     </div>
   </div>
@@ -65,7 +81,7 @@ const { product } = Astro.props;
     role="tablist"
   >
     {
-      product.data.tabs.map((tab, index) => (
+      tabs.map((tab, index) => (
         <ProductTabBtn
           title={tab.title}
           id={tab.id}
@@ -84,29 +100,26 @@ const { product } = Astro.props;
             <h2
               class="text-3xl font-bold tracking-tight text-balance text-neutral-800 md:leading-tight lg:text-4xl dark:text-neutral-200"
             >
-              {product.data.longDescription.title}
+              {product.longDescriptionTitle}
             </h2>
             <p class="mt-3 text-pretty text-neutral-600 dark:text-neutral-400">
-              {product.data.longDescription.subTitle}
+              {product.longDescriptionSubtitle}
             </p>
             <p class="mt-5">
-              <PrimaryCTA
-                title={product.data.longDescription.btnTitle}
-                url={product.data.longDescription.btnURL}
-              />
+              <PrimaryCTA title={product.ctaLabel} url={product.ctaUrl} />
             </p>
           </div>
 
           <div class="space-y-6 lg:space-y-10">
             {
-              product.data.descriptionList.map(list => (
+              product.descriptionItems.map(list => (
                 <div class="flex">
                   <div>
                     <h3 class="text-base font-bold text-neutral-800 sm:text-lg dark:text-neutral-200">
                       {list.title}
                     </h3>
                     <p class="mt-1 text-neutral-600 dark:text-neutral-400">
-                      {list.subTitle}
+                      {list.description}
                     </p>
                   </div>
                 </div>
@@ -122,33 +135,33 @@ const { product } = Astro.props;
         <div class="grid w-full grid-cols-1 gap-x-16 md:grid-cols-2">
           <div class="max-w-md space-y-6">
             {
-              product.data.specificationsLeft.map(spec => (
+              product.specificationsLeft.map(spec => (
                 <div>
                   <h3 class="block font-bold text-neutral-800 dark:text-neutral-200">
                     {spec.title}
                   </h3>
                   <p class="text-neutral-600 dark:text-neutral-400">
-                    {spec.subTitle}
+                    {spec.description}
                   </p>
                 </div>
               ))
             }
           </div>
           {
-            product.data.specificationsRight ? (
+            product.specificationsRight ? (
               <div class="mt-6 max-w-md space-y-6 md:mt-0 md:ml-auto">
-                {product.data.specificationsRight?.map(spec => (
+                {product.specificationsRight?.map(spec => (
                   <div>
                     <h3 class="block font-bold text-neutral-800 dark:text-neutral-200">
                       {spec.title}
                     </h3>
                     <p class="text-neutral-600 dark:text-neutral-400">
-                      {spec.subTitle}
+                      {spec.description}
                     </p>
                   </div>
                 ))}
               </div>
-            ) : product.data.tableData ? (
+            ) : product.tableData && product.tableData.length > 0 ? (
               <div class="mt-6 space-y-6 md:mt-0 md:ml-auto">
                 <div class="flex flex-col">
                   <div class="-m-1.5 overflow-x-auto">
@@ -157,33 +170,26 @@ const { product } = Astro.props;
                         <table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
                           <thead>
                             <tr>
-                              {product.data.tableData?.[0].feature?.map(
-                                header => (
-                                  <th
-                                    scope="col"
-                                    class="px-6 py-3 text-start text-xs font-medium text-neutral-500 uppercase dark:text-neutral-500"
-                                  >
-                                    {header}
-                                  </th>
-                                )
-                              )}
+                              {Object.keys(product.tableData[0]).map(header => (
+                                <th
+                                  scope="col"
+                                  class="px-6 py-3 text-start text-xs font-medium text-neutral-500 uppercase dark:text-neutral-500"
+                                >
+                                  {header}
+                                </th>
+                              ))}
                             </tr>
                           </thead>
                           <tbody class="divide-y divide-neutral-300 dark:divide-neutral-700">
-                            {product.data.tableData?.map(row =>
-                              // Wrap each row's content in a separate <tr> element
-                              row.description.map(rowData => (
-                                <tr>
-                                  {/* Iterate through each cell value in the row's description array */}
-                                  {rowData.map(cellValue => (
-                                    // Render each cell value in its own <td> element
-                                    <td class="px-6 py-4 text-sm font-medium whitespace-nowrap text-neutral-600 dark:text-neutral-400">
-                                      {cellValue}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))
-                            )}
+                            {product.tableData?.map(row => (
+                              <tr>
+                                {Object.values(row).map(cellValue => (
+                                  <td class="px-6 py-4 text-sm font-medium whitespace-nowrap text-neutral-600 dark:text-neutral-400">
+                                    {cellValue}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                       </div>
@@ -203,12 +209,11 @@ const { product } = Astro.props;
           class="relative top-12 left-12 z-10 overflow-hidden rounded-xl shadow-lg md:top-16 md:left-12 md:-ml-12 lg:ml-0"
         >
           {
-            product.data.blueprints.first && (
-              <Image
-                src={product.data.blueprints.first}
+            product.blueprintFirst?.url && (
+              <img
+                src={product.blueprintFirst.url}
                 class="h-full w-full object-cover object-center"
-                alt="Blueprint Illustration"
-                format={'avif'}
+                alt={product.blueprintFirstAlt}
               />
             )
           }
@@ -216,12 +221,11 @@ const { product } = Astro.props;
 
         <div class="relative right-12 overflow-hidden rounded-xl shadow-xl">
           {
-            product.data.blueprints.second && (
-              <Image
-                src={product.data.blueprints.second}
+            product.blueprintSecond?.url && (
+              <img
+                src={product.blueprintSecond.url}
                 class="h-full w-full object-cover object-center"
-                alt="Blueprint Illustration"
-                format={'avif'}
+                alt={product.blueprintSecondAlt}
               />
             )
           }

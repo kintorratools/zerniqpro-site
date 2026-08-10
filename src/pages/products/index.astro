@@ -7,64 +7,58 @@ import CardWide from '@components/ui/cards/CardWide.astro';
 import FeaturesStatsAlt from '@components/sections/features/FeaturesStatsAlt.astro';
 import TestimonialsSectionAlt from '@components/sections/testimonials/TestimonialsSectionAlt.astro';
 
-// Importing necessary functions from Astro
-import { getCollection } from 'astro:content';
-import type { CollectionEntry } from 'astro:content';
+// Importing CMS data functions
+import { getAllProducts, getProductPage } from '@/lib/cms/product';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 import { SITE } from '@data/constants';
 
-// Fetching all the product related content and sorting it by main.id
-const product: CollectionEntry<'products'>[] = (
-  await getCollection('products', ({ id }) => {
-    return id.startsWith('en/');
-  })
-).sort(
-  (a: CollectionEntry<'products'>, b: CollectionEntry<'products'>) =>
-    a.data.main.id - b.data.main.id
-);
+// Fetch CMS data
+const products = await getAllProducts('en');
+const productPage = await getProductPage('en');
 
-// Define variables for page content
-const title: string = 'Products';
-const subTitle: string =
-  'Explore the durability and precision of Acme tools, designed for both professionals and enthusiasts. Each of our products is crafted with precision and built to last, ensuring you have the right tool for every job.';
+// Fetch runtime config for SEO URLs
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  // fall back to SITE.url
+}
 
-// Testimonial data that will be rendered in the component
-const testimonials = [
-  // First testimonial data
-  {
-    content:
-      ' "Since switching to Acme\'s hardware tools, the efficiency on our construction sites has skyrocketed. The durability of the hex bolts and precision of the machine screws are simply unmatched. It\'s refreshing to work with a company that truly understands the daily demands of the industry." ',
-    author: 'Jason Clark',
-    role: 'Site Foreman | TopBuild',
-    avatarSrc:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
-    avatarAlt: 'Image Description',
-  },
-  // Second testimonial data
-  {
-    content:
-      ' "As an interior designer, I\'m always looking for high-quality materials and tools that help bring my visions to life. Acme\'s mixed screws assortment has been a game-changer for my projects, providing the perfect blend of quality and variety. The outstanding customer support was just the cherry on top!" ',
-    author: 'Maria Gonzalez',
-    role: 'Interior Designer | Creative Spaces',
-    avatarSrc:
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1376&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
-    avatarAlt: 'Image Description',
-  },
-  // Third testimonial data
-  {
-    content:
-      " \"I've been a professional carpenter for over 15 years, and I can sincerely say that Acme's tap bolts and nuts are some of the best I've used. They grip like no other, and I have full confidence in every joint and fixture. Plus, the service is impeccable – they truly care about my project's success.\" ",
-    author: 'Richard Kim',
-    role: 'Master Carpenter | WoodWright',
-    avatarSrc:
-      'https://images.unsplash.com/photo-1474176857210-7287d38d27c6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
-    avatarAlt: 'Image Description',
-  },
+// Page content from CMS
+const title: string = productPage.title;
+const subTitle: string = productPage.subtitle;
+const customerStoriesLabel: string = productPage.customerStoriesLabel;
+const whyChooseTitle: string = productPage.whyChooseTitle;
+const whyChooseSubtitle: string = productPage.whyChooseSubtitle;
+
+// Testimonials from CMS
+const testimonials = productPage.testimonials.map(t => ({
+  content: t.content,
+  author: t.author,
+  role: t.role,
+  avatarSrc: t.avatar?.url || '',
+  avatarAlt: t.avatar?.alternativeText || '',
+}));
+
+// Benefits from CMS
+const benefits = [
+  productPage.benefit1,
+  productPage.benefit2,
+  productPage.benefit3,
 ];
 
-const pageTitle: string = `Products | ${SITE.title}`;
-const metaDescription =
-  'Explore the durability and precision of Acme tools, designed for both professionals and enthusiasts.';
-const ogTitle = 'Hardware Tools | Acme';
+// SEO from CMS
+const pageTitle: string = productPage.seo?.title
+  ? `${productPage.seo.title} | ${SITE.title}`
+  : `${title} | ${SITE.title}`;
+const metaDescription = productPage.seo?.description || productPage.subtitle;
+const ogTitle = productPage.seo?.title || title;
+
+// Canonical URL
+const canonicalUrl = `${siteDomain}/products`;
 ---
 
 <MainLayout
@@ -74,17 +68,15 @@ const ogTitle = 'Hardware Tools | Acme';
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    '@id': 'https://example.com/products',
-    url: 'https://example.com/products',
-    name: 'Hardware Tools | Acme',
-    description:
-      'Explore the durability and precision of Acme tools, designed for both professionals and enthusiasts.',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: ogTitle,
+    description: metaDescription,
     isPartOf: {
       '@type': 'WebSite',
-      url: 'https://example.com',
-      name: 'Acme',
-      description:
-        'Acme offers top-tier hardware tools and expert construction services to meet all your project needs.',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
     },
     inLanguage: 'en-US',
   }}
@@ -107,15 +99,21 @@ const ogTitle = 'Hardware Tools | Acme';
           )
         }
       </div>
-      <PrimaryCTA title="Customer Stories" url="#testimonials" noArrow={true} />
+      <PrimaryCTA
+        title={customerStoriesLabel}
+        url="#testimonials"
+        noArrow={true}
+      />
     </div>
     {
-      /* Displaying products in alternating styles. Alternative product gets different card styling.
-    Maps through all product entries and displays them with either CardSmall or CardWide based on their position. */
+      /* Displaying products in alternating styles. Alternative product gets different card styling. */
+    }
+    {
+      /* Maps through all product entries and displays them with either CardSmall or CardWide based on their position. */
     }
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6 xl:gap-8">
       {
-        product.map((product, index) => {
+        products.map((product, index) => {
           const position = index % 4;
           if (position === 0 || position === 3) {
             return <CardSmall product={product} />;
@@ -128,17 +126,13 @@ const ogTitle = 'Hardware Tools | Acme';
   </div>
   {/* Features statistics section */}
   <FeaturesStatsAlt
-    title="Why Choose Acme?"
-    subTitle="Transform your ideas into tangible results with Acme tools. Whether you're starting with a sketch on a napkin or diving into a comprehensive construction project, our tools are engineered to help you build with confidence."
-    benefits={[
-      'Robust and reliable tools for long-lasting performance.',
-      'Innovative solutions tailored to modern construction needs.',
-      "Customer support dedicated to your project's success.",
-    ]}
+    title={whyChooseTitle}
+    subTitle={whyChooseSubtitle}
+    benefits={benefits}
   />
   {/* Testimonials section */}
   <TestimonialsSectionAlt
-    title="What Our Customers Say"
+    title={productPage.testimonialsTitle}
     testimonials={testimonials}
   />
 </MainLayout>

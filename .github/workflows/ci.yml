@@ -43,6 +43,9 @@ jobs:
       - name: Product SSR tests
         run: pnpm test:product
 
+      - name: Product Runtime v2 Check
+        run: pnpm test:product-runtime-v2
+
       - name: Brand & i18n tests
         run: pnpm test:brand-i18n
 

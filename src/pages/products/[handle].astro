@@ -1,0 +1,46 @@
+---
+import { getProductByHandle } from '@/lib/cms/product';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+import MainLayout from '@/layouts/MainLayout.astro';
+import ProductDetail from '@components/sections/products/ProductDetail.astro';
+
+export const prerender = false;
+
+const handle = Astro.params.handle!;
+
+let product;
+try {
+  product = await getProductByHandle(handle, 'en');
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  throw e;
+}
+
+const runtimeConfig = await getRuntimeConfig();
+
+const pageTitle = `${product.name} | ${runtimeConfig.brand.name || product.name}`;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  '@id': `${runtimeConfig.site.domain}/products/${handle}/`,
+  name: product.name,
+  description: product.seo.description,
+  brand: {
+    '@type': 'Brand',
+    name: runtimeConfig.brand.name,
+  },
+};
+---
+
+<MainLayout
+  title={pageTitle}
+  customDescription={product.seo.description}
+  customOgTitle={product.name}
+  structuredData={structuredData}
+>
+  <ProductDetail product={product} />
+</MainLayout>

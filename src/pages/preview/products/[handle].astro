@@ -9,7 +9,6 @@ import {
   CmsNotConfiguredError,
   CmsContentNotFoundError,
 } from '@lib/cms/errors';
-import ProductBlockRenderer from '@components/cms/ProductBlockRenderer.astro';
 
 const handle = Astro.params.handle!;
 
@@ -110,29 +109,103 @@ const jsonLdString = JSON.stringify({
 
       {product.summary && <p>{product.summary}</p>}
 
+      {product.introText && (
+        <section>
+          <p>{product.introText}</p>
+          {product.mainImage?.url && (
+            <img
+              src={product.mainImage.url}
+              alt={product.mainImageAlt || ''}
+              style="max-width:100%;height:auto;aspect-ratio:16/9"
+            />
+          )}
+        </section>
+      )}
+
       {
-        product.hero && (
+        product.descriptionItems.length > 0 && (
           <section>
-            {product.hero.eyebrow && <p>{product.hero.eyebrow}</p>}
-            {product.hero.heading && product.hero.heading !== product.name && (
-              <h2>{product.hero.heading}</h2>
+            <h2>{product.descriptionTabLabel}</h2>
+            {product.longDescriptionTitle && (
+              <h3>{product.longDescriptionTitle}</h3>
             )}
-            {product.hero.description &&
-              product.hero.description !== product.summary && (
-                <p>{product.hero.description}</p>
-              )}
-            {product.hero.imageUrl && (
+            {product.longDescriptionSubtitle && (
+              <p>{product.longDescriptionSubtitle}</p>
+            )}
+            <dl>
+              {product.descriptionItems.map((item) => (
+                <div>
+                  <dt>{item.title}</dt>
+                  <dd>{item.description}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )
+      }
+
+      {
+        (product.specificationsLeft.length > 0 ||
+          product.specificationsRight.length > 0) && (
+          <section>
+            <h2>{product.specificationsTabLabel}</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+              <div>
+                {product.specificationsLeft.map((item) => (
+                  <div>
+                    <dt>{item.title}</dt>
+                    <dd>{item.description}</dd>
+                  </div>
+                ))}
+              </div>
+              <div>
+                {product.specificationsRight.map((item) => (
+                  <div>
+                    <dt>{item.title}</dt>
+                    <dd>{item.description}</dd>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      }
+
+      {product.tableData && product.tableData.length > 0 && (
+        <section>
+          {product.tableData.map((row) => (
+            <div>
+              <pre>{JSON.stringify(row, null, 2)}</pre>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {
+        (product.blueprintFirst?.url || product.blueprintSecond?.url) && (
+          <section>
+            <h2>{product.blueprintsTabLabel}</h2>
+            {product.blueprintFirst?.url && (
               <img
-                src={product.hero.imageUrl}
-                alt={product.hero.imageAlt ?? ''}
-                style="max-width:100%;height:auto;aspect-ratio:16/9"
+                src={product.blueprintFirst.url}
+                alt={product.blueprintFirstAlt || ''}
+                style="max-width:100%;height:auto"
+              />
+            )}
+            {product.blueprintSecond?.url && (
+              <img
+                src={product.blueprintSecond.url}
+                alt={product.blueprintSecondAlt || ''}
+                style="max-width:100%;height:auto"
               />
             )}
           </section>
         )
       }
 
-      <ProductBlockRenderer blocks={product.blocks} />
+      {product.ctaLabel && (
+        <a href={product.ctaUrl || '#'}>{product.ctaLabel}</a>
+      )}
     </main>
   </body>
 </html>
