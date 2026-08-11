@@ -44,6 +44,8 @@ const metaDescription =
   servicesPage.seo?.description || servicesPage.introSubtitle;
 const canonicalUrl = `${siteDomain}/pages/services`;
 
+const pageContentAvailability = { en: true, fr: true };
+
 // Helper to build article array for the 5 service slots (fixed order: 1R, 2L, 3R, 4L, 5R)
 const articles = [
   { isRightSection: true, data: servicesPage.service1, single: false },
@@ -58,6 +60,7 @@ const articles = [
   title={pageTitle}
   customDescription={metaDescription}
   customOgTitle={servicesPage.seo?.title || servicesPage.introTitle}
+  pageContentAvailability={pageContentAvailability}
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',

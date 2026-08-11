@@ -8,7 +8,7 @@ import type { SiteViewModel } from '@lib/cms/models';
 import type { LocaleViewModel } from '@lib/cms/locale-models';
 import type { SEOConfig } from '@lib/cms/seo-models';
 import { resolveGlobalSeo } from '@lib/cms/seo';
-import { buildHreflangLinks } from '@lib/i18n/routes';
+import { buildHreflangTags } from '@lib/i18n/routes';
 
 interface Props {
   meta?: string;
@@ -18,6 +18,8 @@ interface Props {
   brand?: BrandViewModel;
   site?: SiteViewModel;
   locales?: LocaleViewModel[];
+  currentLocale?: string;
+  pageContentAvailability?: Record<string, boolean>;
 }
 
 const {
@@ -28,6 +30,8 @@ const {
   brand,
   site,
   locales,
+  currentLocale = 'en',
+  pageContentAvailability,
 } = Astro.props;
 
 const pageSeo: Partial<SEOConfig> = {
@@ -41,10 +45,11 @@ const description = resolvedSeo.description;
 const ogTitle = resolvedSeo.title;
 const ogDescription = resolvedSeo.description;
 
-const siteURL = `${Astro.site}`;
+const siteDomain = site?.domain ? site.domain.replace(/\/+$/, '') : null;
 const author = brand?.name || site?.name || '';
-const canonical = new URL(Astro.url.pathname, Astro.site || Astro.url.origin)
-  .href;
+const canonical = siteDomain
+  ? siteDomain + Astro.url.pathname
+  : new URL(Astro.url.pathname, Astro.site || Astro.url.origin).href;
 const basePath = Astro.url.pathname;
 const socialImageRes = await getImage({
   src: OG.image,
@@ -53,38 +58,46 @@ const socialImageRes = await getImage({
 });
 const socialImage = Astro.url.origin + socialImageRes.src;
 
-const languages: Record<string, string> = {};
-if (locales) {
-  for (const loc of locales) {
-    if (loc.enabled) {
-      languages[loc.code] = loc.code === 'en' ? '' : loc.code;
+// Build alternates config for hreflang tags
+const alternatesConfig = {
+  siteUrl: siteDomain || String(Astro.url.origin).replace(/\/+$/, ''),
+  currentPath: Astro.url.pathname,
+  currentLocale: currentLocale || 'en',
+  enabledLocales: locales ? getEnabledLocalesFromLocales(locales) : ['en'],
+  contentAvailability:
+    pageContentAvailability || getDefaultContentAvailability(locales),
+};
+
+// Helper function inline in frontmatter
+function getEnabledLocalesFromLocales(
+  localesList: LocaleViewModel[]
+): string[] {
+  return localesList.filter(l => l.enabled).map(l => l.code);
+}
+
+function getDefaultContentAvailability(
+  localesList: LocaleViewModel[] | undefined
+): Record<string, boolean> {
+  if (!localesList) return { en: true, fr: true };
+  const avail: Record<string, boolean> = {};
+  for (const loc of localesList) {
+    if (loc.enabled && (loc.code === 'en' || loc.code === 'fr')) {
+      avail[loc.code] = true;
+    } else {
+      avail[loc.code] = false;
     }
   }
-} else {
-  languages['en'] = '';
-  languages['fr'] = 'fr';
+  return avail;
 }
 
-function createHref(_lang: string, prefix: string, path: string): string {
-  const cleanPath = path.replace(/^\/(fr|en)\//, '/');
-  const basePath = prefix ? `/${prefix}${cleanPath}` : cleanPath;
-  const normalizedBasePath = basePath.replace(/\/\/+/g, '/');
-  return `${siteURL.slice(0, -1)}${normalizedBasePath}`;
-}
-
-const fullPath: string = Astro.url.pathname;
-
-const hreflangLinks =
-  locales && locales.length > 0
-    ? buildHreflangLinks(locales, fullPath, String(Astro.site || ''))
-    : [];
+const hreflangTags = buildHreflangTags(alternatesConfig);
 
 const dynamicStructuredData =
   brand && site
     ? {
         '@context': 'https://schema.org',
         '@type': 'WebPage',
-        inLanguage: 'en-US',
+        inLanguage: currentLocale || 'en',
         '@id': site.domain,
         url: site.domain,
         name: brand.name,
@@ -130,21 +143,19 @@ const appleTouchIcon = await getImage({
 <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 <link rel="canonical" href={canonical} />
 {
-  hreflangLinks.length > 0
-    ? hreflangLinks.map(({ lang, href }) => (
-        <link rel="alternate" hreflang={lang} href={href} />
-      ))
-    : Object.entries(languages).map(([lang, prefix]) => {
-        const cleanPath = fullPath.replace(/^\/(fr|en)\//, '/');
-        const href = createHref(lang, prefix, cleanPath);
-        return <link rel="alternate" hreflang={lang} href={href} />;
-      })
+  hreflangTags.map(({ lang, href }) => (
+    <link rel="alternate" hreflang={lang} href={href} />
+  ))
 }
 
 {/* Facebook Meta Tags */}
 <meta
   property="og:locale"
-  content={basePath.startsWith('/fr') ? 'fr_FR' : 'en_US'}
+  content={currentLocale === 'fr'
+    ? 'fr_FR'
+    : currentLocale === 'en'
+      ? 'en_US'
+      : currentLocale}
 />
 <meta property="og:url" content={canonical} />
 <meta property="og:type" content="website" />

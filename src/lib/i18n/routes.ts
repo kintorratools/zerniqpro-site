@@ -22,7 +22,11 @@ export function getLocalizedPath(path: string, locale: string): string {
   return `${prefix}${cleanPath}`.replace(/\/+/g, '/');
 }
 
-/** Build hreflang alternates from enabled locales */
+/**
+ * Build hreflang alternates from enabled locales.
+ * @deprecated Use {@link buildHreflangTags} from `@lib/i18n/alternates` instead.
+ *             This function does NOT check content availability via `contentAvailability`.
+ */
 export function buildHreflangLinks(
   locales: LocaleViewModel[],
   currentPath: string,
@@ -36,3 +40,11 @@ export function buildHreflangLinks(
       href: `${siteUrl}${getLocalizedPath(cleanPath, l.code)}`,
     }));
 }
+
+// Re-export from alternates for convenience
+export {
+  classifyRoute,
+  buildLocaleAlternates,
+  buildHreflangTags,
+} from './alternates';
+export type { RouteAlternate, AlternatesConfig } from './alternates';

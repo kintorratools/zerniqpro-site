@@ -35,6 +35,8 @@ const structuredData = {
   },
   inLanguage: 'fr',
 };
+
+const pageContentAvailability = { en: true, fr: true };
 ---
 
 <MainLayout
@@ -42,6 +44,7 @@ const structuredData = {
   lang="fr"
   customDescription={product.seo.description}
   customOgTitle={product.name}
+  pageContentAvailability={pageContentAvailability}
   structuredData={structuredData}
 >
   <ProductDetail product={product} lang="fr" />

@@ -136,6 +136,8 @@ const feedbackTitle = supportPage?.feedbackTitle || 'Was this post helpful?';
 const feedbackYesLabel = supportPage?.feedbackYesLabel || 'Yes';
 const feedbackNoLabel = supportPage?.feedbackNoLabel || 'No';
 const relatedTitle = supportPage?.relatedTitle || 'Related articles';
+
+const pageContentAvailability = { en: true, fr: true };
 ---
 
 <MainLayout
@@ -143,6 +145,7 @@ const relatedTitle = supportPage?.relatedTitle || 'Related articles';
   customDescription={metaDescription}
   customOgTitle={ogTitle}
   structuredData={structuredData}
+  pageContentAvailability={pageContentAvailability}
 >
   {
     template === 'blog' && (

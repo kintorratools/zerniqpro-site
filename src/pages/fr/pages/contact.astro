@@ -37,6 +37,8 @@ const pageTitle = contactPage.seo?.title
   : `${contactPage.title} | ${SITE.title}`;
 const metaDescription = contactPage.seo?.description || contactPage.subtitle;
 const canonicalUrl = `${siteDomain}/fr/pages/contact`;
+
+const pageContentAvailability = { en: true, fr: true };
 ---
 
 <MainLayout
@@ -44,6 +46,7 @@ const canonicalUrl = `${siteDomain}/fr/pages/contact`;
   lang="fr"
   customDescription={metaDescription}
   customOgTitle={contactPage.seo?.title || contactPage.title}
+  pageContentAvailability={pageContentAvailability}
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',

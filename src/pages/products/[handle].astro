@@ -34,6 +34,8 @@ const structuredData = {
     name: runtimeConfig.brand.name,
   },
 };
+
+const pageContentAvailability = { en: true, fr: true };
 ---
 
 <MainLayout
@@ -41,6 +43,7 @@ const structuredData = {
   customDescription={product.seo.description}
   customOgTitle={product.name}
   structuredData={structuredData}
+  pageContentAvailability={pageContentAvailability}
 >
   <ProductDetail product={product} />
 </MainLayout>

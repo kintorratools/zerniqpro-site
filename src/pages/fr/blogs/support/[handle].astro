@@ -139,6 +139,8 @@ const feedbackTitle =
 const feedbackYesLabel = supportPage?.feedbackYesLabel || 'Oui';
 const feedbackNoLabel = supportPage?.feedbackNoLabel || 'Non';
 const relatedTitle = supportPage?.relatedTitle || 'Articles connexes';
+
+const pageContentAvailability = { en: true, fr: true };
 ---
 
 <MainLayout
@@ -146,6 +148,7 @@ const relatedTitle = supportPage?.relatedTitle || 'Articles connexes';
   title={pageTitle}
   customDescription={metaDescription}
   customOgTitle={ogTitle}
+  pageContentAvailability={pageContentAvailability}
   structuredData={structuredData}
 >
   {

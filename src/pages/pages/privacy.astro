@@ -36,12 +36,15 @@ const pageTitle = legalPage.seo?.title
   : `${legalPage.title} | ${SITE.title}`;
 const metaDescription = legalPage.seo?.description || '';
 const canonicalUrl = `${siteDomain}/pages/privacy`;
+
+const pageContentAvailability: Record<string, boolean> = {};
 ---
 
 <MainLayout
   title={pageTitle}
   customDescription={metaDescription}
   customOgTitle={legalPage.seo?.title || legalPage.title}
+  pageContentAvailability={pageContentAvailability}
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',

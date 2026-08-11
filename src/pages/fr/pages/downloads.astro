@@ -43,6 +43,8 @@ const pageTitle = downloadsPage.seo?.title
 const metaDescription =
   downloadsPage.seo?.description || downloadsPage.subtitle;
 const canonicalUrl = `${siteDomain}/fr/pages/downloads`;
+
+const pageContentAvailability: Record<string, boolean> = {};
 ---
 
 <MainLayout
@@ -50,6 +52,7 @@ const canonicalUrl = `${siteDomain}/fr/pages/downloads`;
   lang="fr"
   customDescription={metaDescription}
   customOgTitle={downloadsPage.seo?.title || downloadsPage.title}
+  pageContentAvailability={pageContentAvailability}
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',

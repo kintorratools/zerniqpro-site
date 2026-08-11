@@ -36,6 +36,8 @@ const pageTitle = warrantyPage.seo?.title
   : `${warrantyPage.title} | ${SITE.title}`;
 const metaDescription = warrantyPage.seo?.description || warrantyPage.intro;
 const canonicalUrl = `${siteDomain}/fr/pages/warranty`;
+
+const pageContentAvailability: Record<string, boolean> = {};
 ---
 
 <MainLayout
@@ -43,6 +45,7 @@ const canonicalUrl = `${siteDomain}/fr/pages/warranty`;
   lang="fr"
   customDescription={metaDescription}
   customOgTitle={warrantyPage.seo?.title || warrantyPage.title}
+  pageContentAvailability={pageContentAvailability}
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',

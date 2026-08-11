@@ -52,6 +52,9 @@ jobs:
       - name: Remaining Pages Runtime Check
         run: pnpm test:remaining-pages-runtime
 
+      - name: I18N Routing V2 Check
+        run: pnpm test:i18n-routing-v2
+
       - name: Brand & i18n tests
         run: pnpm test:brand-i18n
 

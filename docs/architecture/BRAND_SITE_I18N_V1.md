@@ -14,7 +14,6 @@ In Phase 3 and earlier, `Site` held branding directly as an optional component (
 | ------------- | ---------- | -------- | ----------------------------------------------------- |
 | `key`         | `string`   | Yes      | Unique lookup key (e.g. `zerniq`)                     |
 | `name`        | `string`   | Yes      | Display name used in OG/title fallbacks               |
-| `domain`      | `string`   | Yes      | Canonical domain (`https://...`)                      |
 | `logo`        | `object`   | No       | `{ url, alt, width, height }`                         |
 | `favicon`     | `string`   | No       | Favicon URL                                           |
 | `colors`      | `object`   | No       | `{ primary, accent }` — hex colors                    |
