@@ -4,7 +4,8 @@ const ROUTES = [
   // Product listing is SSR-only (CMS-dependent), accept errors when no CMS
   {
     path: '/products/',
-    expectStatus: s => s >= 200 && s < 300 || s === 500 || s === 502 || s === 503,
+    expectStatus: s =>
+      (s >= 200 && s < 300) || s === 500 || s === 502 || s === 503,
   },
   { path: '/blog/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/contact/', expectStatus: s => s >= 200 && s < 300 },
