@@ -406,6 +406,59 @@ console.log('\n--- (j) Preview is not production ---');
   );
 }
 
+// ── (k) Listing pages are SSR-only ──
+
+console.log('\n--- (k) Listing pages are SSR-only ---');
+
+{
+  const enListing = readContent('src/pages/products/index.astro');
+  check(
+    '[Prerender] EN listing has prerender = false',
+    enListing.includes('prerender = false')
+  );
+
+  const frListing = readContent('src/pages/fr/products/index.astro');
+  check(
+    '[Prerender] FR listing has prerender = false',
+    frListing.includes('prerender = false')
+  );
+
+  // Detail routes retain prerender=false
+  const enDetail = readContent('src/pages/products/[handle].astro');
+  check(
+    '[Prerender] EN detail has prerender = false',
+    enDetail.includes('prerender = false')
+  );
+
+  const frDetail = readContent('src/pages/fr/products/[handle].astro');
+  check(
+    '[Prerender] FR detail has prerender = false',
+    frDetail.includes('prerender = false')
+  );
+
+  // EN listing still calls getAllProducts from CMS
+  check(
+    '[Prerender] EN listing still calls getAllProducts',
+    enListing.includes('getAllProducts')
+  );
+
+  // FR listing uses CMS product functions
+  const frListingUsesCms =
+    frListing.includes('getAllProducts') ||
+    frListing.includes("from '@/lib/cms/product'");
+  check('[Prerender] FR listing uses CMS product functions', frListingUsesCms);
+
+  // No local product fallback in listing pages
+  check(
+    '[Prerender] No local product fallback in EN listing',
+    !enListing.includes("getCollection('products')")
+  );
+  check(
+    '[Prerender] No local product fallback in FR listing',
+    !frListing.includes("getCollection('products')")
+  );
+}
+
 // ── Summary ──
 
 console.log(`\nRESULTS: ${passed} passed, ${failed} failed`);
