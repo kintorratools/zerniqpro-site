@@ -1,0 +1,82 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import { getWarrantyPage } from '@/lib/cms/warranty-page';
+import type { WarrantyPageViewModel } from '@/lib/cms/warranty-page';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { SITE } from '@data/constants';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+
+let warrantyPage: WarrantyPageViewModel;
+try {
+  warrantyPage = await getWarrantyPage('en');
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  if (e instanceof Error && e.message === 'CMS not configured') {
+    return new Response(null, { status: 503 });
+  }
+  return new Response(null, { status: 502 });
+}
+
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  /* fallback */
+}
+
+const pageTitle = warrantyPage.seo?.title
+  ? `${warrantyPage.seo.title} | ${SITE.title}`
+  : `${warrantyPage.title} | ${SITE.title}`;
+const metaDescription = warrantyPage.seo?.description || warrantyPage.intro;
+const canonicalUrl = `${siteDomain}/pages/warranty`;
+---
+
+<MainLayout
+  title={pageTitle}
+  customDescription={metaDescription}
+  customOgTitle={warrantyPage.seo?.title || warrantyPage.title}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: warrantyPage.seo?.title || warrantyPage.title,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
+    },
+    inLanguage: 'en-US',
+  }}
+>
+  <section>
+    <h1>{warrantyPage.title}</h1>
+    {warrantyPage.intro && <p>{warrantyPage.intro}</p>}
+
+    {
+      warrantyPage.body.map(block => (
+        <div>
+          {block.heading && <h2>{block.heading}</h2>}
+          {block.content && <p>{block.content}</p>}
+        </div>
+      ))
+    }
+
+    {
+      warrantyPage.contactCtaLabel && (
+        <a href={warrantyPage.contactCtaUrl || '#'}>
+          {warrantyPage.contactCtaLabel}
+        </a>
+      )
+    }
+  </section>
+</MainLayout>

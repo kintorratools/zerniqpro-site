@@ -1,0 +1,100 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import { getDownloadsPage, getDownloads } from '@/lib/cms/downloads-page';
+import type { DownloadsPageViewModel } from '@/lib/cms/downloads-page';
+import type { DownloadEntry } from '@/lib/cms/downloads-page';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { SITE } from '@data/constants';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+
+let downloadsPage: DownloadsPageViewModel;
+let downloads: DownloadEntry[];
+
+try {
+  [downloadsPage, downloads] = await Promise.all([
+    getDownloadsPage('fr'),
+    getDownloads('fr'),
+  ]);
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  if (e instanceof Error && e.message === 'CMS not configured') {
+    return new Response(null, { status: 503 });
+  }
+  return new Response(null, { status: 502 });
+}
+
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  /* fallback */
+}
+
+const pageTitle = downloadsPage.seo?.title
+  ? `${downloadsPage.seo.title} | ${SITE.title}`
+  : `${downloadsPage.title} | ${SITE.title}`;
+const metaDescription =
+  downloadsPage.seo?.description || downloadsPage.subtitle;
+const canonicalUrl = `${siteDomain}/fr/pages/downloads`;
+---
+
+<MainLayout
+  title={pageTitle}
+  lang="fr"
+  customDescription={metaDescription}
+  customOgTitle={downloadsPage.seo?.title || downloadsPage.title}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: downloadsPage.seo?.title || downloadsPage.title,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
+    },
+    inLanguage: 'fr',
+  }}
+>
+  <section>
+    <h1>{downloadsPage.title}</h1>
+    {downloadsPage.subtitle && <p>{downloadsPage.subtitle}</p>}
+
+    {
+      downloads.length > 0 ? (
+        <ul>
+          {downloads.map(d => (
+            <li>
+              <strong>{d.title}</strong>
+              {d.version && <span> v{d.version}</span>}
+              {d.platform && <span> ({d.platform})</span>}
+              {d.description && <p>{d.description}</p>}
+              {d.file?.url ? (
+                <a href={d.file.url} download>
+                  {d.file.alt || d.title}
+                </a>
+              ) : (
+                <span>{d.title}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div>
+          {downloadsPage.emptyTitle && <h2>{downloadsPage.emptyTitle}</h2>}
+          {downloadsPage.emptyText && <p>{downloadsPage.emptyText}</p>}
+        </div>
+      )
+    }
+  </section>
+</MainLayout>

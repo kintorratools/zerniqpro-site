@@ -49,6 +49,9 @@ jobs:
       - name: Fixed Pages Runtime Check
         run: pnpm test:fixed-pages-runtime
 
+      - name: Remaining Pages Runtime Check
+        run: pnpm test:remaining-pages-runtime
+
       - name: Brand & i18n tests
         run: pnpm test:brand-i18n
 

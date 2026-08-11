@@ -1,0 +1,82 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import { getLegalPage } from '@/lib/cms/legal-page';
+import type { LegalPageViewModel } from '@/lib/cms/legal-page';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { SITE } from '@data/constants';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+
+let legalPage: LegalPageViewModel;
+try {
+  legalPage = await getLegalPage('fr', 'privacy');
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  if (e instanceof Error && e.message === 'CMS not configured') {
+    return new Response(null, { status: 503 });
+  }
+  return new Response(null, { status: 502 });
+}
+
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  /* fallback */
+}
+
+const pageTitle = legalPage.seo?.title
+  ? `${legalPage.seo.title} | ${SITE.title}`
+  : `${legalPage.title} | ${SITE.title}`;
+const metaDescription = legalPage.seo?.description || '';
+const canonicalUrl = `${siteDomain}/fr/pages/privacy`;
+---
+
+<MainLayout
+  title={pageTitle}
+  lang="fr"
+  customDescription={metaDescription}
+  customOgTitle={legalPage.seo?.title || legalPage.title}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: legalPage.seo?.title || legalPage.title,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
+    },
+    inLanguage: 'fr',
+  }}
+>
+  <section>
+    <h1>{legalPage.title}</h1>
+
+    {
+      legalPage.body.map(block => (
+        <div>
+          {block.heading && <h2>{block.heading}</h2>}
+          {block.content && <p>{block.content}</p>}
+        </div>
+      ))
+    }
+
+    {
+      legalPage.effectiveDate && (
+        <p>
+          <em>Effective: {legalPage.effectiveDate}</em>
+        </p>
+      )
+    }
+  </section>
+</MainLayout>

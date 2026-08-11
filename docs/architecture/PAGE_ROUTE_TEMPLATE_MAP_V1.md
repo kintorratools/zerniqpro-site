@@ -44,10 +44,13 @@ Only these 9 Astro template types are allowed. Astro controls layout, section or
 | 8   | `/contact/`       | `/contact/`                   | `/pages/contact/`                           | F — Contact                 | Contact         | yes           | yes       | TRANSITION_REQUIRED |
 | 9   | —                 | `/preview/products/<handle>/` | `/preview/`                                 | B — Product Detail (shadow) | Product         | no            | no        | SHADOW              |
 | 10  | `/fr/`            | `/fr/`                        | `/fr/`                                      | A-I (localized mirrors)     | (same as en)    | yes           | yes       | UNCHANGED           |
-| 11  | —                 | —                             | `/pages/downloads/`                         | G — Downloads               | Download        | yes           | yes       | FUTURE              |
-| 12  | —                 | —                             | `/pages/warranty/`                          | H — Warranty                | Warranty        | yes           | yes       | FUTURE              |
-| 13  | —                 | —                             | `/pages/privacy/`                           | I — Legal                   | Legal Page      | yes           | yes       | FUTURE              |
-| 14  | `/404`            | `/404`                        | `/404`                                      | Non-content                 | N/A             | no            | yes       | UNCHANGED           |
+| 11  | —                 | —                             | `/pages/downloads/`                         | G — Downloads               | Download        | yes           | yes       | READY_UNPUBLISHED   |
+| 12  | —                 | —                             | `/pages/warranty/`                          | H — Warranty                | Warranty        | yes           | yes       | READY_UNPUBLISHED   |
+| 13  | —                 | —                             | `/pages/privacy/`                           | I — Legal                   | Legal Page      | yes           | yes       | READY_UNPUBLISHED   |
+| 14  | —                 | —                             | `/fr/pages/downloads/`                      | G — Downloads               | Download        | yes           | yes       | READY_UNPUBLISHED   |
+| 15  | —                 | —                             | `/fr/pages/warranty/`                       | H — Warranty                | Warranty        | yes           | yes       | READY_UNPUBLISHED   |
+| 16  | —                 | —                             | `/fr/pages/privacy/`                        | I — Legal                   | Legal Page      | yes           | yes       | READY_UNPUBLISHED   |
+| 17  | `/404`            | `/404`                        | `/404`                                      | Non-content                 | N/A             | no            | yes       | UNCHANGED           |
 
 ---
 
