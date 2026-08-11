@@ -46,6 +46,9 @@ jobs:
       - name: Product Runtime v2 Check
         run: pnpm test:product-runtime-v2
 
+      - name: Fixed Pages Runtime Check
+        run: pnpm test:fixed-pages-runtime
+
       - name: Brand & i18n tests
         run: pnpm test:brand-i18n
 

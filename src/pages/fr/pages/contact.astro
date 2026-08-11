@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import ContactSection from '@components/sections/misc/ContactSection.astro';
+import { getContactPage } from '@/lib/cms/contact-page';
+import type { ContactPageViewModel } from '@/lib/cms/contact-page';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { SITE } from '@data/constants';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+
+let contactPage: ContactPageViewModel;
+try {
+  contactPage = await getContactPage('fr');
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  if (e instanceof Error && e.message === 'CMS not configured') {
+    return new Response(null, { status: 503 });
+  }
+  return new Response(null, { status: 502 });
+}
+
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  /* fallback */
+}
+
+const pageTitle = contactPage.seo?.title
+  ? `${contactPage.seo.title} | ${SITE.title}`
+  : `${contactPage.title} | ${SITE.title}`;
+const metaDescription = contactPage.seo?.description || contactPage.subtitle;
+const canonicalUrl = `${siteDomain}/fr/pages/contact`;
+---
+
+<MainLayout
+  title={pageTitle}
+  lang="fr"
+  customDescription={metaDescription}
+  customOgTitle={contactPage.seo?.title || contactPage.title}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: contactPage.seo?.title || contactPage.title,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
+    },
+    inLanguage: 'fr',
+  }}
+>
+  <ContactSection copy={contactPage} />
+</MainLayout>
