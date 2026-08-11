@@ -2,7 +2,7 @@ import { strapiFetch } from './client';
 import { getCmsConfig } from './config';
 import { buildServicesPageQuery } from './services-page-queries';
 import type { CmsMedia, CmsMediaView } from './media';
-import { resolveMediaUrl, toCmsMediaView } from './media';
+import { resolveMediaUrl } from './media';
 import { CmsContentNotFoundError } from './errors';
 
 export interface ServiceSlot {

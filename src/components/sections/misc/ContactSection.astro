@@ -7,35 +7,66 @@ import PhoneInput from '@components/ui/forms/input/PhoneInput.astro';
 import TextAreaInput from '@components/ui/forms/input/TextAreaInput.astro';
 import Icon from '@components/ui/icons/Icon.astro';
 
-interface Props {
-  copy: {
-    title: string;
-    subtitle: string;
-    formTitle: string;
-    formSubtitle: string;
-    firstNameLabel: string;
-    lastNameLabel: string;
-    detailsLabel: string;
-    submitLabel: string;
-    demoMessage: string;
-    knowledgeHeading: string;
-    knowledgeContent: string;
-    knowledgeLinkLabel: string;
-    knowledgeLinkUrl: string;
-    faqHeading: string;
-    faqContent: string;
-    faqLinkLabel: string;
-    faqLinkUrl: string;
-    officeHeading: string;
-    officeName: string;
-    officeAddress: string;
-    emailHeading: string;
-    emailContent: string;
-    contactEmail: string;
-  };
+interface ContactCopy {
+  title: string;
+  subtitle: string;
+  formTitle: string;
+  formSubtitle: string;
+  firstNameLabel: string;
+  lastNameLabel: string;
+  detailsLabel: string;
+  submitLabel: string;
+  demoMessage: string;
+  knowledgeHeading: string;
+  knowledgeContent: string;
+  knowledgeLinkLabel: string;
+  knowledgeLinkUrl: string;
+  faqHeading: string;
+  faqContent: string;
+  faqLinkLabel: string;
+  faqLinkUrl: string;
+  officeHeading: string;
+  officeName: string;
+  officeAddress: string;
+  emailHeading: string;
+  emailContent: string;
+  contactEmail: string;
 }
 
-const { copy } = Astro.props;
+const DEFAULT_COPY: ContactCopy = {
+  title: 'Contact Us',
+  subtitle:
+    "Have questions or want to discuss a project? Reach out, and let's craft the perfect solution with our tools and services.",
+  formTitle: 'Fill out the form',
+  formSubtitle: "We'll get back to you within 24 hours.",
+  firstNameLabel: 'First Name',
+  lastNameLabel: 'Last Name',
+  detailsLabel: 'Details',
+  submitLabel: 'Send Message',
+  demoMessage: 'This is a demo form. No data will be sent.',
+  knowledgeHeading: 'Knowledge Base',
+  knowledgeContent:
+    'Looking for answers? Browse our comprehensive documentation and guides.',
+  knowledgeLinkLabel: 'Browse Knowledge Base',
+  knowledgeLinkUrl: '/blogs/support',
+  faqHeading: 'FAQ',
+  faqContent: 'Check out our frequently asked questions for quick answers.',
+  faqLinkLabel: 'View FAQ',
+  faqLinkUrl: '#faq',
+  officeHeading: 'Our Office',
+  officeName: 'Acme HQ',
+  officeAddress: '123 Innovation Drive, Tech City, TC 94105',
+  emailHeading: 'Email',
+  emailContent:
+    "Drop us an email and we'll get back to you as soon as possible.",
+  contactEmail: 'info@example.com',
+};
+
+interface Props {
+  copy?: ContactCopy;
+}
+
+const { copy = DEFAULT_COPY } = Astro.props;
 ---
 
 <section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">

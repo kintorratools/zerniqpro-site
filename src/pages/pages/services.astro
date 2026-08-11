@@ -7,10 +7,7 @@ import LeftSection from '@components/ui/blocks/LeftSection.astro';
 import RightSection from '@components/ui/blocks/RightSection.astro';
 import FeaturesStats from '@components/sections/features/FeaturesStats.astro';
 import { getServicesPage } from '@/lib/cms/services-page';
-import type {
-  ServiceSlot,
-  ServicesPageViewModel,
-} from '@/lib/cms/services-page';
+import type { ServicesPageViewModel } from '@/lib/cms/services-page';
 import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 import { SITE } from '@data/constants';
 import { CmsContentNotFoundError } from '@/lib/cms/errors';
