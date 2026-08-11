@@ -67,7 +67,10 @@ const routes = [
 ];
 for (const route of routes) {
   const content = readContent(route);
-  check(`Prerender: ${route} has prerender = false`, content.includes('prerender = false'));
+  check(
+    `Prerender: ${route} has prerender = false`,
+    content.includes('prerender = false')
+  );
 }
 
 // ── (c) No local fallback ──
@@ -77,7 +80,8 @@ for (const route of routes) {
   const content = readContent(route);
   check(
     `No fallback: ${route} does NOT import from astro:content`,
-    !content.includes("from 'astro:content'") && !content.includes('from "astro:content"')
+    !content.includes("from 'astro:content'") &&
+      !content.includes('from "astro:content"')
   );
   check(
     `No fallback: ${route} does NOT use getCollection`,
@@ -105,12 +109,26 @@ for (const route of routes) {
 console.log('\n--- (e) Services data sourcing ---');
 {
   const enContent = readContent('src/pages/pages/services.astro');
-  check('Services EN: imports getServicesPage', enContent.includes('getServicesPage'));
-  check('Services EN: calls getServicesPage with locale', enContent.includes("getServicesPage('en')") || enContent.includes('getServicesPage("en")'));
+  check(
+    'Services EN: imports getServicesPage',
+    enContent.includes('getServicesPage')
+  );
+  check(
+    'Services EN: calls getServicesPage with locale',
+    enContent.includes("getServicesPage('en')") ||
+      enContent.includes('getServicesPage("en")')
+  );
 
   const frContent = readContent('src/pages/fr/pages/services.astro');
-  check('Services FR: imports getServicesPage', frContent.includes('getServicesPage'));
-  check('Services FR: calls getServicesPage with locale', frContent.includes("getServicesPage('fr')") || frContent.includes('getServicesPage("fr")'));
+  check(
+    'Services FR: imports getServicesPage',
+    frContent.includes('getServicesPage')
+  );
+  check(
+    'Services FR: calls getServicesPage with locale',
+    frContent.includes("getServicesPage('fr')") ||
+      frContent.includes('getServicesPage("fr")')
+  );
 }
 
 // ── (f) Contact CMS data sourcing ──
@@ -118,12 +136,26 @@ console.log('\n--- (e) Services data sourcing ---');
 console.log('\n--- (f) Contact data sourcing ---');
 {
   const enContent = readContent('src/pages/pages/contact.astro');
-  check('Contact EN: imports getContactPage', enContent.includes('getContactPage'));
-  check('Contact EN: calls getContactPage with locale', enContent.includes("getContactPage('en')") || enContent.includes('getContactPage("en")'));
+  check(
+    'Contact EN: imports getContactPage',
+    enContent.includes('getContactPage')
+  );
+  check(
+    'Contact EN: calls getContactPage with locale',
+    enContent.includes("getContactPage('en')") ||
+      enContent.includes('getContactPage("en")')
+  );
 
   const frContent = readContent('src/pages/fr/pages/contact.astro');
-  check('Contact FR: imports getContactPage', frContent.includes('getContactPage'));
-  check('Contact FR: calls getContactPage with locale', frContent.includes("getContactPage('fr')") || frContent.includes('getContactPage("fr")'));
+  check(
+    'Contact FR: imports getContactPage',
+    frContent.includes('getContactPage')
+  );
+  check(
+    'Contact FR: calls getContactPage with locale',
+    frContent.includes("getContactPage('fr')") ||
+      frContent.includes('getContactPage("fr")')
+  );
 }
 
 // ── (g) Services fixed order (5 sections, alternating Right/Left) ──
@@ -133,7 +165,10 @@ console.log('\n--- (g) Services fixed order ---');
   const content = readContent('src/pages/pages/services.astro');
 
   // MainSection is used for intro
-  check('Services: MainSection component preserved', content.includes('MainSection'));
+  check(
+    'Services: MainSection component preserved',
+    content.includes('MainSection')
+  );
 
   // 5 services: 3 Right, 2 Left (count entries in articles array)
   const rightCount = (content.match(/isRightSection:\s*true/g) || []).length;
@@ -142,25 +177,54 @@ console.log('\n--- (g) Services fixed order ---');
   check('Services: 2 Left sections', leftCount === 2, `found ${leftCount}`);
 
   // FeaturesStats preserved
-  check('Services: FeaturesStats component preserved', content.includes('FeaturesStats'));
+  check(
+    'Services: FeaturesStats component preserved',
+    content.includes('FeaturesStats')
+  );
 
   // Stats fields used (CMS-driven)
-  check('Services: statsTitle from CMS', content.includes('servicesPage.statsTitle'));
-  check('Services: mainStatValue from CMS', content.includes('servicesPage.mainStatValue'));
+  check(
+    'Services: statsTitle from CMS',
+    content.includes('servicesPage.statsTitle')
+  );
+  check(
+    'Services: mainStatValue from CMS',
+    content.includes('servicesPage.mainStatValue')
+  );
 }
 
 // ── (h) Contact form demo mode preserved ──
 
 console.log('\n--- (h) Contact demo mode ---');
 {
-  const content = readContent('src/components/sections/misc/ContactSection.astro');
+  const content = readContent(
+    'src/components/sections/misc/ContactSection.astro'
+  );
   check('Contact: demo form preserved', content.includes('data-demo-form'));
-  check('Contact: demo message preserved', content.includes('data-demo-message'));
-  check('Contact: form inputs preserved (firstName)', content.includes('hs-firstname-contacts'));
-  check('Contact: form inputs preserved (lastName)', content.includes('hs-lastname-contacts'));
-  check('Contact: form inputs preserved (email)', content.includes('hs-email-contacts'));
-  check('Contact: form inputs preserved (phone)', content.includes('hs-phone-number'));
-  check('Contact: form inputs preserved (details)', content.includes('hs-about-contacts'));
+  check(
+    'Contact: demo message preserved',
+    content.includes('data-demo-message')
+  );
+  check(
+    'Contact: form inputs preserved (firstName)',
+    content.includes('hs-firstname-contacts')
+  );
+  check(
+    'Contact: form inputs preserved (lastName)',
+    content.includes('hs-lastname-contacts')
+  );
+  check(
+    'Contact: form inputs preserved (email)',
+    content.includes('hs-email-contacts')
+  );
+  check(
+    'Contact: form inputs preserved (phone)',
+    content.includes('hs-phone-number')
+  );
+  check(
+    'Contact: form inputs preserved (details)',
+    content.includes('hs-about-contacts')
+  );
 
   // No hardcoded locale copy; props-driven
   const hasGetMarketingLocale = content.includes('getMarketingLocale');
@@ -174,12 +238,11 @@ console.log('\n--- (h) Contact demo mode ---');
 console.log('\n--- (i) Site canonical ---');
 for (const route of routes) {
   const content = readContent(route);
-  const usesSiteDomain = content.includes('runtimeConfig.site.domain') || content.includes('siteDomain');
+  const usesSiteDomain =
+    content.includes('runtimeConfig.site.domain') ||
+    content.includes('siteDomain');
   check(`Canonical: ${route} uses site domain`, usesSiteDomain);
-  check(
-    `Canonical: ${route} no example.com`,
-    !content.includes('example.com')
-  );
+  check(`Canonical: ${route} no example.com`, !content.includes('example.com'));
   check(
     `Canonical: ${route} no screwfast.uk`,
     !content.includes('screwfast.uk')
@@ -192,22 +255,48 @@ console.log('\n--- (j) Locale isolation ---');
 {
   const enServices = readContent('src/pages/pages/services.astro');
   const frServices = readContent('src/pages/fr/pages/services.astro');
-  check('Services EN: inLanguage en-US', enServices.includes("inLanguage: 'en-US'"));
+  check(
+    'Services EN: inLanguage en-US',
+    enServices.includes("inLanguage: 'en-US'")
+  );
   check('Services FR: inLanguage fr', frServices.includes("inLanguage: 'fr'"));
-  check('Services FR: lang="fr" on MainLayout', frServices.includes('lang="fr"'));
+  check(
+    'Services FR: lang="fr" on MainLayout',
+    frServices.includes('lang="fr"')
+  );
 }
 
 // ── (k) ContactSection receives CMS model ──
 
 console.log('\n--- (k) ContactSection CMS props ---');
 {
-  const contactSection = readContent('src/components/sections/misc/ContactSection.astro');
-  check('ContactSection: officeName field', contactSection.includes('officeName'));
-  check('ContactSection: officeAddress field', contactSection.includes('officeAddress'));
-  check('ContactSection: contactEmail field', contactSection.includes('contactEmail'));
-  check('ContactSection: knowledgeLinkLabel field', contactSection.includes('knowledgeLinkLabel'));
-  check('ContactSection: knowledgeLinkUrl field', contactSection.includes('knowledgeLinkUrl'));
-  check('ContactSection: demoMessage field', contactSection.includes('demoMessage'));
+  const contactSection = readContent(
+    'src/components/sections/misc/ContactSection.astro'
+  );
+  check(
+    'ContactSection: officeName field',
+    contactSection.includes('officeName')
+  );
+  check(
+    'ContactSection: officeAddress field',
+    contactSection.includes('officeAddress')
+  );
+  check(
+    'ContactSection: contactEmail field',
+    contactSection.includes('contactEmail')
+  );
+  check(
+    'ContactSection: knowledgeLinkLabel field',
+    contactSection.includes('knowledgeLinkLabel')
+  );
+  check(
+    'ContactSection: knowledgeLinkUrl field',
+    contactSection.includes('knowledgeLinkUrl')
+  );
+  check(
+    'ContactSection: demoMessage field',
+    contactSection.includes('demoMessage')
+  );
 }
 
 // ── Results ──

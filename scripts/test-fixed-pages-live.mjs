@@ -68,14 +68,32 @@ async function main() {
     } else {
       const body = await res.json();
       const data = body?.data;
-      check('[Services EN] Page exists', Array.isArray(data) && data.length === 1);
+      check(
+        '[Services EN] Page exists',
+        Array.isArray(data) && data.length === 1
+      );
       const page = data?.[0];
       if (page) {
-        check('[Services EN] introTitle non-empty', typeof page.introTitle === 'string' && page.introTitle.length > 0);
-        check('[Services EN] service1 exists', page.service1 && typeof page.service1.title === 'string');
-        check('[Services EN] service5 exists', page.service5 && typeof page.service5.title === 'string');
-        check('[Services EN] statsTitle matches', page.statsTitle === 'By the Numbers');
-        check('[Services EN] mainStatValue matches', page.mainStatValue === '96%');
+        check(
+          '[Services EN] introTitle non-empty',
+          typeof page.introTitle === 'string' && page.introTitle.length > 0
+        );
+        check(
+          '[Services EN] service1 exists',
+          page.service1 && typeof page.service1.title === 'string'
+        );
+        check(
+          '[Services EN] service5 exists',
+          page.service5 && typeof page.service5.title === 'string'
+        );
+        check(
+          '[Services EN] statsTitle matches',
+          page.statsTitle === 'By the Numbers'
+        );
+        check(
+          '[Services EN] mainStatValue matches',
+          page.mainStatValue === '96%'
+        );
       }
     }
   } catch (err) {
@@ -91,12 +109,21 @@ async function main() {
     } else {
       const body = await res.json();
       const data = body?.data;
-      check('[Services FR] Page exists', Array.isArray(data) && data.length === 1);
+      check(
+        '[Services FR] Page exists',
+        Array.isArray(data) && data.length === 1
+      );
       const page = data?.[0];
       if (page) {
         check('[Services FR] locale is fr', page.locale === 'fr');
-        check('[Services FR] introTitle non-empty', typeof page.introTitle === 'string' && page.introTitle.length > 0);
-        check('[Services FR] introTitle is French', page.introTitle.startsWith("Unir l'expertise"));
+        check(
+          '[Services FR] introTitle non-empty',
+          typeof page.introTitle === 'string' && page.introTitle.length > 0
+        );
+        check(
+          '[Services FR] introTitle is French',
+          page.introTitle.startsWith("Unir l'expertise")
+        );
       }
     }
   } catch (err) {
@@ -112,15 +139,34 @@ async function main() {
     } else {
       const body = await res.json();
       const data = body?.data;
-      check('[Contact EN] Page exists', Array.isArray(data) && data.length === 1);
+      check(
+        '[Contact EN] Page exists',
+        Array.isArray(data) && data.length === 1
+      );
       const page = data?.[0];
       if (page) {
         check('[Contact EN] title matches', page.title === 'Contact us');
-        check('[Contact EN] formTitle non-empty', typeof page.formTitle === 'string' && page.formTitle.length > 0);
-        check('[Contact EN] knowledge block exists', typeof page.knowledgeHeading === 'string');
-        check('[Contact EN] office block exists', typeof page.officeHeading === 'string');
-        check('[Contact EN] email block exists', typeof page.emailHeading === 'string');
-        check('[Contact EN] demoMessage non-empty', typeof page.demoMessage === 'string' && page.demoMessage.includes('Demo'));
+        check(
+          '[Contact EN] formTitle non-empty',
+          typeof page.formTitle === 'string' && page.formTitle.length > 0
+        );
+        check(
+          '[Contact EN] knowledge block exists',
+          typeof page.knowledgeHeading === 'string'
+        );
+        check(
+          '[Contact EN] office block exists',
+          typeof page.officeHeading === 'string'
+        );
+        check(
+          '[Contact EN] email block exists',
+          typeof page.emailHeading === 'string'
+        );
+        check(
+          '[Contact EN] demoMessage non-empty',
+          typeof page.demoMessage === 'string' &&
+            page.demoMessage.includes('Demo')
+        );
       }
     }
   } catch (err) {
@@ -136,12 +182,18 @@ async function main() {
     } else {
       const body = await res.json();
       const data = body?.data;
-      check('[Contact FR] Page exists', Array.isArray(data) && data.length === 1);
+      check(
+        '[Contact FR] Page exists',
+        Array.isArray(data) && data.length === 1
+      );
       const page = data?.[0];
       if (page) {
         check('[Contact FR] locale is fr', page.locale === 'fr');
         check('[Contact FR] title matches', page.title === 'Contactez-nous');
-        check('[Contact FR] formTitle is French', page.formTitle?.includes('Remplissez') || false);
+        check(
+          '[Contact FR] formTitle is French',
+          page.formTitle?.includes('Remplissez') || false
+        );
       }
     }
   } catch (err) {
@@ -152,13 +204,19 @@ async function main() {
   try {
     const enPath = `/api/services-pages?filters[site][key][$eq]=${SITE_KEY}&locale=en&status=published&pagination[pageSize]=1`;
     const frPath = `/api/services-pages?filters[site][key][$eq]=${SITE_KEY}&locale=fr&status=published&pagination[pageSize]=1`;
-    const [enRes, frRes] = await Promise.all([cmsFetch(enPath), cmsFetch(frPath)]);
+    const [enRes, frRes] = await Promise.all([
+      cmsFetch(enPath),
+      cmsFetch(frPath),
+    ]);
     const enBody = await enRes.json();
     const frBody = await frRes.json();
     const enIntro = enBody.data?.[0]?.introTitle || '';
     const frIntro = frBody.data?.[0]?.introTitle || '';
     check('[Locale Isolation] EN ≠ FR introTitle', enIntro !== frIntro);
-    check('[Locale Isolation] FR introTitle is French', !frIntro.includes('Expertise') || frIntro.includes('expertise'));
+    check(
+      '[Locale Isolation] FR introTitle is French',
+      !frIntro.includes('Expertise') || frIntro.includes('expertise')
+    );
   } catch (err) {
     check('[Locale Isolation] EN ≠ FR', false, err.message);
   }
