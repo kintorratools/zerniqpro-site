@@ -46,6 +46,9 @@ jobs:
       - name: Product Runtime v2 Check
         run: pnpm test:product-runtime-v2
 
+      - name: Product Preservation tests
+        run: pnpm test:product-preservation
+
       - name: Fixed Pages Runtime Check
         run: pnpm test:fixed-pages-runtime
 

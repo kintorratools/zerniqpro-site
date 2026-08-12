@@ -61,7 +61,6 @@ export async function GET() {
       status: 'error',
       cmsReachable: false,
       siteKey: config.siteKey,
-      error: errorMessage,
     });
   }
 }

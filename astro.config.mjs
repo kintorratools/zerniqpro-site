@@ -1,5 +1,6 @@
 import { defineConfig, envField } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import starlight from '@astrojs/starlight';
 
@@ -64,10 +65,7 @@ export default defineConfig({
           label: 'English',
           lang: 'en',
         },
-        de: { label: 'Deutsch', lang: 'de' },
-        es: { label: 'Español', lang: 'es' },
         fr: { label: 'Français', lang: 'fr' },
-        'pt-BR': { label: 'Português (Brasil)', lang: 'pt-BR' },
       },
       // https://starlight.astro.build/guides/sidebar/
       sidebar: [
@@ -123,6 +121,7 @@ export default defineConfig({
       },
     }),
     mdx(),
+    sitemap(),
   ],
   experimental: {
     clientPrerender: true,

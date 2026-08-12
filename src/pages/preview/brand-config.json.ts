@@ -24,6 +24,14 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 export async function GET() {
+  // Disable preview endpoints in production via env flag
+  if (import.meta.env.DISABLE_PREVIEW === 'true') {
+    return new Response(JSON.stringify({ error: 'Not Found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const config = await getRuntimeConfig();
     const enabledLocales = getEnabledLocales(config.locales);
@@ -52,14 +60,7 @@ export async function GET() {
       },
     });
   } catch (e) {
-    console.error(
-      '[brand-config] Error:',
-      e instanceof Error ? e.message : String(e)
-    );
-    console.error(
-      '[brand-config] Stack:',
-      e instanceof Error ? e.stack : 'no stack'
-    );
+    console.error('[brand-config] Error fetching brand configuration');
     if (e instanceof CmsNotConfiguredError) {
       return jsonResponse(503, { status: 'unconfigured' });
     }

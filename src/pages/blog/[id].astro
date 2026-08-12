@@ -11,6 +11,7 @@ import { capitalize, formatDate } from '@utils/utils';
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 
 // Update getStaticPaths for English posts
 export async function getStaticPaths() {
@@ -29,6 +30,17 @@ export async function getStaticPaths() {
 // Get the current post's data
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// Get site domain from runtime config
+let siteUrl = SITE.url;
+try {
+  const runtime = await getRuntimeConfig('en');
+  siteUrl = runtime.site?.domain
+    ? runtime.site.domain.replace(/\/+$/, '')
+    : SITE.url;
+} catch {
+  /* fallback */
+}
 
 const blogPosts: CollectionEntry<'blog'>[] = await getCollection(
   'blog',
@@ -67,12 +79,12 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
       name: SITE.title,
       logo: {
         '@type': 'ImageObject',
-        url: 'https://example.com/favicon.ico',
+        url: `${siteUrl}/favicon.ico`,
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://example.com/blog/${post.id.replace(/^en\//, '')}`,
+      '@id': `${siteUrl}/blog/${post.id.replace(/^en\//, '')}`,
     },
   }}
 >

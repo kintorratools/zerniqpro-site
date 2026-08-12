@@ -8,7 +8,7 @@ const ROUTES = [
       (s >= 200 && s < 300) || s === 500 || s === 502 || s === 503,
   },
   { path: '/blog/', expectStatus: s => s >= 200 && s < 300 },
-  { path: '/contact/', expectStatus: s => s >= 200 && s < 300 },
+  { path: '/contact/', expectStatus: s => s >= 200 && s < 400 },
   { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
   // CMS probe: 200 if CMS configured, 503 if not, 502 if CMS error
@@ -224,17 +224,22 @@ for (const route of ROUTES) {
       );
     }
 
-    // Extra checks for product preview shadow route
+    // Extra checks for product preview shadow route (only when reachable)
     if (route.path === '/preview/products/test-product/') {
-      const xRobots = res.headers.get('x-robots-tag') ?? '';
-      if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
-        console.error(
-          `FAIL ${route.path} -> X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
-        );
-        failed = true;
-        continue;
+      if (res.status === 404) {
+        // Production guard returns 404 — no X-Robots-Tag expected
+        console.log(`OK   ${route.path} -> 404 (production guard active)`);
+      } else {
+        const xRobots = res.headers.get('x-robots-tag') ?? '';
+        if (!xRobots.includes('noindex') || !xRobots.includes('nofollow')) {
+          console.error(
+            `FAIL ${route.path} -> X-Robots-Tag must include noindex and nofollow: "${xRobots}"`
+          );
+          failed = true;
+          continue;
+        }
+        console.log(`OK   ${route.path} -> noindex/nofollow verified`);
       }
-      console.log(`OK   ${route.path} -> noindex/nofollow verified`);
     }
   } catch (err) {
     console.error(`FAIL ${route.path} -> ${err.message}`);

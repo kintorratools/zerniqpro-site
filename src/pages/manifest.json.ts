@@ -2,6 +2,7 @@ import type { APIRoute, ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 import icon from '@images/icon.png';
 import maskableIcon from '@images/icon-maskable.png';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 
 interface Favicon {
   purpose: 'any' | 'maskable' | 'monochrome';
@@ -43,9 +44,17 @@ export const GET: APIRoute = async () => {
     )
   );
 
+  let brandName = 'Acme';
+  try {
+    const runtime = await getRuntimeConfig();
+    brandName = runtime.brand?.name || runtime.site?.name || 'Acme';
+  } catch {
+    /* fallback */
+  }
+
   const manifest = {
-    short_name: 'Acme',
-    name: 'Acme',
+    short_name: brandName,
+    name: brandName,
     icons,
     display: 'minimal-ui',
     id: '/',

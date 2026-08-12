@@ -7,6 +7,20 @@ import CardInsight from '@components/ui/cards/CardInsight.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+
+// Get brand and site domain from runtime config
+let brandName = SITE.title;
+let siteUrl = SITE.url;
+try {
+  const runtime = await getRuntimeConfig('en');
+  brandName = runtime.brand?.name || runtime.site?.name || SITE.title;
+  siteUrl = runtime.site?.domain
+    ? runtime.site.domain.replace(/\/+$/, '')
+    : SITE.url;
+} catch {
+  /* fallback to SITE constants */
+}
 
 // Get all blogs post in English and sort them based on publish date
 
@@ -31,16 +45,13 @@ const otherPosts: CollectionEntry<'blog'>[] = blogPosts.slice(1);
 
 // Define variables for page content
 const title: string = 'Your Gateway to Construction Excellence';
-const subTitle: string =
-  'Explore the latest news, tips, and insights from Acme to enhance your construction projects. From product spotlights to project management strategies, our blog is your go-to resource for all things hardware and construction.';
+const subTitle: string = `Explore the latest news, tips, and insights from ${brandName} to enhance your construction projects. From product spotlights to project management strategies, our blog is your go-to resource for all things hardware and construction.`;
 const secondTitle: string = 'Insights';
-const secondSubTitle: string =
-  "Stay up-to-date with the latest trends and developments in the construction industry with insights from Acme's team of industry experts. ";
+const secondSubTitle: string = `Stay up-to-date with the latest trends and developments in the construction industry with insights from ${brandName}'s team of industry experts. `;
 
-const pageTitle: string = `Blog | ${SITE.title}`;
-const metaDescription =
-  "Stay up-to-date with the latest trends and developments in the construction industry with insights from Acme's team of industry experts.";
-const ogTitle = 'Construction Industry Blog | Acme';
+const pageTitle: string = `Blog | ${brandName}`;
+const metaDescription = `Stay up-to-date with the latest trends and developments in the construction industry with insights from ${brandName}'s team of industry experts.`;
+const ogTitle = `Construction Industry Blog | ${brandName}`;
 ---
 
 <MainLayout
@@ -50,17 +61,15 @@ const ogTitle = 'Construction Industry Blog | Acme';
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    '@id': 'https://example.com/blog',
-    url: 'https://example.com/blog',
-    name: 'Blog | Acme',
-    description:
-      "Stay up-to-date with the latest trends and developments in the construction industry with insights from Acme's team of industry experts.",
+    '@id': `${siteUrl}/blog`,
+    url: `${siteUrl}/blog`,
+    name: `Blog | ${brandName}`,
+    description: metaDescription,
     isPartOf: {
       '@type': 'WebSite',
-      url: 'https://example.com',
-      name: 'Acme',
-      description:
-        'Acme offers top-tier hardware tools and expert construction services to meet all your project needs.',
+      url: siteUrl,
+      name: brandName,
+      description: SITE.description,
     },
     inLanguage: 'en-US',
   }}

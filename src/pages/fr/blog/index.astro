@@ -7,6 +7,20 @@ import CardInsight from '@components/ui/cards/CardInsight.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+
+// Get brand and site domain from runtime config
+let brandName = SITE.title;
+let siteUrl = SITE.url;
+try {
+  const runtime = await getRuntimeConfig('fr');
+  brandName = runtime.brand?.name || runtime.site?.name || SITE.title;
+  siteUrl = runtime.site?.domain
+    ? runtime.site.domain.replace(/\/+$/, '')
+    : SITE.url;
+} catch {
+  /* fallback to SITE constants */
+}
 
 // Get all blogs post in French and sort them based on publish date
 
@@ -31,16 +45,13 @@ const otherPosts: CollectionEntry<'blog'>[] = blogPosts.slice(1);
 
 // Define variables for page content
 const title: string = "Votre Passerelle vers l'Excellence en Construction";
-const subTitle: string =
-  'Explorez les dernières actualités, astuces et analyses de Acme pour améliorer vos projets de construction. Des mises en avant de produits aux stratégies de gestion de projet, notre blog est votre ressource incontournable pour tout ce qui concerne les outils et la construction.';
+const subTitle: string = `Explorez les dernières actualités, astuces et analyses de ${brandName} pour améliorer vos projets de construction. Des mises en avant de produits aux stratégies de gestion de projet, notre blog est votre ressource incontournable pour tout ce qui concerne les outils et la construction.`;
 const secondTitle: string = 'Perspectives';
-const secondSubTitle: string =
-  "Restez à jour avec les dernières tendances et évolutions de l'industrie de la construction grâce aux analyses de l'équipe d'experts de Acme.";
+const secondSubTitle: string = `Restez à jour avec les dernières tendances et évolutions de l'industrie de la construction grâce aux analyses de l'équipe d'experts de ${brandName}.`;
 
-const pageTitle: string = `Blog | ${SITE.title}`;
-const metaDescription =
-  "Restez informé des dernières tendances et évolutions dans le secteur de la construction avec les analyses de l'équipe d'experts de Acme.";
-const ogTitle = "Blog de l'Industrie de la Construction | Acme";
+const pageTitle: string = `Blog | ${brandName}`;
+const metaDescription = `Restez informé des dernières tendances et évolutions dans le secteur de la construction avec les analyses de l'équipe d'experts de ${brandName}.`;
+const ogTitle = `Blog de l'Industrie de la Construction | ${brandName}`;
 ---
 
 <MainLayout
@@ -51,17 +62,15 @@ const ogTitle = "Blog de l'Industrie de la Construction | Acme";
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    '@id': 'https://example.com/fr/blog',
-    url: 'https://example.com/fr/blog',
-    name: 'Blog | Acme',
-    description:
-      "Restez informé des dernières tendances et évolutions dans le secteur de la construction avec les analyses de l'équipe d'experts de Acme.",
+    '@id': `${siteUrl}/fr/blog`,
+    url: `${siteUrl}/fr/blog`,
+    name: `Blog | ${brandName}`,
+    description: metaDescription,
     isPartOf: {
       '@type': 'WebSite',
-      url: 'https://example.com/fr',
-      name: 'Acme',
-      description:
-        'Acme propose des outils matériels de premier ordre et des services de construction experts pour répondre à tous vos besoins de projet.',
+      url: siteUrl,
+      name: brandName,
+      description: SITE.description,
     },
     inLanguage: 'fr',
   }}

@@ -3,6 +3,7 @@ import { SITE } from '@data/constants';
 import MainLayout from '@/layouts/MainLayout.astro';
 import InsightDetail from '@components/sections/insights/InsightDetail.astro';
 import { getCollection } from 'astro:content';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 
 export async function getStaticPaths() {
   const insightPosts = await getCollection('insights', ({ id }) =>
@@ -18,6 +19,17 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+
+// Get site domain from runtime config
+let siteUrl = SITE.url;
+try {
+  const runtime = await getRuntimeConfig('en');
+  siteUrl = runtime.site?.domain
+    ? runtime.site.domain.replace(/\/+$/, '')
+    : SITE.url;
+} catch {
+  /* fallback */
+}
 
 const pageTitle: string = `${post.data.title} | ${SITE.title}`;
 const metaDescription = post.data.description;
@@ -44,12 +56,12 @@ const insightId = post.id.replace(/^en\//, '');
       name: SITE.title,
       logo: {
         '@type': 'ImageObject',
-        url: `${SITE.url}/favicon.ico`,
+        url: `${siteUrl}/favicon.ico`,
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${SITE.url}/insights/${insightId}`,
+      '@id': `${siteUrl}/insights/${insightId}`,
     },
   }}
 >

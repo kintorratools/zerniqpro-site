@@ -250,7 +250,7 @@ if (mediaInventoryStart >= 0) {
 console.log('\n--- 4. ProductDetail fixed structure ---');
 
 // The page wrapper imports ProductDetail component
-const detailPagePath = 'src/pages/products/[id].astro';
+const detailPagePath = 'src/pages/products/[handle].astro';
 checkExists(detailPagePath);
 const detailPageContent = readContent(detailPagePath);
 check(
@@ -265,7 +265,7 @@ const detailCompContent = readContent(detailCompPath);
 
 // Protected elements — check in the component (which renders the actual UI)
 const detailChecks = [
-  ['Hero / intro section (main.content)', 'main.content'],
+  ['Hero / intro section (introText)', 'introText'],
   ['Tab navigation', 'tab'],
   ['Tab button', 'ProductTabBtn'],
   ['Main image rendering', 'Image'],
@@ -293,10 +293,12 @@ check(
   `found ${tabPanelsFound}/3 panel IDs`
 );
 
-// Tabs are rendered from product.data.tabs (3 entries in data)
+// Tabs are rendered from product tab labels (3 tabs: desc, specs, blueprints)
 check(
-  'ProductDetail component renders tabs from product.data.tabs',
-  detailCompContent.includes('product.data.tabs')
+  'ProductDetail component renders tabs from product tab labels',
+  detailCompContent.includes('descriptionTabLabel') &&
+    detailCompContent.includes('specificationsTabLabel') &&
+    detailCompContent.includes('blueprintsTabLabel')
 );
 
 // GSAP animation IDs in component
@@ -482,9 +484,12 @@ check(
 
 console.log('\n--- 10. Target route verification ---');
 
-// Current production routes use [id] param
-checkExists('src/pages/products/[id].astro', 'Production detail route');
-checkExists('src/pages/fr/products/[id].astro', 'FR production detail route');
+// Current production routes use [handle] param
+checkExists('src/pages/products/[handle].astro', 'Production detail route');
+checkExists(
+  'src/pages/fr/products/[handle].astro',
+  'FR production detail route'
+);
 
 // Preview route exists
 checkExists(
@@ -528,12 +533,11 @@ check(
   previewContent.includes('X-Robots-Tag')
 );
 
-// Production pages use astro:content, not CMS
-const prodDetailContent = readContent('src/pages/products/[id].astro');
+// Production pages use CMS (getProductByHandle)
+const prodDetailContent = readContent('src/pages/products/[handle].astro');
 check(
-  'Production detail uses astro:content (not CMS)',
-  prodDetailContent.includes('getCollection') ||
-    prodDetailContent.includes('getEntry')
+  'Production detail uses CMS (getProductByHandle)',
+  prodDetailContent.includes('getProductByHandle')
 );
 
 // ---------------------------------------------------------------------------
@@ -544,9 +548,9 @@ console.log('\n--- 12. Old product routes preserved ---');
 
 const oldProductRoutes = [
   'src/pages/products/index.astro',
-  'src/pages/products/[id].astro',
+  'src/pages/products/[handle].astro',
   'src/pages/fr/products/index.astro',
-  'src/pages/fr/products/[id].astro',
+  'src/pages/fr/products/[handle].astro',
 ];
 
 for (const route of oldProductRoutes) {
