@@ -51,19 +51,19 @@ console.log('=== test-fixed-pages-runtime ===');
 // ── (a) 4 routes exist ──
 
 console.log('\n--- (a) Route files exist ---');
-checkExists('src/pages/pages/services.astro', 'EN Services');
-checkExists('src/pages/fr/pages/services.astro', 'FR Services');
-checkExists('src/pages/pages/contact.astro', 'EN Contact');
-checkExists('src/pages/fr/pages/contact.astro', 'FR Contact');
+checkExists('src/pages/services.astro', 'EN Services');
+checkExists('src/pages/fr/services.astro', 'FR Services');
+checkExists('src/pages/contact.astro', 'EN Contact');
+checkExists('src/pages/fr/contact.astro', 'FR Contact');
 
 // ── (b) All routes are SSR-only (prerender = false) ──
 
 console.log('\n--- (b) Prerender = false ---');
 const routes = [
-  'src/pages/pages/services.astro',
-  'src/pages/fr/pages/services.astro',
-  'src/pages/pages/contact.astro',
-  'src/pages/fr/pages/contact.astro',
+  'src/pages/services.astro',
+  'src/pages/fr/services.astro',
+  'src/pages/contact.astro',
+  'src/pages/fr/contact.astro',
 ];
 for (const route of routes) {
   const content = readContent(route);
@@ -108,7 +108,7 @@ for (const route of routes) {
 
 console.log('\n--- (e) Services data sourcing ---');
 {
-  const enContent = readContent('src/pages/pages/services.astro');
+  const enContent = readContent('src/pages/services.astro');
   check(
     'Services EN: imports getServicesPage',
     enContent.includes('getServicesPage')
@@ -119,7 +119,7 @@ console.log('\n--- (e) Services data sourcing ---');
       enContent.includes('getServicesPage("en")')
   );
 
-  const frContent = readContent('src/pages/fr/pages/services.astro');
+  const frContent = readContent('src/pages/fr/services.astro');
   check(
     'Services FR: imports getServicesPage',
     frContent.includes('getServicesPage')
@@ -135,7 +135,7 @@ console.log('\n--- (e) Services data sourcing ---');
 
 console.log('\n--- (f) Contact data sourcing ---');
 {
-  const enContent = readContent('src/pages/pages/contact.astro');
+  const enContent = readContent('src/pages/contact.astro');
   check(
     'Contact EN: imports getContactPage',
     enContent.includes('getContactPage')
@@ -146,7 +146,7 @@ console.log('\n--- (f) Contact data sourcing ---');
       enContent.includes('getContactPage("en")')
   );
 
-  const frContent = readContent('src/pages/fr/pages/contact.astro');
+  const frContent = readContent('src/pages/fr/contact.astro');
   check(
     'Contact FR: imports getContactPage',
     frContent.includes('getContactPage')
@@ -162,7 +162,7 @@ console.log('\n--- (f) Contact data sourcing ---');
 
 console.log('\n--- (g) Services fixed order ---');
 {
-  const content = readContent('src/pages/pages/services.astro');
+  const content = readContent('src/pages/services.astro');
 
   // MainSection is used for intro
   check(
@@ -253,8 +253,8 @@ for (const route of routes) {
 
 console.log('\n--- (j) Locale isolation ---');
 {
-  const enServices = readContent('src/pages/pages/services.astro');
-  const frServices = readContent('src/pages/fr/pages/services.astro');
+  const enServices = readContent('src/pages/services.astro');
+  const frServices = readContent('src/pages/fr/services.astro');
   check(
     'Services EN: inLanguage en-US',
     enServices.includes("inLanguage: 'en-US'")

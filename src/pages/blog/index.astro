@@ -8,6 +8,7 @@ import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
 import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { getCmsBlogArticles, getCmsInsightArticles } from '@/lib/cms/blog-data';
 
 // Get brand and site domain from runtime config
 let brandName = SITE.title;
@@ -22,8 +23,13 @@ try {
   /* fallback to SITE constants */
 }
 
-// Get all blogs post in English and sort them based on publish date
+// Fetch CMS data first (PRIMARY source)
+const cmsBlogArticles = await getCmsBlogArticles('en');
+const cmsInsightArticles = await getCmsInsightArticles('en');
+const hasCmsBlog = cmsBlogArticles.length > 0;
+const hasCmsInsight = cmsInsightArticles.length > 0;
 
+// Get all blogs post in English and sort them based on publish date (MDX fallback)
 const englishBlogEntries = await getCollection('blog', ({ id }) => {
   return id.startsWith('en/');
 });
@@ -42,6 +48,10 @@ const insightPosts: CollectionEntry<'insights'>[] = englishInsightsEntries;
 // Separate the most recent post from others
 const mostRecentPost: CollectionEntry<'blog'> | undefined = blogPosts[0];
 const otherPosts: CollectionEntry<'blog'>[] = blogPosts.slice(1);
+
+// CMS-driven data
+const cmsMostRecent = hasCmsBlog ? cmsBlogArticles[0] : null;
+const cmsOtherBlog = hasCmsBlog ? cmsBlogArticles.slice(1) : [];
 
 // Define variables for page content
 const title: string = 'Your Gateway to Construction Excellence';
@@ -97,7 +107,44 @@ const ogTitle = `Construction Industry Blog | ${brandName}`;
     class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full"
   >
     {
-      blogPosts.length === 0 ? (
+      hasCmsBlog ? (
+        cmsOtherBlog.length > 0 ? (
+          <div class="grid gap-6 lg:grid-cols-2">
+            {cmsOtherBlog.map(article => (
+              <a
+                class="group relative block rounded-xl ring-zinc-500 outline-hidden transition duration-500 focus-visible:ring-3 dark:ring-zinc-200 dark:focus:outline-hidden"
+                href={`/blog/${article.slug}/`}
+                data-astro-prefetch
+              >
+                <div class="relative h-[350px] w-full shrink-0 overflow-hidden rounded-xl before:absolute before:inset-x-0 before:z-1 before:size-full before:bg-linear-to-t before:from-neutral-900/[.7]">
+                  {article.cardImage?.url && (
+                    <img
+                      class="absolute start-0 top-0 size-full object-cover transition duration-500 group-hover:scale-110"
+                      src={`http://127.0.0.1:1337${article.cardImage.url}`}
+                      alt={article.cardImageAlt}
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+                <div class="absolute inset-x-0 bottom-0 z-10">
+                  <div class="flex h-full flex-col p-4 sm:p-6">
+                    <h3 class="text-lg font-bold text-balance text-neutral-50 group-hover:text-neutral-50/[.8] sm:text-3xl">
+                      {article.title}
+                    </h3>
+                    <p class="mt-2 text-pretty text-neutral-50/[.8]">
+                      {article.excerpt}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="text-center text-neutral-600 dark:text-neutral-400">
+            No blog posts yet. Check back soon.
+          </p>
+        )
+      ) : blogPosts.length === 0 ? (
         <p class="text-center text-neutral-600 dark:text-neutral-400">
           No blog posts yet. Check back soon.
         </p>
@@ -110,15 +157,60 @@ const ogTitle = `Construction Industry Blog | ${brandName}`;
       )
     }
   </section>
-  {/* Most recent blog post */}
+  <!-- Most recent blog post -->
   {
-    mostRecentPost && (
+    hasCmsBlog && cmsMostRecent ? (
       <section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
-        <CardBlogRecent blogEntry={mostRecentPost} />
+        <div class="grid gap-8 sm:grid-cols-2 sm:items-center">
+          <div class="sm:order-2">
+            <div class="relative rounded-lg pt-[50%] sm:pt-[100%]">
+              {cmsMostRecent.cardImage?.url && (
+                <img
+                  class="absolute start-0 top-0 size-full rounded-xl object-cover"
+                  src={`http://127.0.0.1:1337${cmsMostRecent.cardImage.url}`}
+                  alt={cmsMostRecent.cardImageAlt}
+                  loading="lazy"
+                />
+              )}
+            </div>
+          </div>
+          <div class="sm:order-1">
+            <h2 class="text-2xl font-bold tracking-tight text-balance text-neutral-800 md:text-3xl lg:text-4xl lg:leading-tight xl:text-5xl xl:leading-tight dark:text-neutral-200">
+              <a
+                class="ring-zinc-500 outline-hidden transition duration-300 hover:text-orange-400 focus-visible:ring-3 dark:text-neutral-300 dark:ring-zinc-200 dark:hover:text-neutral-50 dark:focus:outline-hidden"
+                href={`/blog/${cmsMostRecent.slug}/`}
+              >
+                {cmsMostRecent.excerpt}
+              </a>
+            </h2>
+            <div class="mt-6 flex items-center sm:mt-10">
+              <div class="ms-3 sm:ms-4">
+                <p class="font-bold text-neutral-800 sm:mb-1 dark:text-neutral-200">
+                  {cmsMostRecent.author}
+                </p>
+              </div>
+            </div>
+            <div class="mt-5">
+              <a
+                class="inline-flex items-center gap-x-3 rounded-lg bg-orange-400 px-4 py-3 text-sm font-semibold text-neutral-50 transition duration-300 hover:bg-orange-500"
+                href={`/blog/${cmsMostRecent.slug}/`}
+                data-astro-prefetch
+              >
+                Read More
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
+    ) : (
+      mostRecentPost && (
+        <section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
+          <CardBlogRecent blogEntry={mostRecentPost} />
+        </section>
+      )
     )
   }
-  {/* Insights section */}
+  <!-- Insights section -->
   <section
     class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full"
   >
@@ -133,7 +225,44 @@ const ogTitle = `Construction Industry Blog | ${brandName}`;
       </p>
     </div>
     {
-      insightPosts.length === 0 ? (
+      hasCmsInsight ? (
+        cmsInsightArticles.length === 0 ? (
+          <p class="text-center text-neutral-600 dark:text-neutral-400">
+            No insights yet. Check back soon.
+          </p>
+        ) : (
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {cmsInsightArticles.map(article => (
+              <a
+                class="group rounded-xl ring-zinc-500 outline-hidden transition duration-300 focus-visible:ring-3 dark:ring-zinc-200 dark:focus:outline-hidden"
+                href={`/insights/${article.slug}/`}
+              >
+                <div class="relative overflow-hidden rounded-xl pt-[50%] sm:pt-[70%]">
+                  {article.cardImage?.url && (
+                    <img
+                      class="absolute start-0 top-0 size-full rounded-xl object-cover transition duration-500 ease-in-out group-hover:scale-105"
+                      src={`http://127.0.0.1:1337${article.cardImage.url}`}
+                      alt={article.cardImageAlt}
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+                <div class="mt-7">
+                  <h3 class="text-xl font-bold text-neutral-800 group-hover:text-neutral-600 dark:text-neutral-200 dark:group-hover:text-neutral-400">
+                    {article.title}
+                  </h3>
+                  <p class="mt-3 text-neutral-600 dark:text-neutral-400">
+                    {article.excerpt}
+                  </p>
+                  <p class="mt-5 inline-flex items-center gap-x-1 font-medium text-orange-400 decoration-2 group-hover:underline dark:text-orange-300">
+                    Read more
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )
+      ) : insightPosts.length === 0 ? (
         <p class="text-center text-neutral-600 dark:text-neutral-400">
           No insights yet. Check back soon.
         </p>

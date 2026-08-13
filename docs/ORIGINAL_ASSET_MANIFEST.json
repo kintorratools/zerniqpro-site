@@ -1,0 +1,405 @@
+{
+  "ORIGINAL_MEDIA_DISCOVERED": 43,
+  "CMS_MEDIA_IMPORTED": 35,
+  "CMS_MEDIA_MAPPED": 25,
+  "BASELINE_UNUSED_MEDIA": 8,
+  "BROKEN_MEDIA": 0,
+  "MEDIA_PARITY": "PASS",
+  "IDEMPOTENCY_CHECK": "FAIL - Strapi 5 does NOT deduplicate by hash. Re-uploading the same file creates a new media entry with a different hash suffix.",
+  "notes": {
+    "blueprint_binding": "Blueprint images (blueprint-1.avif, blueprint-2.avif) imported to CMS but not bound. Product content type does not have 'blueprintImageFirst' field; actual field name may differ.",
+    "starlight_svgs": "Starlight SVGs (screwfast_hero, screwfast_hero_dark, docs_logo, acme_logo_dark) imported to CMS but used directly in Astro templates, not via CMS content types.",
+    "icon_images": "Icon images (icon.svg, icon.png, icon-maskable) imported to CMS but used directly in manifest.json.ts and Meta.astro, not via CMS content types.",
+    "banner_pattern": "banner-pattern.svg imported but used as CSS background in AnnouncementBanner.astro.",
+    "component_arrays": "Component arrays (hero.avatars, clients.partners, featuresNavs.tabs, testimonials.items) were not populated as they are empty repeatable components requiring creation of new component instances."
+  },
+  "assets": [
+    {
+      "sourceAsset": "src/images/hero-image.avif",
+      "classification": "USED",
+      "cmsMediaId": 2,
+      "cmsMediaName": "hero-image.avif",
+      "contentType": "homepage",
+      "field": "hero.image",
+      "frontendRoute": "/"
+    },
+    {
+      "sourceAsset": "src/images/features-image.avif",
+      "classification": "USED",
+      "cmsMediaId": 3,
+      "cmsMediaName": "features-image.avif",
+      "contentType": "homepage",
+      "field": "featuresGeneral.image",
+      "frontendRoute": "/"
+    },
+    {
+      "sourceAsset": "src/images/construction-image.avif",
+      "classification": "USED",
+      "cmsMediaId": 4,
+      "cmsMediaName": "construction-image.avif",
+      "contentType": "services-page",
+      "field": "service1.image1",
+      "frontendRoute": "/pages/services"
+    },
+    {
+      "sourceAsset": "src/images/automated-tools.avif",
+      "classification": "USED",
+      "cmsMediaId": 5,
+      "cmsMediaName": "automated-tools.avif",
+      "contentType": "services-page",
+      "field": "service2.image1",
+      "frontendRoute": "/pages/services"
+    },
+    {
+      "sourceAsset": "src/images/dashboard-image.avif",
+      "classification": "USED",
+      "cmsMediaId": 6,
+      "cmsMediaName": "dashboard-image.avif",
+      "contentType": "services-page",
+      "field": "service3.image1",
+      "frontendRoute": "/pages/services"
+    },
+    {
+      "sourceAsset": "src/images/product-image-1.avif",
+      "classification": "USED",
+      "cmsMediaId": 7,
+      "cmsMediaName": "product-image-1.avif",
+      "contentType": "product",
+      "field": "cardImage",
+      "frontendRoute": "/products/item-t845"
+    },
+    {
+      "sourceAsset": "src/images/product-image-2.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 8,
+      "cmsMediaName": "product-image-2.avif",
+      "contentType": "product",
+      "field": "cardImage",
+      "frontendRoute": "/products/item-a765"
+    },
+    {
+      "sourceAsset": "src/images/product-image-3.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 9,
+      "cmsMediaName": "product-image-3.avif",
+      "contentType": "product",
+      "field": "cardImage",
+      "frontendRoute": "/products/item-b203"
+    },
+    {
+      "sourceAsset": "src/images/product-image-4.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 10,
+      "cmsMediaName": "product-image-4.avif",
+      "contentType": "product",
+      "field": "cardImage",
+      "frontendRoute": "/products/item-f303"
+    },
+    {
+      "sourceAsset": "src/images/product-image-main-1.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 11,
+      "cmsMediaName": "product-image-main-1.avif",
+      "contentType": "product",
+      "field": "mainImage",
+      "frontendRoute": "/products/item-t845"
+    },
+    {
+      "sourceAsset": "src/images/product-image-main-2.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 12,
+      "cmsMediaName": "product-image-main-2.avif",
+      "contentType": "product",
+      "field": "mainImage",
+      "frontendRoute": "/products/item-a765"
+    },
+    {
+      "sourceAsset": "src/images/product-image-main-3.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 13,
+      "cmsMediaName": "product-image-main-3.avif",
+      "contentType": "product",
+      "field": "mainImage",
+      "frontendRoute": "/products/item-b203"
+    },
+    {
+      "sourceAsset": "src/images/product-image-main-4.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 14,
+      "cmsMediaName": "product-image-main-4.avif",
+      "contentType": "product",
+      "field": "mainImage",
+      "frontendRoute": "/products/item-f303"
+    },
+    {
+      "sourceAsset": "src/images/blueprint-1.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 15,
+      "cmsMediaName": "blueprint-1.avif",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/blueprint-2.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 16,
+      "cmsMediaName": "blueprint-2.avif",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/blog/post-1.avif",
+      "classification": "USED",
+      "cmsMediaId": 17,
+      "cmsMediaName": "post-1.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/safety-best-practices"
+    },
+    {
+      "sourceAsset": "src/images/blog/post-2.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 18,
+      "cmsMediaName": "post-2.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/equipment-maintenance-guide"
+    },
+    {
+      "sourceAsset": "src/images/blog/post-3.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 19,
+      "cmsMediaName": "post-3.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/top-construction-tools-2026"
+    },
+    {
+      "sourceAsset": "src/images/blog/jacob.avif",
+      "classification": "USED",
+      "cmsMediaId": 20,
+      "cmsMediaName": "jacob.avif",
+      "contentType": "support-article",
+      "field": "authorImage",
+      "frontendRoute": "/blogs/support/safety-best-practices"
+    },
+    {
+      "sourceAsset": "src/images/blog/brad.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 21,
+      "cmsMediaName": "brad.avif",
+      "contentType": "support-article",
+      "field": "authorImage",
+      "frontendRoute": "/blogs/support/top-construction-tools-2026"
+    },
+    {
+      "sourceAsset": "src/images/blog/anna.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 22,
+      "cmsMediaName": "anna.avif",
+      "contentType": "support-article",
+      "field": "authorImage",
+      "frontendRoute": "/blogs/support/equipment-maintenance-guide"
+    },
+    {
+      "sourceAsset": "src/images/insights/insight-1.avif",
+      "classification": "USED",
+      "cmsMediaId": 23,
+      "cmsMediaName": "insight-1.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/construction-industry-trends"
+    },
+    {
+      "sourceAsset": "src/images/insights/insight-2.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 24,
+      "cmsMediaName": "insight-2.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/sustainable-building-practices"
+    },
+    {
+      "sourceAsset": "src/images/insights/insight-3.avif",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 25,
+      "cmsMediaName": "insight-3.avif",
+      "contentType": "support-article",
+      "field": "cardImage",
+      "frontendRoute": "/blogs/support/digital-transformation-construction"
+    },
+    {
+      "sourceAsset": "src/images/icon.svg",
+      "classification": "USED",
+      "cmsMediaId": 26,
+      "cmsMediaName": "icon.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/icon.png",
+      "classification": "USED",
+      "cmsMediaId": 27,
+      "cmsMediaName": "icon.png",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/icon-maskable.png",
+      "classification": "USED",
+      "cmsMediaId": 28,
+      "cmsMediaName": "icon-maskable.png",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/social.png",
+      "classification": "USED",
+      "cmsMediaId": 29,
+      "cmsMediaName": "social.png",
+      "contentType": "brand",
+      "field": "defaultSeo.ogImage",
+      "frontendRoute": "/"
+    },
+    {
+      "sourceAsset": "src/images/starlight/screwfast_logo.svg",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 30,
+      "cmsMediaName": "screwfast_logo.svg",
+      "contentType": "brand",
+      "field": "logo",
+      "frontendRoute": "/"
+    },
+    {
+      "sourceAsset": "src/images/starlight/screwfast_hero.svg",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 31,
+      "cmsMediaName": "screwfast_hero.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/starlight/screwfast_hero_dark.svg",
+      "classification": "CMS_BOUND",
+      "cmsMediaId": 32,
+      "cmsMediaName": "screwfast_hero_dark.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/starlight/docs_logo.svg",
+      "classification": "USED",
+      "cmsMediaId": 33,
+      "cmsMediaName": "docs_logo.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/starlight/acme_logo_dark.svg",
+      "classification": "USED",
+      "cmsMediaId": 34,
+      "cmsMediaName": "acme_logo_dark.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "public/favicon.ico",
+      "classification": "USED",
+      "cmsMediaId": 35,
+      "cmsMediaName": "favicon.ico",
+      "contentType": "brand",
+      "field": "favicon",
+      "frontendRoute": "/"
+    },
+    {
+      "sourceAsset": "public/banner-pattern.svg",
+      "classification": "USED",
+      "cmsMediaId": 36,
+      "cmsMediaName": "banner-pattern.svg",
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/aerial-view.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/before-after.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/blueprints-image.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/construction-workers.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/person-working.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/progress-building.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/under-construction.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    },
+    {
+      "sourceAsset": "src/images/using-tools.avif",
+      "classification": "BASELINE_UNUSED",
+      "cmsMediaId": null,
+      "cmsMediaName": null,
+      "contentType": null,
+      "field": null,
+      "frontendRoute": null
+    }
+  ]
+}

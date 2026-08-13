@@ -5,12 +5,12 @@
 
 ## Runtime Responsibilities
 
-| Layer              | Runtime                   | Repository                   | Role                                                       |
-| ------------------ | ------------------------- | ---------------------------- | ---------------------------------------------------------- |
-| **Astro Frontend** | Cloudflare Workers        | `zerniqpro-site` (this repo) | Product pages, support docs, download pages, contact forms |
-| **Strapi CMS**     | Cloudflare Containers     | Separate repo (TBD)          | Product content, installation guides, FAQ, troubleshooting |
-| **PostgreSQL**     | External managed          | N/A                          | Strapi database                                            |
-| **R2**             | Cloudflare Object Storage | N/A                          | Media, software downloads, driver files                    |
+| Layer              | Runtime                   | Repository                  | Role                                                       |
+| ------------------ | ------------------------- | --------------------------- | ---------------------------------------------------------- |
+| **Astro Frontend** | Cloudflare Workers        | `frontend-repo` (this repo) | Product pages, support docs, download pages, contact forms |
+| **Strapi CMS**     | Cloudflare Containers     | Separate repo (TBD)         | Product content, installation guides, FAQ, troubleshooting |
+| **PostgreSQL**     | External managed          | N/A                         | Strapi database                                            |
+| **R2**             | Cloudflare Object Storage | N/A                         | Media, software downloads, driver files                    |
 
 ## Multi-Site Architecture
 
@@ -18,9 +18,9 @@ The `CMS_SITE_KEY` environment variable is the **only** deployment variable that
 
 ```
 Strapi (single instance)
-├── CMS_SITE_KEY: "zerniq"     → Worker A (Zerniq brand, North America)
+├── CMS_SITE_KEY: "site-a"     → Worker A (Brand A, North America)
 ├── CMS_SITE_KEY: "screwfast"  → Worker B (ScrewFast brand, UK)
-├── CMS_SITE_KEY: "aussie"     → Worker C (AussieSteel brand, AU)
+├── CMS_SITE_KEY: "brand-b"    → Worker C (Brand B, AU)
 ```
 
 ## Progressive Migration Path
@@ -136,13 +136,13 @@ All content (product descriptions, specs, guides, support) remains in Strapi.
 
 ## Environment Variables
 
-| Variable                 | Context | Access | Default                 | Purpose                 |
-| ------------------------ | ------- | ------ | ----------------------- | ----------------------- |
-| `SITE_URL`               | server  | public | `https://zerniqpro.com` | Canonical site URL      |
-| `CMS_SITE_KEY`           | server  | public | `zerniq`                | Multi-site content key  |
-| `CMS_REQUEST_TIMEOUT_MS` | server  | public | `8000`                  | Strapi fetch timeout    |
-| `STRAPI_URL`             | server  | secret | (none)                  | Strapi API base URL     |
-| `STRAPI_API_TOKEN`       | server  | secret | (none)                  | Strapi API bearer token |
+| Variable                 | Context | Access | Default                  | Purpose                 |
+| ------------------------ | ------- | ------ | ------------------------ | ----------------------- |
+| `SITE_URL`               | server  | public | `https://site-a.example` | Canonical site URL      |
+| `CMS_SITE_KEY`           | server  | public | `site-a`                 | Multi-site content key  |
+| `CMS_REQUEST_TIMEOUT_MS` | server  | public | `8000`                   | Strapi fetch timeout    |
+| `STRAPI_URL`             | server  | secret | (none)                   | Strapi API base URL     |
+| `STRAPI_API_TOKEN`       | server  | secret | (none)                   | Strapi API bearer token |
 
 Secrets (`STRAPI_URL`, `STRAPI_API_TOKEN`) are accessed via `getSecret()` from `astro:env/server`.
 

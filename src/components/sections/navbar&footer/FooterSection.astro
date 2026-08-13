@@ -70,20 +70,14 @@ const newsletterDemoMessage =
     <div class="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
       <div class="col-span-full lg:col-span-1">
         {/* Brand Logo */}
-        {
-          brand?.logo?.url ? (
-            <img
-              src={brand.logo.url}
-              alt={brand.logo.alt || brand.name || 'Logo'}
-              width="128"
-              height="40"
-              class="h-auto w-32"
-              loading="lazy"
-            />
-          ) : (
-            <BrandLogo class="h-auto w-32" />
-          )
-        }
+        <BrandLogo
+          class="h-auto w-32"
+          logo={brand?.logo}
+          name={brand?.name}
+          width={128}
+          height={40}
+          loading="lazy"
+        />
       </div>
       {/* Footer columns from CMS */}
       {

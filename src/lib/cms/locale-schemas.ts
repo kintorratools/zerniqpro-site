@@ -2,7 +2,7 @@ import { z } from 'astro/zod';
 import type { LocaleRecord, LocaleViewModel } from './locale-models';
 import { CmsValidationError } from './errors';
 
-const localeCodeSchema = z.enum(['en', 'es', 'de', 'fr', 'pt-BR']);
+const localeCodeSchema = z.enum(['en', 'es', 'de', 'fr', 'fa', 'ja', 'zh-cn']);
 
 /** Raw Strapi 5 flat entity shape — Locale content type */
 const localeRecordSchema = z.object({
@@ -24,11 +24,11 @@ const strapiCollectionLocaleSchema = z
     data: z.array(localeRecordSchema),
   })
   .superRefine((val, ctx) => {
-    // 1. Must have exactly 5 entries (all 5 codes present)
-    if (val.data.length !== 5) {
+    // 1. Must have exactly 7 entries (all 7 codes present)
+    if (val.data.length !== 7) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Expected exactly 5 locales, got ${val.data.length}`,
+        message: `Expected exactly 7 locales, got ${val.data.length}`,
         path: ['data'],
       });
     }

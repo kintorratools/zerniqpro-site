@@ -1,0 +1,525 @@
+{
+  "audit_info": {
+    "generated_at": "2026-08-12T12:00:00+08:00",
+    "baseline_commit": "15da780b4fcda4501aa8bfc28c165d517ba2cf70",
+    "baseline_short": "15da780b",
+    "strapi_origin": "http://127.0.0.1:1337",
+    "strapi_media_count": 43,
+    "baseline_media_count": 41
+  },
+  "total_discovered": 41,
+  "total_in_strapi": 40,
+  "classification": {
+    "RENDERED_AND_CMS_MAPPED": 17,
+    "CMS_MAPPED_NOT_RENDERED": 1,
+    "RENDERED_STATIC_FALLBACK": 13,
+    "BASELINE_UNUSED": 1,
+    "BROKEN": 10,
+    "MISSING": 1
+  },
+  "active_media_required": {
+    "description": "Actively-used media that still needs CMS mapping or fallback implementation",
+    "CMS_MAPPED_NOT_RENDERED": 0,
+    "RENDERED_STATIC_FALLBACK": 13,
+    "BROKEN": 10,
+    "MISSING": 1
+  },
+  "extra_cms_files": [
+    {
+      "name": "acme_logo_dark.svg",
+      "strapi_id": 34,
+      "note": "New file (post-baseline) — used statically in SiteTitle.astro (starlight docs logo replacement)"
+    },
+    {
+      "name": "banner-pattern.svg",
+      "strapi_id": 36,
+      "note": "New file (post-baseline) — used as static background URL in AnnouncementBanner.astro"
+    },
+    {
+      "name": "favicon.ico",
+      "strapi_id": 35,
+      "note": "New file (post-baseline) — uploaded to Strapi, bound to ScrewFast brand. Actual favicon served via Astro endpoint (favicon.ico.ts) using local icon.png, not CMS."
+    }
+  ],
+  "files": [
+    {
+      "source_path": "src/images/hero-image.avif",
+      "pages": ["/", "/fr"],
+      "section": "hero",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 2,
+      "cms_field": "homepage.hero.image",
+      "detail": "CMS field is null — uses local import fallback in index.astro"
+    },
+    {
+      "source_path": "src/images/features-image.avif",
+      "pages": ["/", "/fr"],
+      "section": "featuresGeneral",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 3,
+      "cms_field": "homepage.featuresGeneral.image",
+      "detail": "CMS field is null — uses local import fallback in index.astro"
+    },
+    {
+      "source_path": "src/images/construction-image.avif",
+      "pages": ["/", "/fr"],
+      "section": "featuresNavs (tabs)",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 4,
+      "cms_field": "homepage.featuresNavs.tabs[].image",
+      "detail": "CMS tabs images are all null — uses local import fallback (tab index 2)"
+    },
+    {
+      "source_path": "src/images/automated-tools.avif",
+      "pages": ["/", "/fr"],
+      "section": "featuresNavs (tabs)",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 5,
+      "cms_field": "homepage.featuresNavs.tabs[].image",
+      "detail": "CMS tabs images are all null — uses local import fallback (tab index 0)"
+    },
+    {
+      "source_path": "src/images/dashboard-image.avif",
+      "pages": ["/", "/fr"],
+      "section": "featuresNavs (tabs)",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 6,
+      "cms_field": "homepage.featuresNavs.tabs[].image",
+      "detail": "CMS tabs images are all null — uses local import fallback (tab index 1)"
+    },
+    {
+      "source_path": "src/images/blueprints-image.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service1 (article_delivering_guidance)",
+      "status": "BROKEN",
+      "strapi_id": 39,
+      "cms_field": "services-page.service1.image1",
+      "detail": "CMS field is null — LeftSection/RightSection receive undefined, no static fallback in component. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/person-working.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service1 (article_delivering_guidance)",
+      "status": "BROKEN",
+      "strapi_id": 40,
+      "cms_field": "services-page.service1.image2",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/before-after.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service2 (article_transforming_designs)",
+      "status": "BROKEN",
+      "strapi_id": 41,
+      "cms_field": "services-page.service2.image1",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/construction-workers.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service3 (article_navigating_projects)",
+      "status": "BROKEN",
+      "strapi_id": 42,
+      "cms_field": "services-page.service3.image1",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/aerial-view.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service3 (article_navigating_projects)",
+      "status": "BROKEN",
+      "strapi_id": 43,
+      "cms_field": "services-page.service3.image2",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/using-tools.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service4 (article_ensuring_performance)",
+      "status": "BROKEN",
+      "strapi_id": 44,
+      "cms_field": "services-page.service4.image1",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/progress-building.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service5 (article_bespoke_strategies)",
+      "status": "BROKEN",
+      "strapi_id": 45,
+      "cms_field": "services-page.service5.image1",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/under-construction.avif",
+      "pages": ["/services", "/fr/services"],
+      "section": "service5 (article_bespoke_strategies)",
+      "status": "BROKEN",
+      "strapi_id": 38,
+      "cms_field": "services-page.service5.image2",
+      "detail": "CMS field is null — no static fallback. Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/product-image-1.avif",
+      "pages": ["/products", "/fr/products"],
+      "section": "product_card (item-t845, CardSmall/CardWide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 7,
+      "cms_field": "product.cardImage (item-t845)",
+      "detail": "CMS field populated: /uploads/product_image_1_0c59666c84.avif"
+    },
+    {
+      "source_path": "src/images/product-image-2.avif",
+      "pages": ["/products", "/fr/products"],
+      "section": "product_card (item-a765, CardSmall/CardWide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 8,
+      "cms_field": "product.cardImage (item-a765)",
+      "detail": "CMS field populated: /uploads/product_image_2_2fd2af30fe.avif"
+    },
+    {
+      "source_path": "src/images/product-image-3.avif",
+      "pages": ["/products", "/fr/products"],
+      "section": "product_card (item-b203, CardSmall/CardWide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 9,
+      "cms_field": "product.cardImage (item-b203)",
+      "detail": "CMS field populated: /uploads/product_image_3_be1c261fd4.avif"
+    },
+    {
+      "source_path": "src/images/product-image-4.avif",
+      "pages": ["/products", "/fr/products"],
+      "section": "product_card (item-f303, CardSmall/CardWide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 10,
+      "cms_field": "product.cardImage (item-f303)",
+      "detail": "CMS field populated: /uploads/product_image_4_3f7147c9a1.avif"
+    },
+    {
+      "source_path": "src/images/product-image-main-1.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail mainImage (item-t845)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 11,
+      "cms_field": "product.mainImage (item-t845)",
+      "detail": "CMS field populated: /uploads/product_image_main_1_25869d3b5d.avif"
+    },
+    {
+      "source_path": "src/images/product-image-main-2.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail mainImage (item-a765)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 12,
+      "cms_field": "product.mainImage (item-a765)",
+      "detail": "CMS field populated: /uploads/product_image_main_2_bb2a9483d9.avif"
+    },
+    {
+      "source_path": "src/images/product-image-main-3.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail mainImage (item-b203)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 13,
+      "cms_field": "product.mainImage (item-b203)",
+      "detail": "CMS field populated: /uploads/product_image_main_3_c7ad945e30.avif"
+    },
+    {
+      "source_path": "src/images/product-image-main-4.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail mainImage (item-f303)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 14,
+      "cms_field": "product.mainImage (item-f303)",
+      "detail": "CMS field populated: /uploads/product_image_main_4_5424481177.avif"
+    },
+    {
+      "source_path": "src/images/blueprint-1.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail (blueprints tab)",
+      "status": "BROKEN",
+      "strapi_id": 15,
+      "cms_field": "product.blueprintFirst",
+      "detail": "CMS field is null on all 4 products. ProductDetail uses conditional render (url && <img>). Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/blueprint-2.avif",
+      "pages": ["/products/[handle]", "/fr/products/[handle]"],
+      "section": "product_detail (blueprints tab)",
+      "status": "BROKEN",
+      "strapi_id": 16,
+      "cms_field": "product.blueprintSecond",
+      "detail": "CMS field is null on all 4 products. ProductDetail uses conditional render (url && <img>). Image NOT rendered."
+    },
+    {
+      "source_path": "src/images/blog/post-1.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]", "/blog"],
+      "section": "blog_post cardImage (safety-best-practices)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 17,
+      "cms_field": "support-article.cardImage (slug: safety-best-practices)",
+      "detail": "CMS field populated: /uploads/post_1_b5124545ab.avif"
+    },
+    {
+      "source_path": "src/images/blog/post-2.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]", "/blog"],
+      "section": "blog_post cardImage (equipment-maintenance-guide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 18,
+      "cms_field": "support-article.cardImage (slug: equipment-maintenance-guide)",
+      "detail": "CMS field populated: /uploads/post_2_8eca23c1a7.avif"
+    },
+    {
+      "source_path": "src/images/blog/post-3.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]", "/blog"],
+      "section": "blog_post cardImage (top-construction-tools-2026)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 19,
+      "cms_field": "support-article.cardImage (slug: top-construction-tools-2026)",
+      "detail": "CMS field populated: /uploads/post_3_5cad2169f6.avif"
+    },
+    {
+      "source_path": "src/images/blog/jacob.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "section": "author_avatar (Jacob, safety-best-practices)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 20,
+      "cms_field": "support-article.authorImage (slug: safety-best-practices)",
+      "detail": "CMS field populated: /uploads/jacob_63a9da0cc9.avif"
+    },
+    {
+      "source_path": "src/images/blog/brad.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "section": "author_avatar (Brad, top-construction-tools-2026)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 21,
+      "cms_field": "support-article.authorImage (slug: top-construction-tools-2026)",
+      "detail": "CMS field populated: /uploads/brad_1e33f5d574.avif"
+    },
+    {
+      "source_path": "src/images/blog/anna.avif",
+      "pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "section": "author_avatar (Anna, equipment-maintenance-guide)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 22,
+      "cms_field": "support-article.authorImage (slug: equipment-maintenance-guide)",
+      "detail": "CMS field populated: /uploads/anna_0de119e8a0.avif"
+    },
+    {
+      "source_path": "src/images/insights/insight-1.avif",
+      "pages": ["/blog", "/insights/[id]", "/fr/blog", "/fr/insights/[id]"],
+      "section": "insight cardImage (construction-industry-trends + insight-1)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 23,
+      "cms_field": "support-article.cardImage (slugs: construction-industry-trends, insight-1)",
+      "detail": "CMS field populated on 2 articles: /uploads/insight_1_f3d0df8627.avif"
+    },
+    {
+      "source_path": "src/images/insights/insight-2.avif",
+      "pages": ["/blog", "/insights/[id]", "/fr/blog", "/fr/insights/[id]"],
+      "section": "insight cardImage (sustainable-building-practices + insight-2)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 24,
+      "cms_field": "support-article.cardImage (slugs: sustainable-building-practices, insight-2)",
+      "detail": "CMS field populated on 2 articles: /uploads/insight_2_359c9792aa.avif"
+    },
+    {
+      "source_path": "src/images/insights/insight-3.avif",
+      "pages": ["/blog", "/insights/[id]", "/fr/blog", "/fr/insights/[id]"],
+      "section": "insight cardImage (digital-transformation-construction + insight-3)",
+      "status": "RENDERED_AND_CMS_MAPPED",
+      "strapi_id": 25,
+      "cms_field": "support-article.cardImage (slugs: digital-transformation-construction, insight-3)",
+      "detail": "CMS field populated on 2 articles: /uploads/insight_3_91f5d2b489.avif"
+    },
+    {
+      "source_path": "src/images/social.png",
+      "pages": ["all (OG metadata)"],
+      "section": "og_image",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 29,
+      "cms_field": null,
+      "detail": "OG image sourced from src/data_files/constants.ts local import. Brand Alpha has no socialImage set in CMS. No CMS OG image path implemented."
+    },
+    {
+      "source_path": "src/images/icon.png",
+      "pages": ["all"],
+      "section": "favicon / PWA icon",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 27,
+      "cms_field": null,
+      "detail": "Favicon generated via getImage() in Meta.astro from local import @images/icon.png. No CMS favicon path implemented."
+    },
+    {
+      "source_path": "src/images/icon.svg",
+      "pages": ["all"],
+      "section": "favicon (SVG)",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 26,
+      "cms_field": null,
+      "detail": "Favicon SVG generated via getImage() in Meta.astro from local import @images/icon.svg."
+    },
+    {
+      "source_path": "src/images/icon-maskable.png",
+      "pages": ["all"],
+      "section": "PWA maskable icon",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 28,
+      "cms_field": null,
+      "detail": "PWA icon imported in manifest.json.ts from local file."
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_logo.svg",
+      "pages": ["all (navbar/footer logo)"],
+      "section": "site_logo",
+      "status": "CMS_MAPPED_NOT_RENDERED",
+      "strapi_id": 30,
+      "cms_field": "brand.logo (ScrewFast brand)",
+      "detail": "Uploaded to Strapi and bound to ScrewFast brand's logo field. But active site (store-us) uses Brand Alpha (no logo set) → falls back to BrandLogo inline SVG (geometric logo, NOT screwfast_logo.svg)."
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_hero.svg",
+      "pages": ["/docs/*"],
+      "section": "starlight_docs hero image",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 31,
+      "cms_field": null,
+      "detail": "Imported via MDX frontmatter in welcome-to-docs.mdx using astro:assets. Not CMS-managed."
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_hero_dark.svg",
+      "pages": ["/docs/*"],
+      "section": "starlight_docs dark hero image",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 32,
+      "cms_field": null,
+      "detail": "Imported via MDX frontmatter in welcome-to-docs.mdx using astro:assets. Not CMS-managed."
+    },
+    {
+      "source_path": "src/images/starlight/docs_logo.svg",
+      "pages": ["/docs/*"],
+      "section": "starlight_docs logo",
+      "status": "RENDERED_STATIC_FALLBACK",
+      "strapi_id": 33,
+      "cms_field": null,
+      "detail": "Imported in SiteTitle.astro from local file."
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_logo_dark.svg",
+      "pages": [],
+      "section": "NOT USED",
+      "status": "BASELINE_UNUSED",
+      "strapi_id": null,
+      "cms_field": null,
+      "detail": "NOT in Strapi. Original dark-mode site logo replaced by acme_logo_dark.svg (new file) and BrandLogo inline SVG. No references found in current codebase."
+    }
+  ],
+  "section_summary": {
+    "homepage": {
+      "total_images": 5,
+      "cms_mapped": 0,
+      "static_fallback": 5,
+      "broken": 0,
+      "note": "Homepage uses CMS-first logic with local fallback. All 5 images fall back to local imports because homepage CMS fields (hero.image, featuresGeneral.image, featuresNavs.tabs[].image) are empty."
+    },
+    "services_page": {
+      "total_images": 8,
+      "cms_mapped": 0,
+      "static_fallback": 0,
+      "broken": 8,
+      "note": "CRITICAL: All 8 services images are BROKEN. CMS fields (service1-5.image1/image2) are all null, and the page has NO static fallback. LeftSection/RightSection receive undefined as src."
+    },
+    "products": {
+      "total_images": 10,
+      "cms_mapped": 8,
+      "static_fallback": 0,
+      "broken": 2,
+      "note": "Card images and main images are fully CMS-mapped. Blueprints (blueprint-1.avif, blueprint-2.avif) have null CMS fields and no fallback — blueprints tab renders empty."
+    },
+    "blog": {
+      "total_images": 6,
+      "cms_mapped": 6,
+      "static_fallback": 0,
+      "broken": 0,
+      "note": "All blog post images and author avatars are CMS-mapped through support-articles."
+    },
+    "insights": {
+      "total_images": 3,
+      "cms_mapped": 3,
+      "static_fallback": 0,
+      "broken": 0,
+      "note": "All insight images are CMS-mapped through support-articles."
+    },
+    "site_wide": {
+      "total_images": 8,
+      "cms_mapped": 0,
+      "static_fallback": 7,
+      "broken": 0,
+      "unused": 1,
+      "note": "Favicons, OG image, and starlight assets are static local imports. screwfast_logo.svg is CMS-mapped but not rendered (brand mismatch). screwfast_logo_dark.svg is unused."
+    }
+  },
+  "critical_issues": [
+    {
+      "severity": "HIGH",
+      "area": "Services Page",
+      "issue": "All 8 services images are BROKEN — no images render on /services page",
+      "files": [
+        "src/images/blueprints-image.avif",
+        "src/images/person-working.avif",
+        "src/images/before-after.avif",
+        "src/images/construction-workers.avif",
+        "src/images/aerial-view.avif",
+        "src/images/using-tools.avif",
+        "src/images/progress-building.avif",
+        "src/images/under-construction.avif"
+      ],
+      "root_cause": "CMS services-page fields (service1-5.image1/image2) are all empty. No static fallback exists in page/component.",
+      "fix": "Either populate CMS services-page media fields in Strapi admin, OR add local fallback imports in services.astro similar to how homepage handles it."
+    },
+    {
+      "severity": "HIGH",
+      "area": "Product Detail - Blueprints Tab",
+      "issue": "Blueprint images on product detail pages are BROKEN",
+      "files": ["src/images/blueprint-1.avif", "src/images/blueprint-2.avif"],
+      "root_cause": "CMS product fields (blueprintFirst, blueprintSecond) are empty on all 4 products. ProductDetail uses conditional render (url && <img>) so images do not appear.",
+      "fix": "Populate blueprintFirst/blueprintSecond in Strapi product entries, OR add local fallback imports in ProductDetail."
+    },
+    {
+      "severity": "MEDIUM",
+      "area": "Homepage",
+      "issue": "5 homepage images use static fallback instead of CMS",
+      "files": [
+        "src/images/hero-image.avif",
+        "src/images/features-image.avif",
+        "src/images/construction-image.avif",
+        "src/images/automated-tools.avif",
+        "src/images/dashboard-image.avif"
+      ],
+      "root_cause": "CMS homepage media fields are empty. Images render correctly via local fallback but are not CMS-editable.",
+      "fix": "Populate homepage CMS media fields so content editors can change these images."
+    },
+    {
+      "severity": "LOW",
+      "area": "Brand Logo",
+      "issue": "screwfast_logo.svg is uploaded and CMS-bound but not rendered (brand mismatch)",
+      "files": ["src/images/starlight/screwfast_logo.svg"],
+      "root_cause": "ScrewFast brand has logo set in CMS, but active site uses Brand Alpha (no logo). The fallback BrandLogo component uses its own inline SVG.",
+      "fix": "Ensure active brand has logo set, or update BrandLogo fallback to use screwfast_logo.svg."
+    },
+    {
+      "severity": "LOW",
+      "area": "Site-wide Assets",
+      "issue": "screwfast_logo_dark.svg is missing from Strapi and no longer used",
+      "files": ["src/images/starlight/screwfast_logo_dark.svg"],
+      "root_cause": "Replaced by acme_logo_dark.svg (new file) and inline BrandLogo SVG. Not needed.",
+      "fix": "No action needed — this is expected rebranding cleanup."
+    }
+  ],
+  "cms_integration_assessment": {
+    "overall_grade": "C",
+    "fully_cms_mapped": 17,
+    "backend_only": 1,
+    "static_fallback": 13,
+    "actively_broken": 10,
+    "summary": "41.5% of baseline media is properly CMS-mapped. 24.4% is actively broken with no rendered images. 31.7% uses static fallback — functional but not CMS-editable. Key gap: services page has zero CMS image integration despite all images being uploaded."
+  }
+}

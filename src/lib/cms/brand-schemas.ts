@@ -10,21 +10,20 @@ const hexColor = z
     'must be a hex color (#RGB, #RGBA, #RRGGBB, or #RRGGBBAA)'
   );
 
-/** URL that must use http or https protocol */
-const urlField = z
-  .string()
-  .url()
-  .refine(
-    val => {
-      try {
-        const u = new URL(val);
-        return u.protocol === 'http:' || u.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    },
-    { message: 'must be an http or https URL' }
-  );
+/** URL that must use http or https protocol, or be a relative path */
+const urlField = z.string().refine(
+  val => {
+    // Relative paths (starting with /) are valid (CMS media URLs)
+    if (val.startsWith('/')) return true;
+    try {
+      const u = new URL(val);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  },
+  { message: 'must be an http/https URL or a relative path' }
+);
 
 /** Strapi may return null for optional fields */
 const nullableString = z.string().trim().nullable().optional();

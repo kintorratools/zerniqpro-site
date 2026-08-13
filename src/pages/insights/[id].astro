@@ -4,21 +4,48 @@ import MainLayout from '@/layouts/MainLayout.astro';
 import InsightDetail from '@components/sections/insights/InsightDetail.astro';
 import { getCollection } from 'astro:content';
 import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { getCmsArticleBySlug, renderBlocksToHtml } from '@/lib/cms/blog-data';
+import type { SupportArticleViewModel } from '@/lib/cms/support-models';
 
 export async function getStaticPaths() {
   const insightPosts = await getCollection('insights', ({ id }) =>
     id.startsWith('en/')
   );
-  return insightPosts.map(post => {
-    const idWithoutLang = post.id.replace(/^en\//, '');
-    return {
-      params: { id: idWithoutLang },
-      props: { post },
-    };
-  });
+  // Also include CMS insight articles as paths
+  const { getCmsInsightArticles } = await import('@/lib/cms/blog-data');
+  let cmsSlugs: string[] = [];
+  try {
+    const cmsArticles = await getCmsInsightArticles('en');
+    cmsSlugs = cmsArticles.map(a => a.slug);
+  } catch {
+    /* ignore */
+  }
+
+  const mdxPaths = insightPosts.map(post => ({
+    params: { id: post.id.replace(/^en\//, '') },
+    props: { post, cmsSlug: null },
+  }));
+
+  const seen = new Set(insightPosts.map(p => p.id.replace(/^en\//, '')));
+  const cmsPaths = cmsSlugs
+    .filter(s => !seen.has(s))
+    .map(slug => ({
+      params: { id: slug },
+      props: { post: null, cmsSlug: slug },
+    }));
+
+  return [...mdxPaths, ...cmsPaths];
 }
 
-const { post } = Astro.props;
+const { post, cmsSlug } = Astro.props;
+
+let cmsArticle: SupportArticleViewModel | null = null;
+if (cmsSlug) {
+  cmsArticle = await getCmsArticleBySlug(cmsSlug, 'en');
+} else if (post) {
+  const slug = post.id.replace(/^en\//, '');
+  cmsArticle = await getCmsArticleBySlug(slug, 'en');
+}
 
 // Get site domain from runtime config
 let siteUrl = SITE.url;
@@ -31,10 +58,20 @@ try {
   /* fallback */
 }
 
-const pageTitle: string = `${post.data.title} | ${SITE.title}`;
-const metaDescription = post.data.description;
-const ogTitle = `${post.data.title} | Insights | ${SITE.title}`;
-const insightId = post.id.replace(/^en\//, '');
+const isCmsDriven = Boolean(cmsArticle);
+const displayTitle = cmsArticle?.title || post?.data.title || '';
+const metaDescription = cmsArticle?.excerpt || post?.data.description || '';
+const displayImageUrl = cmsArticle?.cardImage?.url || '';
+const displayImageAlt =
+  cmsArticle?.cardImageAlt || post?.data.cardImageAlt || '';
+const cmsHtmlContent = cmsArticle
+  ? renderBlocksToHtml(cmsArticle.content)
+  : null;
+const currentSlug =
+  cmsArticle?.slug || (post ? post.id.replace(/^en\//, '') : '');
+
+const pageTitle: string = `${displayTitle} | ${SITE.title}`;
+const ogTitle = `${displayTitle} | Insights | ${SITE.title}`;
 ---
 
 <MainLayout
@@ -44,9 +81,9 @@ const insightId = post.id.replace(/^en\//, '');
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: post.data.title,
+    headline: displayTitle,
     description: metaDescription,
-    image: post.data.cardImage.src,
+    image: isCmsDriven ? displayImageUrl : post?.data.cardImage.src,
     author: {
       '@type': 'Organization',
       name: SITE.title,
@@ -61,9 +98,39 @@ const insightId = post.id.replace(/^en\//, '');
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${siteUrl}/insights/${insightId}`,
+      '@id': `${siteUrl}/insights/${currentSlug}`,
     },
   }}
 >
-  <InsightDetail post={post} />
+  {
+    isCmsDriven ? (
+      <section class="py-6 sm:py-8 lg:py-12">
+        <div class="mx-auto max-w-(--breakpoint-xl) px-4 md:px-8">
+          <div class="grid gap-8 md:grid-cols-2 lg:gap-12">
+            <div>
+              <div class="h-64 overflow-hidden rounded-lg shadow-lg md:h-auto">
+                {displayImageUrl && (
+                  <img
+                    class="h-full w-full object-cover object-center"
+                    src={`http://127.0.0.1:1337${displayImageUrl}`}
+                    alt={displayImageAlt}
+                  />
+                )}
+              </div>
+            </div>
+            <div class="md:pt-8">
+              <h1 class="mb-4 text-center text-2xl font-bold text-balance text-neutral-800 sm:text-3xl md:mb-6 md:text-left dark:text-neutral-200">
+                {displayTitle}
+              </h1>
+              <article class="text-lg text-pretty text-neutral-700 dark:text-neutral-300">
+                <Fragment set:html={cmsHtmlContent} />
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    ) : (
+      post && <InsightDetail post={post} />
+    )
+  }
 </MainLayout>

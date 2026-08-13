@@ -32,7 +32,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
     reviewsText: 'From Over 12.8k Reviews',
     imageAlt: 'Stack of Acme product boxes containing assorted hardware tools',
     image: {
-      url: String(heroImage),
+      url: heroImage.src,
       alt: 'Stack of Acme product boxes containing assorted hardware tools',
     },
     avatars: [
@@ -70,7 +70,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
       "At Acme, we tackle the unique challenges encountered in the hardware and construction sectors. From cutting-edge tools to expert services, we're dedicated to helping you overcome obstacles and achieve your goals.",
     imageAlt: 'Acme products in floating boxes',
     image: {
-      url: String(featureImage),
+      url: featureImage.src,
       alt: 'Acme products in floating boxes',
     },
     items: [
@@ -113,7 +113,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         iconKey: 'tools',
         imageAlt: 'Yellow and black heavy equipment on brown grass field',
         image: {
-          url: String(tools),
+          url: tools.src,
           alt: 'Yellow and black heavy equipment on brown grass field',
         },
       },
@@ -125,7 +125,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         imageAlt:
           'A screenshot or graphic representation of the intuitive dashboard',
         image: {
-          url: String(dashboard),
+          url: dashboard.src,
           alt: 'A screenshot or graphic representation of the intuitive dashboard',
         },
       },
@@ -136,7 +136,7 @@ export const HOMEPAGE_BASELINE: HomepageViewModel = {
         iconKey: 'house',
         imageAlt: 'Gray metal building frame near tower crane during daytime',
         image: {
-          url: String(construction),
+          url: construction.src,
           alt: 'Gray metal building frame near tower crane during daytime',
         },
       },

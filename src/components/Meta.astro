@@ -78,14 +78,10 @@ function getEnabledLocalesFromLocales(
 function getDefaultContentAvailability(
   localesList: LocaleViewModel[] | undefined
 ): Record<string, boolean> {
-  if (!localesList) return { en: true, fr: true };
+  if (!localesList) return { en: true };
   const avail: Record<string, boolean> = {};
   for (const loc of localesList) {
-    if (loc.enabled && (loc.code === 'en' || loc.code === 'fr')) {
-      avail[loc.code] = true;
-    } else {
-      avail[loc.code] = false;
-    }
+    avail[loc.code] = loc.enabled;
   }
   return avail;
 }

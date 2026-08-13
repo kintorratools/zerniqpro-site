@@ -12,7 +12,7 @@ In Phase 3 and earlier, `Site` held branding directly as an optional component (
 
 | Field         | Type       | Required | Notes                                                 |
 | ------------- | ---------- | -------- | ----------------------------------------------------- |
-| `key`         | `string`   | Yes      | Unique lookup key (e.g. `zerniq`)                     |
+| `key`         | `string`   | Yes      | Unique lookup key (e.g. `site-a`)                     |
 | `name`        | `string`   | Yes      | Display name used in OG/title fallbacks               |
 | `logo`        | `object`   | No       | `{ url, alt, width, height }`                         |
 | `favicon`     | `string`   | No       | Favicon URL                                           |
@@ -24,7 +24,7 @@ In Phase 3 and earlier, `Site` held branding directly as an optional component (
 
 | Field           | Type       | Required | Notes                                             |
 | --------------- | ---------- | -------- | ------------------------------------------------- |
-| `key`           | `string`   | Yes      | Unique lookup key (e.g. `zerniq`)                 |
+| `key`           | `string`   | Yes      | Unique lookup key (e.g. `site-a`)                 |
 | `name`          | `string`   | Yes      | Site display name                                 |
 | `defaultLocale` | `string`   | Yes      | Default locale code (e.g. `en`)                   |
 | `defaultSeo`    | `object`   | No       | `{ title?, description? }` — site-level overrides |
@@ -65,16 +65,16 @@ interface BrandViewModel {
 
 ```
 Strapi CMS
-├── Brand (key=zerniq)
-│   ├── name: "Zerniq"
-│   ├── domain: "https://zerniqpro.com"
+├── Brand (key=site-a)
+│   ├── name: "Brand A"
+│   ├── domain: "https://site-a.example"
 │   ├── logo: { url, alt, width, height }
 │   ├── favicon: "https://..."
 │   ├── colors: { primary: "#0A0A0A", accent: "#00E5FF" }
 │   ├── seo: { title, description }
 │   └── socialLinks: [{ platform, url }, ...]
 │
-├── Site (key=zerniq, brand={ documentId, key })
+├── Site (key=site-a, brand={ documentId, key })
 │   ├── defaultLocale: "en"
 │   └── defaultSeo: { title?, description? }
 │
@@ -84,7 +84,7 @@ Strapi CMS
     └── isDefault: true
               │
               ▼
-  1. getSiteConfig(siteKey)  → SiteViewModel { brandKey: "zerniq", ... }
+  1. getSiteConfig(siteKey)  → SiteViewModel { brandKey: "site-a", ... }
               │
               ▼
   2. Promise.all([

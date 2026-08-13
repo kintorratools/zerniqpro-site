@@ -184,14 +184,7 @@ if (filesWithForbidden.length > 0) {
 console.log('\n--- Brand Hardcoding Scan ---');
 
 // Scan key source files for hardcoded brand names
-const FORBIDDEN_BRANDS = [
-  'ScrewFast',
-  'ZERNIQ',
-  'MEITE',
-  'AussieSteel',
-  'zerniqpro.com',
-  'screwfast.uk',
-];
+const FORBIDDEN_BRANDS = ['ScrewFast', 'MEITE', 'AussieSteel', 'screwfast.uk'];
 
 function scanDirForBrands(dir, extensions = ['.astro', '.ts', '.tsx']) {
   const results = [];

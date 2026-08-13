@@ -49,20 +49,14 @@ const homeUrl = Astro.url.pathname.startsWith('/fr') ? '/fr' : '/';
         href={homeUrl}
         aria-label={brand?.name || 'Home'}
       >
-        {
-          brand?.logo?.url ? (
-            <img
-              src={brand.logo.url}
-              alt={brand.logo.alt || brand.name || 'Logo'}
-              width="96"
-              height="40"
-              class="h-auto w-24"
-              loading="eager"
-            />
-          ) : (
-            <BrandLogo class="h-auto w-24" />
-          )
-        }
+        <BrandLogo
+          class="h-auto w-24"
+          logo={brand?.logo}
+          name={brand?.name}
+          width={96}
+          height={40}
+          loading="eager"
+        />
       </a>
       {/* Collapse toggle for smaller screens */}
       <div class="mr-5 ml-auto md:hidden">

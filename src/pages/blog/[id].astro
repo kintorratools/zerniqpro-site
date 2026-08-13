@@ -12,24 +12,52 @@ import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
 import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { getCmsArticleBySlug, renderBlocksToHtml } from '@/lib/cms/blog-data';
+import type { SupportArticleViewModel } from '@/lib/cms/support-models';
 
 // Update getStaticPaths for English posts
 export async function getStaticPaths() {
   const blogPosts = await getCollection('blog', ({ id }) =>
     id.startsWith('en/')
   );
-  return blogPosts.map(post => {
-    const idWithoutLang = post.id.replace(/^en\//, ''); // Remove the "en/" prefix
-    return {
-      params: { id: idWithoutLang },
-      props: { post },
-    };
+  // Also include CMS blog articles as paths
+  const { getCmsBlogArticles } = await import('@/lib/cms/blog-data');
+  let cmsSlugs: string[] = [];
+  try {
+    const cmsArticles = await getCmsBlogArticles('en');
+    cmsSlugs = cmsArticles.map(a => a.slug);
+  } catch {
+    /* ignore */
+  }
+
+  const mdxPaths = blogPosts.map(post => {
+    const idWithoutLang = post.id.replace(/^en\//, '');
+    return { params: { id: idWithoutLang }, props: { post, cmsData: null } };
   });
+
+  // Add CMS-only paths
+  const seen = new Set(blogPosts.map(p => p.id.replace(/^en\//, '')));
+  const cmsPaths = cmsSlugs
+    .filter(s => !seen.has(s))
+    .map(slug => ({
+      params: { id: slug },
+      props: { post: null, cmsSlug: slug },
+    }));
+
+  return [...mdxPaths, ...cmsPaths];
 }
 
 // Get the current post's data
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { post, cmsSlug } = Astro.props;
+
+// Try to fetch from CMS first
+let cmsArticle: SupportArticleViewModel | null = null;
+if (cmsSlug) {
+  cmsArticle = await getCmsArticleBySlug(cmsSlug, 'en');
+} else if (post) {
+  const slug = post.id.replace(/^en\//, '');
+  cmsArticle = await getCmsArticleBySlug(slug, 'en');
+}
 
 // Get site domain from runtime config
 let siteUrl = SITE.url;
@@ -48,16 +76,36 @@ const blogPosts: CollectionEntry<'blog'>[] = await getCollection(
 );
 
 // Filter out the current post to get related posts
-// Note: This is a very basic way of choosing related posts, just for the purpose of the example.
-// In a production site, you might want to implement a more robust algorithm, choosing related posts based on tags, categories, dates, authors, or keywords.
-// See example: https://blog.codybrunner.com/2024/adding-related-articles-with-astro-content-collections/
+const currentSlug =
+  cmsArticle?.slug || (post ? post.id.replace(/^en\//, '') : '');
 const relatedPosts: CollectionEntry<'blog'>[] = blogPosts.filter(
-  blogEntry => blogEntry.id !== post.id
+  blogEntry => blogEntry.id !== post?.id
 );
 
-const pageTitle: string = `${post.data.title} | ${SITE.title}`;
-const metaDescription = post.data.description;
-const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
+// Page metadata from CMS or MDX
+const pageTitle: string = cmsArticle
+  ? `${cmsArticle.title} | ${SITE.title}`
+  : `${post!.data.title} | ${SITE.title}`;
+const metaDescription = cmsArticle?.excerpt || post?.data.description || '';
+const ogTitle = cmsArticle
+  ? `${cmsArticle.title} | Blog | ${SITE.title}`
+  : `${post!.data.title} | Blog | ${SITE.title}`;
+
+const displayTitle = cmsArticle?.title || post?.data.title || '';
+const displayAuthor = cmsArticle?.author || post?.data.author || '';
+const displayDate = cmsArticle?.displayDate
+  ? new Date(cmsArticle.displayDate)
+  : post?.data.pubDate || new Date();
+const displayReadTime = cmsArticle?.readTimeMinutes || post?.data.readTime || 0;
+const displayTags = cmsArticle?.tags || post?.data.tags || [];
+const displayImageUrl = cmsArticle?.cardImage?.url || '';
+const displayImageAlt =
+  cmsArticle?.cardImageAlt || post?.data.cardImageAlt || '';
+const cmsHtmlContent = cmsArticle
+  ? renderBlocksToHtml(cmsArticle.content)
+  : null;
+const isCmsDriven = Boolean(cmsArticle);
+const { Content } = post ? await render(post) : { Content: null };
 ---
 
 <MainLayout
@@ -67,12 +115,12 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
   structuredData={{
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.data.title,
-    image: post.data.cardImage.src,
-    datePublished: post.data.pubDate.toISOString(),
+    headline: displayTitle,
+    image: isCmsDriven ? displayImageUrl : post?.data.cardImage.src,
+    datePublished: displayDate.toISOString(),
     author: {
       '@type': 'Person',
-      name: post.data.author,
+      name: displayAuthor,
     },
     publisher: {
       '@type': 'Organization',
@@ -84,7 +132,7 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${siteUrl}/blog/${post.id.replace(/^en\//, '')}`,
+      '@id': `${siteUrl}/blog/${currentSlug}`,
     },
   }}
 >
@@ -92,49 +140,72 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
     <div class="max-w-2xl">
       <div class="mb-6 flex items-center justify-between">
         <div class="flex w-full gap-x-5 sm:items-center sm:gap-x-3">
-          <AvatarBlogLarge blogEntry={post} />
-          <div class="grow">
-            <div class="flex items-center justify-between gap-x-2">
-              <div>
-                {/* Post metadata and author info */}
-                <span class="font-bold text-neutral-700 dark:text-neutral-300">
-                  {post.data.author}
-                </span>
-                <ul class="text-xs text-neutral-500">
-                  <li
-                    class="relative inline-block pe-6 before:absolute before:end-2 before:top-1/2 before:size-1 before:-translate-y-1/2 before:rounded-full before:bg-neutral-300 last:pe-0 last-of-type:before:hidden dark:text-neutral-400 dark:before:bg-neutral-600"
-                  >
-                    {formatDate(post.data.pubDate)}
-                  </li>
-                  <li
-                    class="relative inline-block pe-6 before:absolute before:end-2 before:top-1/2 before:size-1 before:-translate-y-1/2 before:rounded-full before:bg-neutral-300 last:pe-0 last-of-type:before:hidden dark:text-neutral-400 dark:before:bg-neutral-600"
-                  >
-                    {post.data.readTime} min read
-                  </li>
-                </ul>
+          {
+            isCmsDriven ? (
+              <div class="flex items-center gap-x-3">
+                {cmsArticle?.authorImage?.url && (
+                  <img
+                    class="size-16 shrink-0 rounded-full object-cover"
+                    src={cmsArticle.authorImage.url}
+                    alt={displayAuthor}
+                  />
+                )}
+                <div>
+                  <span class="font-bold text-neutral-700 dark:text-neutral-300">
+                    {displayAuthor}
+                  </span>
+                  <ul class="text-xs text-neutral-500">
+                    <li class="relative inline-block pe-6 before:absolute before:end-2 before:top-1/2 before:size-1 before:-translate-y-1/2 before:rounded-full before:bg-neutral-300 last:pe-0 last-of-type:before:hidden dark:text-neutral-400 dark:before:bg-neutral-600">
+                      {formatDate(displayDate)}
+                    </li>
+                    <li class="relative inline-block pe-6 before:absolute before:end-2 before:top-1/2 before:size-1 before:-translate-y-1/2 before:rounded-full before:bg-neutral-300 last:pe-0 last-of-type:before:hidden dark:text-neutral-400 dark:before:bg-neutral-600">
+                      {displayReadTime} min read
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          </div>
+            ) : (
+              post && <AvatarBlogLarge blogEntry={post} />
+            )
+          }
         </div>
       </div>
-      {/* Blog post title */}
+      <!-- Blog post title -->
       <h2
         class="mb-3 text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200"
       >
-        {post.data.title}
+        {displayTitle}
       </h2>
-      <Image
-        class="mb-5 w-full rounded-xl object-cover md:mb-8"
-        src={post.data.cardImage}
-        alt={post.data.cardImageAlt}
-        draggable={'false'}
-        format={'avif'}
-      />
-      {/* Blog post contents */}
+      {
+        isCmsDriven ? (
+          displayImageUrl && (
+            <img
+              class="mb-5 w-full rounded-xl object-cover md:mb-8"
+              src={`http://127.0.0.1:1337${displayImageUrl}`}
+              alt={displayImageAlt}
+            />
+          )
+        ) : post ? (
+          <Image
+            class="mb-5 w-full rounded-xl object-cover md:mb-8"
+            src={post.data.cardImage}
+            alt={post.data.cardImageAlt}
+            draggable={'false'}
+            format={'avif'}
+          />
+        ) : null
+      }
+      <!-- Blog post contents -->
       <article
         class="prose prose-lg prose-neutral dark:prose-invert mb-5 max-w-none text-pretty md:mb-8"
       >
-        <Content />
+        {
+          isCmsDriven ? (
+            <Fragment set:html={cmsHtmlContent} />
+          ) : Content ? (
+            <Content />
+          ) : null
+        }
       </article>
       <div
         class="mx-auto grid max-w-(--breakpoint-lg) gap-y-5 sm:flex sm:items-center sm:justify-between sm:gap-y-0"
@@ -144,7 +215,7 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
           class="flex flex-wrap gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center sm:gap-y-0"
         >
           {
-            post.data.tags?.map((tag: string) => (
+            displayTags.map((tag: string) => (
               <span class="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-400/30 px-3 py-1.5 text-xs font-medium text-neutral-700 outline-hidden focus:outline-hidden focus-visible:ring-3 focus-visible:outline-hidden dark:bg-neutral-700/60 dark:text-neutral-300">
                 {capitalize(tag)}
               </span>
@@ -159,7 +230,7 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
           >
           </div>
           <div class="inline-flex">
-            <SocialShare pageTitle={post.data.title} />
+            <SocialShare pageTitle={displayTitle} />
           </div>
         </div>
       </div>
@@ -171,7 +242,7 @@ const ogTitle = `${post.data.title} | Blog | ${SITE.title}`;
     />
   </section>
 
-  {/* Related articles section */}
+  <!-- Related articles section -->
   <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
     <div class="mb-10 max-w-2xl">
       <h2

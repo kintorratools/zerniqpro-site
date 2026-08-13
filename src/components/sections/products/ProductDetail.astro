@@ -148,7 +148,8 @@ const tabs = [
             }
           </div>
           {
-            product.specificationsRight ? (
+            product.specificationsRight &&
+            product.specificationsRight.length > 0 ? (
               <div class="mt-6 max-w-md space-y-6 md:mt-0 md:ml-auto">
                 {product.specificationsRight?.map(spec => (
                   <div>
@@ -170,7 +171,7 @@ const tabs = [
                         <table class="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700">
                           <thead>
                             <tr>
-                              {Object.keys(product.tableData[0]).map(header => (
+                              {product.tableData[0]?.feature?.map(header => (
                                 <th
                                   scope="col"
                                   class="px-6 py-3 text-start text-xs font-medium text-neutral-500 uppercase dark:text-neutral-500"
@@ -181,11 +182,11 @@ const tabs = [
                             </tr>
                           </thead>
                           <tbody class="divide-y divide-neutral-300 dark:divide-neutral-700">
-                            {product.tableData?.map(row => (
+                            {product.tableData[0]?.description?.map(row => (
                               <tr>
-                                {Object.values(row).map(cellValue => (
+                                {row.map(cell => (
                                   <td class="px-6 py-4 text-sm font-medium whitespace-nowrap text-neutral-600 dark:text-neutral-400">
-                                    {cellValue}
+                                    {cell}
                                   </td>
                                 ))}
                               </tr>
@@ -364,79 +365,32 @@ const tabs = [
     );
   }
 
-  let activePanel = document.querySelector(
-    '.product-tab-panel:not(.hidden)'
-  ) as HTMLElement | null;
-  let isSwitching = false;
+  const tabButtons = Array.from(document.querySelectorAll('[data-target]'));
+  const tabPanels = Array.from(document.querySelectorAll('.product-tab-panel'));
 
-  function clearPanelMotion(panel: HTMLElement) {
-    panel.style.transition = '';
-    panel.style.opacity = '';
-    panel.style.transform = '';
+  function selectTab(index: number) {
+    if (index < 0 || index >= tabButtons.length) return;
+
+    tabButtons.forEach((btn, i) => {
+      if (i === index) {
+        setButtonActive(btn);
+      } else {
+        setButtonInactive(btn, tabButtons[index]);
+      }
+    });
+
+    tabPanels.forEach((panel, i) => {
+      if (i === index) {
+        panel.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+      }
+    });
   }
 
-  function switchPanel(nextPanel: HTMLElement) {
-    if (!nextPanel || nextPanel === activePanel || isSwitching) return;
-
-    if (prefersReducedMotion || !activePanel) {
-      activePanel?.classList.add('hidden');
-      nextPanel.classList.remove('hidden');
-      clearPanelMotion(nextPanel);
-      activePanel = nextPanel;
-      return;
-    }
-
-    isSwitching = true;
-    const previousPanel = activePanel;
-
-    previousPanel.style.transition =
-      'opacity 220ms cubic-bezier(0.4, 0, 1, 1), transform 220ms cubic-bezier(0.4, 0, 1, 1)';
-    previousPanel.style.opacity = '0';
-    previousPanel.style.transform = 'translateY(10px)';
-
-    window.setTimeout(() => {
-      previousPanel.classList.add('hidden');
-      clearPanelMotion(previousPanel);
-
-      nextPanel.classList.remove('hidden');
-      nextPanel.style.opacity = '0';
-      nextPanel.style.transform = 'translateY(16px)';
-      void nextPanel.offsetWidth;
-
-      nextPanel.style.transition =
-        'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1), transform 400ms cubic-bezier(0.22, 1, 0.36, 1)';
-      nextPanel.style.opacity = '1';
-      nextPanel.style.transform = 'translateY(0)';
-
-      window.setTimeout(() => {
-        clearPanelMotion(nextPanel);
-        activePanel = nextPanel;
-        isSwitching = false;
-      }, 420);
-    }, 230);
-  }
-
-  const tabButtons = document.querySelectorAll('[data-target]');
-
-  if (tabButtons.length > 0) {
-    changeHeadingStyle(
-      tabButtons[0],
-      ['text-orange-400', 'dark:text-orange-300'],
-      []
-    );
-  }
-
-  tabButtons.forEach(button => {
+  tabButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
-      const tabId = button.getAttribute('data-target');
-      if (!tabId) return;
-
-      const nextPanel = document.querySelector(tabId) as HTMLElement | null;
-      if (!nextPanel || nextPanel === activePanel || isSwitching) return;
-
-      tabButtons.forEach(btn => setButtonInactive(btn, button));
-      setButtonActive(button);
-      switchPanel(nextPanel);
+      selectTab(index);
     });
   });
 </script>

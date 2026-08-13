@@ -3,14 +3,7 @@ import { join, relative, resolve } from 'node:path';
 
 const PROJECT_ROOT = resolve(import.meta.dirname, '..');
 
-const PATTERNS = [
-  'zerniqpro.com',
-  'screwfast.uk',
-  'ScrewFast',
-  'ZERNIQ',
-  'MEITE',
-  'AussieSteel',
-];
+const PATTERNS = ['screwfast.uk', 'ScrewFast', 'MEITE', 'AussieSteel'];
 
 // Domains/strings that are explicitly allowed (e.g. generic fixture data).
 // These take precedence over PATTERNS — a line matching an allowed pattern

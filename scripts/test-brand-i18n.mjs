@@ -84,9 +84,27 @@ const MOCK_LOCALES = [
   },
   {
     id: 5,
-    documentId: 'loc-pt',
-    code: 'pt-BR',
-    name: 'Português (Brasil)',
+    documentId: 'loc-fa',
+    code: 'fa',
+    name: 'فارسی',
+    enabled: false,
+    isDefault: false,
+    direction: 'rtl',
+  },
+  {
+    id: 6,
+    documentId: 'loc-ja',
+    code: 'ja',
+    name: '日本語',
+    enabled: false,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 7,
+    documentId: 'loc-zh',
+    code: 'zh-cn',
+    name: '简体中文',
     enabled: false,
     isDefault: false,
     direction: 'ltr',
@@ -172,9 +190,27 @@ const MOCK_LOCALES_DIFF = [
   },
   {
     id: 105,
-    documentId: 'loc-diff-pt',
-    code: 'pt-BR',
-    name: 'Português (Brasil)',
+    documentId: 'loc-diff-fa',
+    code: 'fa',
+    name: 'فارسی',
+    enabled: false,
+    isDefault: false,
+    direction: 'rtl',
+  },
+  {
+    id: 106,
+    documentId: 'loc-diff-ja',
+    code: 'ja',
+    name: '日本語',
+    enabled: false,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 107,
+    documentId: 'loc-diff-zh',
+    code: 'zh-cn',
+    name: '简体中文',
     enabled: false,
     isDefault: false,
     direction: 'ltr',
@@ -398,7 +434,7 @@ async function testBrandAndLocales(workerUrl) {
   check(body.locales.includes('es'), 'locales includes es');
   check(body.locales.includes('fr'), 'locales includes fr');
   check(!body.locales.includes('de'), 'locales excludes de (disabled)');
-  check(!body.locales.includes('pt-BR'), 'locales excludes pt-BR (disabled)');
+  check(!body.locales.includes('fa'), 'locales excludes fa (disabled)');
 
   check(body.defaultLocale === 'en', 'defaultLocale=en');
 
@@ -478,6 +514,48 @@ const LOCALE_FR = {
   direction: 'ltr',
 };
 
+/** Filler locales to ensure exactly 7 entries with valid codes */
+function fillerLocales(startId = 10) {
+  return [
+    {
+      id: startId,
+      documentId: `loc-fill-de`,
+      code: 'de',
+      name: 'Deutsch',
+      enabled: false,
+      isDefault: false,
+      direction: 'ltr',
+    },
+    {
+      id: startId + 1,
+      documentId: `loc-fill-fa`,
+      code: 'fa',
+      name: 'فارسی',
+      enabled: false,
+      isDefault: false,
+      direction: 'rtl',
+    },
+    {
+      id: startId + 2,
+      documentId: `loc-fill-ja`,
+      code: 'ja',
+      name: '日本語',
+      enabled: false,
+      isDefault: false,
+      direction: 'ltr',
+    },
+    {
+      id: startId + 3,
+      documentId: `loc-fill-zh`,
+      code: 'zh-cn',
+      name: '简体中文',
+      enabled: false,
+      isDefault: false,
+      direction: 'ltr',
+    },
+  ];
+}
+
 /** Helper to spin up mock + worker, run test, then clean up */
 async function runLocaleTest(testName, localeData) {
   console.log(`\n--- Locale Invalid: ${testName} ---`);
@@ -529,6 +607,7 @@ async function testLocaleEnMissing() {
   await runLocaleTest('en missing', [
     { ...LOCALE_ES, isDefault: true },
     { ...LOCALE_FR },
+    ...fillerLocales(10),
   ]);
 }
 
@@ -538,6 +617,7 @@ async function testLocaleEnDisabled() {
     LOCALE_BASE({ enabled: false }),
     { ...LOCALE_ES },
     { ...LOCALE_FR },
+    ...fillerLocales(10),
   ]);
 }
 
@@ -547,22 +627,24 @@ async function testLocaleEnNotDefault() {
     LOCALE_BASE({ isDefault: false }),
     { ...LOCALE_ES, isDefault: true },
     { ...LOCALE_FR },
+    ...fillerLocales(10),
   ]);
 }
 
 async function testLocaleTwoDefaults() {
   // en and es both isDefault=true
   await runLocaleTest('two defaults', [
-    LOCALE_BASE({ isDefault: true }),
-    { ...LOCALE_ES, isDefault: true },
-    { ...LOCALE_FR },
+    LOCALE_BASE({ id: 1, isDefault: true }),
+    { ...LOCALE_ES, isDefault: true, id: 2 },
+    { ...LOCALE_FR, id: 3 },
+    ...fillerLocales(10),
   ]);
 }
 
 async function testLocaleDuplicate() {
   // two locales with code='en'
   await runLocaleTest('duplicate en', [
-    LOCALE_BASE(),
+    LOCALE_BASE({ id: 1 }),
     {
       id: 2,
       documentId: 'loc-en-2',
@@ -572,6 +654,7 @@ async function testLocaleDuplicate() {
       isDefault: false,
       direction: 'ltr',
     },
+    ...fillerLocales(10),
   ]);
 }
 

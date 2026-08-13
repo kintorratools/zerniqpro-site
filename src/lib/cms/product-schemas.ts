@@ -111,7 +111,15 @@ const productRecordSchema = z.object({
   descriptionItems: z.array(descriptionItemSchema).nullable().optional(),
   specificationsLeft: z.array(descriptionItemSchema).nullable().optional(),
   specificationsRight: z.array(descriptionItemSchema).nullable().optional(),
-  tableData: z.array(z.record(z.string(), z.unknown())).nullable().optional(),
+  tableData: z
+    .array(
+      z.object({
+        feature: z.array(z.string()),
+        description: z.array(z.array(z.string())),
+      })
+    )
+    .nullable()
+    .optional(),
   blueprintFirst: mediaSchema,
   blueprintSecond: mediaSchema,
   blueprintFirstAlt: nullableString,

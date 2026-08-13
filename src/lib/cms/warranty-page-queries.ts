@@ -11,6 +11,7 @@ export function buildWarrantyPageQuery(
   parts.push(`filters[site][key][$eq]=${encodeURIComponent(siteKey)}`);
   parts.push(`locale=${encodeURIComponent(locale)}`);
   parts.push('status=published');
+  parts.push('populate[body][populate]=*');
   parts.push('populate[seo]=true');
 
   return `/api/warranty-pages?${parts.join('&')}`;

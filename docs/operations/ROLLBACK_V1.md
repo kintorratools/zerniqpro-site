@@ -4,7 +4,7 @@
 
 ```bash
 # Roll back to previous Worker deployment
-cd zerniqpro-site
+cd frontend-repo
 pnpm wrangler rollback --config dist-out/server/wrangler.json
 ```
 
@@ -30,7 +30,7 @@ pnpm wrangler containers rollback <container-name>
 # Restore from latest backup
 # 1. Confirm DATABASE_URL is set
 # 2. Restore the dump file
-pg_restore -d $DATABASE_URL --clean --if-exists D:\Projects\Zerniq\backups\<latest>.dump
+pg_restore -d $DATABASE_URL --clean --if-exists ./backups/<latest>.dump
 ```
 
 ## R2 Recovery

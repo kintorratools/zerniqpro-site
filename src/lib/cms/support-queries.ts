@@ -51,6 +51,29 @@ export function buildSupportArticleBySlugQuery(
 }
 
 /**
+ * Build a relative Strapi API path for support articles filtered by category (blog/insight/support).
+ */
+export function buildSupportArticlesByCategoryQuery(
+  siteKey: string,
+  locale: string,
+  category: 'blog' | 'insight' | 'support'
+): string {
+  const parts: string[] = [];
+
+  parts.push(`filters[site][key][$eq]=${encodeURIComponent(siteKey)}`);
+  parts.push(`filters[category][$eq]=${encodeURIComponent(category)}`);
+  parts.push(`locale=${encodeURIComponent(locale)}`);
+  parts.push('status=published');
+  parts.push('pagination[pageSize]=100');
+
+  parts.push('populate[cardImage]=true');
+  parts.push('populate[authorImage]=true');
+  parts.push('populate[seo]=true');
+
+  return `/api/support-articles?${parts.join('&')}`;
+}
+
+/**
  * Build a relative Strapi API path for the support page query.
  */
 export function buildSupportPageQuery(siteKey: string, locale: string): string {

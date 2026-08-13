@@ -40,7 +40,7 @@ export interface ProductViewModel {
   /** Right column specifications (localized) */
   specificationsRight: Array<{ title: string; description: string }>;
   /** Tabular data (localized) */
-  tableData: Array<Record<string, unknown>> | null;
+  tableData: Array<{ feature: string[]; description: string[][] }> | null;
   /** First blueprint image (non-localized, shared across locales) */
   blueprintFirst: CmsMedia | null;
   /** First blueprint alt text (localized) */

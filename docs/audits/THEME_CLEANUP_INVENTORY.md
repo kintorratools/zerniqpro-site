@@ -1,5 +1,7 @@
 # Theme Cleanup Inventory: ScrewFast → ZERNIQ
 
+> **Note**: This document is a historical record of the ScrewFast→ZERNIQ migration. 'ZERNIQ' references throughout refer to the former target brand and are preserved as historical context. Current architecture uses generic site-a/brand-a patterns.
+
 > **Audit Date:** 2026-08-05  
 > **Repository:** `zerniqpro-site` (`theme-cleanup` branch)  
 > **Baseline Tag:** `screwfast-baseline-verified-20260805` (commit `35a5cd0`)  

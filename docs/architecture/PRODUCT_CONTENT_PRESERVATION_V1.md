@@ -380,7 +380,7 @@ File: `src/content/products/fr/item-f303.md`
 
 ### Unique Media Files (Disk Verification)
 
-All files verified at `D:\Projects\Zerniq\zerniqpro-site\src\images\`:
+All files verified at `./src/images/`:
 
 | #   | File Name                   | Size / Resolution Verified |
 | --- | --------------------------- | -------------------------- |

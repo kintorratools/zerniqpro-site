@@ -1,0 +1,1300 @@
+{
+  "baseline_commit": "15da780b4fcda4501aa8bfc28c165d517ba2cf70",
+  "baseline_short": "15da780b",
+  "baseline_message": "refactor: remove demo authentication UI",
+  "baseline_description": "Last pre-CMS ScrewFast theme commit — the original ScrewFast open-source theme with all local content before any Strapi/CMS integration. Auth UI was removed but the full theme is preserved intact with local data files, content collections, and images.",
+  "generated_at": "2026-08-12T12:00:00+08:00",
+  "generated_from_repo": "D:\\Projects\\Zerniq\\zerniqpro-site",
+  "pages_not_present_in_baseline": [
+    "/pages/downloads",
+    "/pages/privacy",
+    "/pages/warranty",
+    "/insights (listing page — insights were shown inline on /blog)",
+    "/fr/insights (listing page — insights were shown inline on /fr/blog)"
+  ],
+  "pages": {
+    "/": {
+      "route": "/",
+      "astro_file": "src/pages/index.astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "announcement",
+          "type": "AnnouncementBanner",
+          "text_fields": ["btnTitle: Explore ScrewFast on GitHub"],
+          "image_count": 0,
+          "card_count": 0,
+          "cta_count": 1,
+          "cta_label": "Explore ScrewFast on GitHub",
+          "cta_url": "https://github.com/mearashadowfax/ScrewFast"
+        },
+        {
+          "name": "hero",
+          "type": "HeroSection",
+          "text_fields": [
+            "title",
+            "subTitle",
+            "primaryBtn",
+            "secondaryBtn",
+            "rating",
+            "reviews"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/hero-image.avif"],
+          "card_count": 0,
+          "cta_count": 2,
+          "cta_labels": ["Start Exploring", "Contact Sales Team"],
+          "cta_urls": ["/products", "/contact"],
+          "avatar_count": 4,
+          "avatar_sources": ["unsplash external URL x4"]
+        },
+        {
+          "name": "clients",
+          "type": "ClientsSection",
+          "text_fields": ["title: Trusted by Industry Leaders", "subTitle"],
+          "image_count": 0,
+          "card_count": 4,
+          "card_type": "partner logos (inline SVG)",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresGeneral",
+          "type": "FeaturesGeneral",
+          "text_fields": ["title: Meeting Industry Demands", "subTitle"],
+          "image_count": 1,
+          "image_src": ["src/images/features-image.avif"],
+          "card_count": 4,
+          "card_type": "feature cards from src/data_files/features.json",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresNavs",
+          "type": "FeaturesNavs",
+          "text_fields": [
+            "title (with HTML span)",
+            "3 tab headings",
+            "3 tab contents"
+          ],
+          "image_count": 3,
+          "image_src": [
+            "src/images/automated-tools.avif",
+            "src/images/dashboard-image.avif",
+            "src/images/construction-image.avif"
+          ],
+          "card_count": 0,
+          "tab_count": 3,
+          "cta_count": 0
+        },
+        {
+          "name": "testimonials",
+          "type": "TestimonialsSection",
+          "text_fields": ["title: Fast-Track Your Projects", "subTitle"],
+          "image_count": 0,
+          "card_count": 0,
+          "testimonial_count": 1,
+          "statistic_count": 4,
+          "cta_count": 0
+        },
+        {
+          "name": "pricing",
+          "type": "PricingSection",
+          "text_fields": [
+            "title: Simple, Transparent Pricing",
+            "subTitle",
+            "badge: Best value"
+          ],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "pricing tier cards (Starter Kit, Professional Toolbox)",
+          "cta_count": 2,
+          "cta_labels": ["Get the Starter Kit", "Get the Professional Toolbox"],
+          "data_source": "src/data_files/pricing.json"
+        },
+        {
+          "name": "faq",
+          "type": "FAQ",
+          "text_fields": ["title: Frequently asked questions (with HTML <br>)"],
+          "image_count": 0,
+          "card_count": 0,
+          "faq_count": 6,
+          "cta_count": 0,
+          "data_source": "src/data_files/faqs.json"
+        },
+        {
+          "name": "bottomCta",
+          "type": "HeroSectionAlt",
+          "text_fields": ["title: Let's Build Together", "subTitle"],
+          "image_count": 0,
+          "card_count": 0,
+          "cta_count": 1,
+          "cta_label": "GitHub link",
+          "cta_url": "https://github.com/mearashadowfax/ScrewFast"
+        }
+      ],
+      "total_sections": 9,
+      "total_local_images": 5,
+      "total_external_images": 8,
+      "total_images": 13,
+      "total_ctas": 6,
+      "total_cards": 10,
+      "content_types": [
+        "fixed text",
+        "json data files",
+        "external URLs",
+        "inline SVGs"
+      ]
+    },
+    "/services": {
+      "route": "/services",
+      "astro_file": "src/pages/services.astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "intro",
+          "type": "MainSection",
+          "text_fields": [
+            "title: Uniting Expertise with Your Vision",
+            "subTitle"
+          ],
+          "image_count": 0,
+          "cta_count": 1,
+          "cta_label": "Schedule a Consultation"
+        },
+        {
+          "name": "article_delivering_guidance",
+          "type": "RightSection",
+          "text_fields": ["title: Delivering Expert Guidance", "subTitle"],
+          "image_count": 2,
+          "image_src": [
+            "src/images/blueprints-image.avif",
+            "src/images/person-working.avif"
+          ],
+          "cta_count": 0
+        },
+        {
+          "name": "article_transforming_designs",
+          "type": "LeftSection",
+          "text_fields": [
+            "title: Transforming Designs into Reality",
+            "subTitle"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/before-after.avif"],
+          "cta_count": 1,
+          "cta_label": "Learn More"
+        },
+        {
+          "name": "article_navigating_projects",
+          "type": "RightSection",
+          "text_fields": [
+            "title: Navigating Projects with Professional Oversight",
+            "subTitle"
+          ],
+          "image_count": 2,
+          "image_src": [
+            "src/images/construction-workers.avif",
+            "src/images/aerial-view.avif"
+          ],
+          "cta_count": 0
+        },
+        {
+          "name": "article_ensuring_performance",
+          "type": "LeftSection",
+          "text_fields": [
+            "title: Ensuring Long-lasting Performance",
+            "subTitle"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/using-tools.avif"],
+          "cta_count": 0
+        },
+        {
+          "name": "article_bespoke_strategies",
+          "type": "RightSection",
+          "text_fields": [
+            "title: Crafting Bespoke Strategies for Unique Challenges",
+            "subTitle"
+          ],
+          "image_count": 2,
+          "image_src": [
+            "src/images/progress-building.avif",
+            "src/images/under-construction.avif"
+          ],
+          "cta_count": 1,
+          "cta_label": "Read more"
+        },
+        {
+          "name": "stats",
+          "type": "FeaturesStats",
+          "text_fields": [
+            "title: By the Numbers",
+            "subTitle",
+            "mainStatTitle: 96%",
+            "mainStatSubTitle"
+          ],
+          "image_count": 0,
+          "stat_count": 4,
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 7,
+      "total_images": 8,
+      "total_ctas": 3
+    },
+    "/contact": {
+      "route": "/contact",
+      "astro_file": "src/pages/contact.astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "contactSection",
+          "type": "ContactSection",
+          "text_fields": [
+            "title: Contact us",
+            "subTitle",
+            "formTitle",
+            "formSubTitle"
+          ],
+          "image_count": 0,
+          "form_field_count": 5,
+          "form_fields": [
+            "First Name (TextInput)",
+            "Last Name (TextInput)",
+            "Email (EmailContactInput)",
+            "Phone (PhoneInput)",
+            "Details (TextAreaInput)"
+          ],
+          "info_block_count": 4,
+          "info_blocks": [
+            {
+              "heading": "Knowledgebase",
+              "has_link": true,
+              "link_text": "Visit guides & tutorials"
+            },
+            { "heading": "FAQ", "has_link": true, "link_text": "Visit FAQ" },
+            {
+              "heading": "Visit our office",
+              "has_address": true,
+              "address": "72 Union Terrace, E10 4PE London"
+            },
+            {
+              "heading": "Contact us by email",
+              "has_link": true,
+              "link_text": "support@screwfast.uk",
+              "link_url": "mailto:support@screwfast.uk"
+            }
+          ],
+          "cta_count": 1,
+          "cta_label": "Send Message",
+          "has_demo_script": true
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 0,
+      "total_ctas": 1,
+      "total_form_fields": 5,
+      "total_info_blocks": 4
+    },
+    "/products": {
+      "route": "/products",
+      "astro_file": "src/pages/products/index.astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "header",
+          "type": "page_header",
+          "text_fields": ["title: Products", "subTitle"],
+          "image_count": 0,
+          "cta_count": 1,
+          "cta_label": "Customer Stories"
+        },
+        {
+          "name": "product_grid",
+          "type": "CardSmall/CardWide grid",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 4,
+          "card_type": "product cards (alternating CardSmall/CardWide)",
+          "data_source": "astro:content products collection (en)",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresStats",
+          "type": "FeaturesStatsAlt",
+          "text_fields": ["title: Why Choose ScrewFast?", "subTitle"],
+          "image_count": 0,
+          "benefit_count": 3,
+          "cta_count": 0
+        },
+        {
+          "name": "testimonials",
+          "type": "TestimonialsSectionAlt",
+          "text_fields": ["title: What Our Customers Say"],
+          "image_count": 0,
+          "testimonial_count": 3,
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 4,
+      "total_images": 0,
+      "total_ctas": 1,
+      "total_cards": 4,
+      "total_testimonials": 3
+    },
+    "/products/[id]": {
+      "route": "/products/:id",
+      "astro_file": "src/pages/products/[id].astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "productDetail",
+          "type": "ProductDetail",
+          "text_fields": [
+            "title",
+            "description",
+            "main.content",
+            "longDescription.title",
+            "longDescription.subTitle"
+          ],
+          "image_count": 5,
+          "image_src": [
+            "product-image-X.avif",
+            "product-image-main-X.avif",
+            "blueprint-1.avif",
+            "blueprint-2.avif"
+          ],
+          "tab_count": 3,
+          "tabs": ["Description", "Specifications", "Blueprints"],
+          "cta_count": 1,
+          "cta_label": "Contact sales to learn more"
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 5,
+      "total_ctas": 1,
+      "has_gsap_animation": true
+    },
+    "/blog": {
+      "route": "/blog",
+      "astro_file": "src/pages/blog/index.astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "page_header",
+          "type": "page_header",
+          "text_fields": [
+            "title: Your Gateway to Construction Excellence",
+            "subTitle"
+          ],
+          "image_count": 0,
+          "cta_count": 0
+        },
+        {
+          "name": "blog_grid",
+          "type": "CardBlog grid",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "CardBlog (other posts, excluding most recent)",
+          "data_source": "astro:content blog collection (en)",
+          "cta_count": 0
+        },
+        {
+          "name": "most_recent",
+          "type": "CardBlogRecent",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 1,
+          "card_type": "CardBlogRecent",
+          "data_source": "astro:content blog collection (en, first entry)",
+          "cta_count": 0
+        },
+        {
+          "name": "insights_section",
+          "type": "CardInsight grid",
+          "text_fields": ["secondTitle: Insights", "secondSubTitle"],
+          "image_count": 0,
+          "card_count": 3,
+          "card_type": "CardInsight",
+          "data_source": "astro:content insights collection (en)",
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 4,
+      "total_images": 0,
+      "total_ctas": 0,
+      "total_cards": 6
+    },
+    "/blog/[id]": {
+      "route": "/blog/:id",
+      "astro_file": "src/pages/blog/[id].astro",
+      "lang": "en",
+      "sections": [
+        {
+          "name": "post_content",
+          "type": "blog_post",
+          "text_fields": ["title", "author", "pubDate", "readTime", "tags"],
+          "image_count": 1,
+          "image_src": ["blog post cardImage (MDX frontmatter)"],
+          "cta_count": 0,
+          "has_social_share": true,
+          "has_bookmark": true,
+          "has_feedback": true
+        },
+        {
+          "name": "related_articles",
+          "type": "CardRelated grid",
+          "text_fields": ["title: Related articles"],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "CardRelated",
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 2,
+      "total_images": 1,
+      "total_ctas": 0,
+      "has_structured_data": true
+    },
+    "/insights/[id]": {
+      "route": "/insights/:id",
+      "astro_file": "src/pages/insights/[id].astro",
+      "lang": "en",
+      "note": "No listing page in baseline; insights listing was displayed on /blog page",
+      "sections": [
+        {
+          "name": "insightDetail",
+          "type": "InsightDetail",
+          "text_fields": ["title", "description"],
+          "image_count": 1,
+          "image_src": ["insight cardImage (MDX frontmatter)"],
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 1,
+      "total_ctas": 0,
+      "has_structured_data": true
+    },
+    "/fr": {
+      "route": "/fr",
+      "astro_file": "src/pages/fr/index.astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "announcement",
+          "type": "AnnouncementBanner",
+          "text_fields": ["btnTitle: Découvrez ScrewFast sur GitHub"],
+          "image_count": 0,
+          "card_count": 0,
+          "cta_count": 1,
+          "cta_label": "Découvrez ScrewFast sur GitHub",
+          "cta_url": "https://github.com/mearashadowfax/ScrewFast"
+        },
+        {
+          "name": "hero",
+          "type": "HeroSection",
+          "text_fields": [
+            "title",
+            "subTitle",
+            "primaryBtn: Commencez à explorer",
+            "secondaryBtn: Contacter l'équipe commerciale",
+            "rating",
+            "reviews"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/hero-image.avif"],
+          "card_count": 0,
+          "cta_count": 2,
+          "cta_labels": [
+            "Commencez à explorer",
+            "Contacter l'équipe commerciale"
+          ],
+          "cta_urls": ["/fr/products", "/fr/contact"],
+          "avatar_count": 4,
+          "avatar_sources": ["unsplash external URL x4"]
+        },
+        {
+          "name": "clients",
+          "type": "ClientsSection",
+          "text_fields": [
+            "title: Faites confiance aux leaders de l'industrie",
+            "subTitle"
+          ],
+          "image_count": 0,
+          "card_count": 4,
+          "card_type": "partner logos (inline SVG)",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresGeneral",
+          "type": "FeaturesGeneral",
+          "text_fields": [
+            "title: Répondre aux exigences de l'industrie",
+            "subTitle"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/features-image.avif"],
+          "card_count": 4,
+          "card_type": "feature cards from src/data_files/fr/features.json",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresNavs",
+          "type": "FeaturesNavs",
+          "text_fields": [
+            "title (with HTML span)",
+            "3 tab headings (FR)",
+            "3 tab contents (FR)"
+          ],
+          "image_count": 3,
+          "image_src": [
+            "src/images/automated-tools.avif",
+            "src/images/dashboard-image.avif",
+            "src/images/construction-image.avif"
+          ],
+          "card_count": 0,
+          "tab_count": 3,
+          "cta_count": 0
+        },
+        {
+          "name": "testimonials",
+          "type": "TestimonialsSection",
+          "text_fields": ["title: Accélérez vos projets", "subTitle"],
+          "image_count": 0,
+          "card_count": 0,
+          "testimonial_count": 1,
+          "statistic_count": 4,
+          "cta_count": 0
+        },
+        {
+          "name": "pricing",
+          "type": "PricingSection",
+          "text_fields": ["FR pricing data"],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "pricing tier cards",
+          "cta_count": 2,
+          "data_source": "src/data_files/fr/pricing.json"
+        },
+        {
+          "name": "faq",
+          "type": "FAQ",
+          "text_fields": ["title: Questions fréquemment posées"],
+          "image_count": 0,
+          "card_count": 0,
+          "faq_count": 6,
+          "cta_count": 0,
+          "data_source": "src/data_files/fr/faqs.json"
+        },
+        {
+          "name": "bottomCta",
+          "type": "HeroSectionAlt",
+          "text_fields": ["title: Construisons ensemble", "subTitle"],
+          "image_count": 0,
+          "card_count": 0,
+          "cta_count": 1,
+          "cta_label": "GitHub link",
+          "cta_url": "https://github.com/mearashadowfax/ScrewFast"
+        }
+      ],
+      "total_sections": 9,
+      "total_local_images": 5,
+      "total_external_images": 8,
+      "total_images": 13,
+      "total_ctas": 6
+    },
+    "/fr/services": {
+      "route": "/fr/services",
+      "astro_file": "src/pages/fr/services.astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "intro",
+          "type": "MainSection",
+          "text_fields": [
+            "title: Unir l'expertise à votre vision",
+            "subTitle (FR)"
+          ],
+          "image_count": 0,
+          "cta_count": 1,
+          "cta_label": "Planifier une consultation"
+        },
+        {
+          "name": "article_1",
+          "type": "RightSection",
+          "text_fields": [
+            "title: Fournir des conseils d'experts",
+            "subTitle (FR)"
+          ],
+          "image_count": 2,
+          "image_src": [
+            "src/images/blueprints-image.avif",
+            "src/images/person-working.avif"
+          ],
+          "cta_count": 0
+        },
+        {
+          "name": "article_2",
+          "type": "LeftSection",
+          "text_fields": [
+            "title: Transformer les conceptions en réalité",
+            "subTitle (FR)"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/before-after.avif"],
+          "cta_count": 1,
+          "cta_label": "En savoir plus"
+        },
+        {
+          "name": "article_3",
+          "type": "RightSection",
+          "text_fields": [
+            "title: Naviguer dans les projets avec une supervision professionnelle",
+            "subTitle (FR)"
+          ],
+          "image_count": 2,
+          "image_src": [
+            "src/images/construction-workers.avif",
+            "src/images/aerial-view.avif"
+          ],
+          "cta_count": 0
+        },
+        {
+          "name": "article_4",
+          "type": "LeftSection",
+          "text_fields": [
+            "title: Garantir des performances durables",
+            "subTitle (FR)"
+          ],
+          "image_count": 1,
+          "image_src": ["src/images/using-tools.avif"],
+          "cta_count": 0
+        },
+        {
+          "name": "article_5",
+          "type": "RightSection",
+          "text_fields": [
+            "title: Élaboration de stratégies sur mesure pour des défis uniques",
+            "subTitle (FR)"
+          ],
+          "image_count": 2,
+          "image_src": [
+            "src/images/progress-building.avif",
+            "src/images/under-construction.avif"
+          ],
+          "cta_count": 1,
+          "cta_label": "Lire la suite"
+        },
+        {
+          "name": "stats",
+          "type": "FeaturesStats",
+          "text_fields": [
+            "title: Par les chiffres",
+            "subTitle (FR)",
+            "mainStatTitle: 96%",
+            "mainStatSubTitle (FR)"
+          ],
+          "image_count": 0,
+          "stat_count": 4,
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 7,
+      "total_images": 8,
+      "total_ctas": 3
+    },
+    "/fr/contact": {
+      "route": "/fr/contact",
+      "astro_file": "src/pages/fr/contact.astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "contactSection",
+          "type": "ContactSection (FR locale)",
+          "text_fields": [
+            "title: Contactez-nous",
+            "subTitle (FR)",
+            "formTitle (FR)",
+            "formSubTitle (FR)"
+          ],
+          "image_count": 0,
+          "form_field_count": 5,
+          "form_fields": [
+            "Prénom (TextInput)",
+            "Nom (TextInput)",
+            "Email (EmailContactInput)",
+            "Phone (PhoneInput)",
+            "Détails (TextAreaInput)"
+          ],
+          "info_block_count": 4,
+          "cta_count": 1,
+          "cta_label": "Envoyer un message"
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 0,
+      "total_ctas": 1,
+      "total_form_fields": 5,
+      "total_info_blocks": 4
+    },
+    "/fr/products": {
+      "route": "/fr/products",
+      "astro_file": "src/pages/fr/products/index.astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "header",
+          "type": "page_header",
+          "text_fields": ["title: Produits", "subTitle (FR)"],
+          "image_count": 0,
+          "cta_count": 1,
+          "cta_label": "Histoires de clients"
+        },
+        {
+          "name": "product_grid",
+          "type": "CardSmall/CardWide grid",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 4,
+          "card_type": "product cards (alternating CardSmall/CardWide)",
+          "data_source": "astro:content products collection (fr)",
+          "cta_count": 0
+        },
+        {
+          "name": "featuresStats",
+          "type": "FeaturesStatsAlt",
+          "text_fields": [
+            "title: Pourquoi choisir ScrewFast ?",
+            "subTitle (FR)"
+          ],
+          "image_count": 0,
+          "benefit_count": 3,
+          "cta_count": 0
+        },
+        {
+          "name": "testimonials",
+          "type": "TestimonialsSectionAlt",
+          "text_fields": ["title: Ce que disent nos clients"],
+          "image_count": 0,
+          "testimonial_count": 3,
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 4,
+      "total_images": 0,
+      "total_ctas": 1,
+      "total_cards": 4
+    },
+    "/fr/products/[id]": {
+      "route": "/fr/products/:id",
+      "astro_file": "src/pages/fr/products/[id].astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "productDetail",
+          "type": "ProductDetail",
+          "text_fields": ["FR product details"],
+          "image_count": 5,
+          "image_src": [
+            "product-image-X.avif",
+            "product-image-main-X.avif",
+            "blueprint-1.avif",
+            "blueprint-2.avif"
+          ],
+          "tab_count": 3,
+          "tabs": [
+            "Description (FR)",
+            "Specifications (FR)",
+            "Blueprints (FR)"
+          ],
+          "cta_count": 1,
+          "cta_label": "Contact sales (FR)"
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 5,
+      "total_ctas": 1
+    },
+    "/fr/blog": {
+      "route": "/fr/blog",
+      "astro_file": "src/pages/fr/blog/index.astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "page_header",
+          "type": "page_header",
+          "text_fields": [
+            "title: Votre Passerelle vers l'Excellence en Construction",
+            "subTitle (FR)"
+          ],
+          "image_count": 0,
+          "cta_count": 0
+        },
+        {
+          "name": "blog_grid",
+          "type": "CardBlog grid",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "CardBlog",
+          "data_source": "astro:content blog collection (fr)",
+          "cta_count": 0
+        },
+        {
+          "name": "most_recent",
+          "type": "CardBlogRecent",
+          "text_fields": [],
+          "image_count": 0,
+          "card_count": 1,
+          "card_type": "CardBlogRecent",
+          "data_source": "astro:content blog collection (fr, first entry)",
+          "cta_count": 0
+        },
+        {
+          "name": "insights_section",
+          "type": "CardInsight grid",
+          "text_fields": ["secondTitle: Perspectives", "secondSubTitle (FR)"],
+          "image_count": 0,
+          "card_count": 3,
+          "card_type": "CardInsight",
+          "data_source": "astro:content insights collection (fr)",
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 4,
+      "total_images": 0,
+      "total_ctas": 0,
+      "total_cards": 6
+    },
+    "/fr/blog/[id]": {
+      "route": "/fr/blog/:id",
+      "astro_file": "src/pages/fr/blog/[id].astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "post_content",
+          "type": "blog_post",
+          "text_fields": [
+            "FR title",
+            "FR author",
+            "pubDate",
+            "readTime",
+            "FR tags"
+          ],
+          "image_count": 1,
+          "image_src": ["blog post cardImage"],
+          "cta_count": 0,
+          "has_social_share": true,
+          "has_bookmark": true,
+          "has_feedback": true
+        },
+        {
+          "name": "related_articles",
+          "type": "CardRelated grid",
+          "text_fields": ["title: Articles connexes"],
+          "image_count": 0,
+          "card_count": 2,
+          "card_type": "CardRelated",
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 2,
+      "total_images": 1,
+      "total_ctas": 0
+    },
+    "/fr/insights/[id]": {
+      "route": "/fr/insights/:id",
+      "astro_file": "src/pages/fr/insights/[id].astro",
+      "lang": "fr",
+      "sections": [
+        {
+          "name": "insightDetail",
+          "type": "InsightDetail",
+          "text_fields": ["FR title", "FR description"],
+          "image_count": 1,
+          "image_src": ["insight cardImage"],
+          "cta_count": 0
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 1,
+      "total_ctas": 0
+    },
+    "/404": {
+      "route": "/404 (catch-all)",
+      "astro_file": "src/pages/404.astro",
+      "lang": "en+fr (locale-aware)",
+      "sections": [
+        {
+          "name": "error_page",
+          "type": "404 page",
+          "text_fields": [
+            "404 heading",
+            "subTitle (EN+FR)",
+            "content (EN+FR)",
+            "homeTitle (EN+FR)",
+            "backTitle (EN+FR)"
+          ],
+          "image_count": 0,
+          "cta_count": 2,
+          "cta_labels": ["Go Home / Page d'accueil", "Go Back / Retour"],
+          "has_client_script": true
+        }
+      ],
+      "total_sections": 1,
+      "total_images": 0,
+      "total_ctas": 2
+    }
+  },
+  "content_counts": {
+    "blog_en_articles": 3,
+    "blog_en_source": "src/content/blog/en/post-1.md, post-2.md, post-3.md",
+    "blog_fr_articles": 3,
+    "blog_fr_source": "src/content/blog/fr/post-1.md, post-2.md, post-3.md",
+    "insight_en_articles": 3,
+    "insight_en_source": "src/content/insights/en/insight-1.md, insight-2.md, insight-3.md",
+    "insight_fr_articles": 3,
+    "insight_fr_source": "src/content/insights/fr/insight-1.md, insight-2.md, insight-3.md",
+    "products_en_total": 4,
+    "products_en_source": "src/content/products/en/item-a765.md, item-b203.md, item-f303.md, item-t845.md",
+    "products_fr_total": 4,
+    "products_fr_source": "src/content/products/fr/item-a765.md, item-b203.md, item-f303.md, item-t845.md",
+    "docs_total": 20,
+    "docs_languages": ["en", "de", "es", "fa", "fr", "ja", "zh-cn"]
+  },
+  "data_files": {
+    "features_json": {
+      "path": "src/data_files/features.json",
+      "fr_path": "src/data_files/fr/features.json",
+      "card_count": 4,
+      "fields_per_card": ["heading", "content", "svg"]
+    },
+    "faqs_json": {
+      "path": "src/data_files/faqs.json",
+      "fr_path": "src/data_files/fr/faqs.json",
+      "faq_count": 6,
+      "fields_per_faq": ["question", "answer"],
+      "has_subTitle": true
+    },
+    "pricing_json": {
+      "path": "src/data_files/pricing.json",
+      "fr_path": "src/data_files/fr/pricing.json",
+      "tier_count": 2,
+      "tiers": ["Starter Kit", "Professional Toolbox"],
+      "fields_per_tier": [
+        "name",
+        "description",
+        "price",
+        "cents",
+        "billingFrequency",
+        "features[]",
+        "purchaseBtnTitle",
+        "purchaseLink"
+      ],
+      "enterprise_option": true
+    },
+    "constants_ts": {
+      "path": "src/data_files/constants.ts",
+      "exports": ["SITE", "SEO", "OG", "partnersData"],
+      "partner_count": 4,
+      "site_fields": [
+        "title",
+        "tagline",
+        "description",
+        "description_short",
+        "url",
+        "author"
+      ]
+    },
+    "mega_link_ts": {
+      "path": "src/data_files/mega_link.ts",
+      "exports": ["servicesData", "successStoriesData"],
+      "services_count": 6,
+      "success_stories_count": 1
+    }
+  },
+  "media_inventory": [
+    {
+      "source_path": "src/images/hero-image.avif",
+      "used_on_pages": ["/", "/fr"],
+      "used_in_section": "hero"
+    },
+    {
+      "source_path": "src/images/features-image.avif",
+      "used_on_pages": ["/", "/fr"],
+      "used_in_section": "featuresGeneral"
+    },
+    {
+      "source_path": "src/images/construction-image.avif",
+      "used_on_pages": ["/", "/fr"],
+      "used_in_section": "featuresNavs (tabs)"
+    },
+    {
+      "source_path": "src/images/automated-tools.avif",
+      "used_on_pages": ["/", "/fr"],
+      "used_in_section": "featuresNavs (tabs)"
+    },
+    {
+      "source_path": "src/images/dashboard-image.avif",
+      "used_on_pages": ["/", "/fr"],
+      "used_in_section": "featuresNavs (tabs)"
+    },
+    {
+      "source_path": "src/images/blueprints-image.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_delivering_guidance"
+    },
+    {
+      "source_path": "src/images/person-working.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_delivering_guidance"
+    },
+    {
+      "source_path": "src/images/before-after.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_transforming_designs"
+    },
+    {
+      "source_path": "src/images/construction-workers.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_navigating_projects"
+    },
+    {
+      "source_path": "src/images/aerial-view.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_navigating_projects"
+    },
+    {
+      "source_path": "src/images/using-tools.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_ensuring_performance"
+    },
+    {
+      "source_path": "src/images/progress-building.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_bespoke_strategies"
+    },
+    {
+      "source_path": "src/images/under-construction.avif",
+      "used_on_pages": ["/services", "/fr/services"],
+      "used_in_section": "article_bespoke_strategies"
+    },
+    {
+      "source_path": "src/images/product-image-1.avif",
+      "used_on_pages": ["/products", "/fr/products"],
+      "used_in_section": "product_card (SF-TB T845)"
+    },
+    {
+      "source_path": "src/images/product-image-2.avif",
+      "used_on_pages": ["/products", "/fr/products"],
+      "used_in_section": "product_card (SF-AB A765)"
+    },
+    {
+      "source_path": "src/images/product-image-3.avif",
+      "used_on_pages": ["/products", "/fr/products"],
+      "used_in_section": "product_card (item-b203)"
+    },
+    {
+      "source_path": "src/images/product-image-4.avif",
+      "used_on_pages": ["/products", "/fr/products"],
+      "used_in_section": "product_card (item-f303)"
+    },
+    {
+      "source_path": "src/images/product-image-main-1.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (SF-TB T845)"
+    },
+    {
+      "source_path": "src/images/product-image-main-2.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (SF-AB A765)"
+    },
+    {
+      "source_path": "src/images/product-image-main-3.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (item-b203)"
+    },
+    {
+      "source_path": "src/images/product-image-main-4.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (item-f303)"
+    },
+    {
+      "source_path": "src/images/blueprint-1.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (blueprints tab)"
+    },
+    {
+      "source_path": "src/images/blueprint-2.avif",
+      "used_on_pages": ["/products/[id]", "/fr/products/[id]"],
+      "used_in_section": "product_detail (blueprints tab)"
+    },
+    {
+      "source_path": "src/images/blog/post-1.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "blog_post (post-1)"
+    },
+    {
+      "source_path": "src/images/blog/post-2.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "blog_post (post-2)"
+    },
+    {
+      "source_path": "src/images/blog/post-3.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "blog_post (post-3)"
+    },
+    {
+      "source_path": "src/images/blog/jacob.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "author_avatar (Jacob, post-1)"
+    },
+    {
+      "source_path": "src/images/blog/brad.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "author_avatar (Brad, post-2)"
+    },
+    {
+      "source_path": "src/images/blog/anna.avif",
+      "used_on_pages": ["/blog/[id]", "/fr/blog/[id]"],
+      "used_in_section": "author_avatar (Olga/Anna, post-3)"
+    },
+    {
+      "source_path": "src/images/insights/insight-1.avif",
+      "used_on_pages": [
+        "/blog",
+        "/insights/[id]",
+        "/fr/blog",
+        "/fr/insights/[id]"
+      ],
+      "used_in_section": "insights_card / insight_detail"
+    },
+    {
+      "source_path": "src/images/insights/insight-2.avif",
+      "used_on_pages": [
+        "/blog",
+        "/insights/[id]",
+        "/fr/blog",
+        "/fr/insights/[id]"
+      ],
+      "used_in_section": "insights_card / insight_detail"
+    },
+    {
+      "source_path": "src/images/insights/insight-3.avif",
+      "used_on_pages": [
+        "/blog",
+        "/insights/[id]",
+        "/fr/blog",
+        "/fr/insights/[id]"
+      ],
+      "used_in_section": "insights_card / insight_detail"
+    },
+    {
+      "source_path": "src/images/social.png",
+      "used_on_pages": ["all (OG metadata)"],
+      "used_in_section": "og_image (src/data_files/constants.ts)"
+    },
+    {
+      "source_path": "src/images/icon.png",
+      "used_on_pages": ["all"],
+      "used_in_section": "favicon / PWA icon"
+    },
+    {
+      "source_path": "src/images/icon.svg",
+      "used_on_pages": ["all"],
+      "used_in_section": "favicon"
+    },
+    {
+      "source_path": "src/images/icon-maskable.png",
+      "used_on_pages": ["all"],
+      "used_in_section": "PWA maskable icon"
+    },
+    {
+      "source_path": "src/images/starlight/docs_logo.svg",
+      "used_on_pages": ["/docs"],
+      "used_in_section": "starlight_docs"
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_hero.svg",
+      "used_on_pages": ["/docs"],
+      "used_in_section": "starlight_docs"
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_hero_dark.svg",
+      "used_on_pages": ["/docs"],
+      "used_in_section": "starlight_docs"
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_logo.svg",
+      "used_on_pages": ["all"],
+      "used_in_section": "site_logo"
+    },
+    {
+      "source_path": "src/images/starlight/screwfast_logo_dark.svg",
+      "used_on_pages": ["all"],
+      "used_in_section": "site_logo"
+    }
+  ],
+  "assets_inventory": [
+    {
+      "source_path": "src/assets/styles/global.css",
+      "type": "stylesheet",
+      "used_on_pages": ["all"]
+    },
+    {
+      "source_path": "src/assets/styles/lenis.css",
+      "type": "stylesheet",
+      "used_on_pages": ["all"]
+    },
+    {
+      "source_path": "src/assets/styles/starlight.css",
+      "type": "stylesheet",
+      "used_on_pages": ["/docs"]
+    },
+    {
+      "source_path": "src/assets/styles/starlight_main.css",
+      "type": "stylesheet",
+      "used_on_pages": ["/docs"]
+    },
+    {
+      "source_path": "src/assets/scripts/lenisSmoothScroll.js",
+      "type": "script",
+      "used_on_pages": ["all"]
+    },
+    {
+      "source_path": "src/assets/scripts/demoForms.js",
+      "type": "script",
+      "used_on_pages": ["/contact", "/fr/contact"]
+    }
+  ],
+  "additional_routes": [
+    {
+      "route": "/favicon.ico",
+      "astro_file": "src/pages/favicon.ico.ts"
+    },
+    {
+      "route": "/robots.txt",
+      "astro_file": "src/pages/robots.txt.ts"
+    },
+    {
+      "route": "/manifest.json",
+      "astro_file": "src/pages/manifest.json.ts"
+    },
+    {
+      "route": "/docs/*",
+      "note": "Starlight documentation with 7 language variants"
+    }
+  ],
+  "key_observations": [
+    "No legal pages (downloads, privacy, warranty) existed in the baseline — these were added later in commit cf4fdfaa",
+    "No standalone /insights listing page existed — insights were shown inline on the /blog page",
+    "All page content was local: data_files/ JSON files, content/ MDX collections, and hardcoded strings in .astro files",
+    "No CMS/Strapi queries anywhere — content fetched via astro:content getCollection() and local JSON imports only",
+    "Internationalization (FR) used separate files (fr/data_files/, fr/content/, fr/pages/) not CMS-based locales",
+    "Contact page form had a demo script (demoForms.js) with a mock submission message",
+    "Product detail pages include GSAP animation in the ProductDetail component",
+    "Blog post detail pages include PostFeedback, Bookmark, and SocialShare interactive components",
+    "The 404 page is locale-aware (detects /fr/ prefix) with i18n strings for both EN and FR"
+  ]
+}

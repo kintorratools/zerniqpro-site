@@ -13,6 +13,7 @@ export function buildLegalPageQuery(
   parts.push(`locale=${encodeURIComponent(locale)}`);
   parts.push('status=published');
   parts.push(`filters[kind][$eq]=${encodeURIComponent(kind)}`);
+  parts.push('populate[body][populate]=*');
   parts.push('populate[seo]=true');
 
   return `/api/legal-pages?${parts.join('&')}`;

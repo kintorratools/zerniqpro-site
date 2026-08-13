@@ -1,0 +1,138 @@
+---
+// Import necessary components, modules and types
+import MainLayout from '@/layouts/MainLayout.astro';
+import CardInsight from '@components/ui/cards/CardInsight.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import { SITE } from '@data/constants';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { getCmsInsightArticles } from '@/lib/cms/blog-data';
+
+// Get brand and site domain from runtime config
+let brandName = SITE.title;
+let siteUrl = SITE.url;
+try {
+  const runtime = await getRuntimeConfig('fr');
+  brandName = runtime.brand?.name || runtime.site?.name || SITE.title;
+  siteUrl = runtime.site?.domain
+    ? runtime.site.domain.replace(/\/+$/, '')
+    : SITE.url;
+} catch {
+  /* fallback to SITE constants */
+}
+
+// Fetch CMS data first (PRIMARY source)
+const cmsInsightArticles = await getCmsInsightArticles('fr');
+const hasCmsInsight = cmsInsightArticles.length > 0;
+
+// Get all insight posts in French (MDX fallback)
+const frenchInsightsEntries = await getCollection('insights', ({ id }) => {
+  return id.startsWith('fr/');
+});
+
+const insightPosts: CollectionEntry<'insights'>[] = frenchInsightsEntries;
+
+// Define variables for page content
+const title: string = 'Perspectives';
+const subTitle: string = `Restez à jour avec les dernières tendances et évolutions de l'industrie de la construction grâce aux analyses de l'équipe d'experts de ${brandName}.`;
+
+const pageTitle: string = `Perspectives | ${brandName}`;
+const metaDescription = `Découvrez les analyses, tendances et perspectives de l'industrie par ${brandName}. Restez informé des dernières évolutions dans le secteur de la construction et des outils.`;
+const ogTitle = `Perspectives de l'Industrie | ${brandName}`;
+---
+
+<MainLayout
+  lang="fr"
+  title={pageTitle}
+  customDescription={metaDescription}
+  customOgTitle={ogTitle}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${siteUrl}/fr/insights`,
+    url: `${siteUrl}/fr/insights`,
+    name: `Perspectives | ${brandName}`,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteUrl,
+      name: brandName,
+      description: SITE.description,
+    },
+    inLanguage: 'fr',
+  }}
+>
+  <section
+    class="mx-auto max-w-[85rem] space-y-8 px-4 pt-16 sm:px-6 lg:px-8 2xl:max-w-full"
+  >
+    {/* Page header */}
+    <div class="mx-auto max-w-3xl text-left sm:text-center">
+      <h1
+        class="block text-4xl font-bold tracking-tight text-balance text-neutral-800 md:text-5xl lg:text-6xl dark:text-neutral-200"
+      >
+        {title}
+      </h1>
+
+      <p
+        class="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-400"
+      >
+        {subTitle}
+      </p>
+    </div>
+  </section>
+
+  <section
+    class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full"
+  >
+    {
+      hasCmsInsight ? (
+        cmsInsightArticles.length === 0 ? (
+          <p class="text-center text-neutral-600 dark:text-neutral-400">
+            Aucune perspective pour le moment. Revenez bientôt.
+          </p>
+        ) : (
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {cmsInsightArticles.map(article => (
+              <a
+                class="group rounded-xl ring-zinc-500 outline-hidden transition duration-300 focus-visible:ring-3 dark:ring-zinc-200 dark:focus:outline-hidden"
+                href={`/fr/insights/${article.slug}/`}
+              >
+                <div class="relative overflow-hidden rounded-xl pt-[50%] sm:pt-[70%]">
+                  {article.cardImage?.url && (
+                    <img
+                      class="absolute start-0 top-0 size-full rounded-xl object-cover transition duration-500 ease-in-out group-hover:scale-105"
+                      src={`http://127.0.0.1:1337${article.cardImage.url}`}
+                      alt={article.cardImageAlt}
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+                <div class="mt-7">
+                  <h3 class="text-xl font-bold text-neutral-800 group-hover:text-neutral-600 dark:text-neutral-200 dark:group-hover:text-neutral-400">
+                    {article.title}
+                  </h3>
+                  <p class="mt-3 text-neutral-600 dark:text-neutral-400">
+                    {article.excerpt}
+                  </p>
+                  <p class="mt-5 inline-flex items-center gap-x-1 font-medium text-orange-400 decoration-2 group-hover:underline dark:text-orange-300">
+                    Lire plus
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )
+      ) : insightPosts.length === 0 ? (
+        <p class="text-center text-neutral-600 dark:text-neutral-400">
+          Aucune perspective pour le moment. Revenez bientôt.
+        </p>
+      ) : (
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {insightPosts.map(insightEntry => (
+            <CardInsight insightEntry={insightEntry} insightLocale="fr" />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</MainLayout>

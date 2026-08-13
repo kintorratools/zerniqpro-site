@@ -1,5 +1,137 @@
 ---
 export const prerender = false;
-// Redirect legacy template route to CMS-driven equivalent
-return Astro.redirect('/fr/pages/services', 301);
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import MainSection from '@components/ui/blocks/MainSection.astro';
+import LeftSection from '@components/ui/blocks/LeftSection.astro';
+import RightSection from '@components/ui/blocks/RightSection.astro';
+import FeaturesStats from '@components/sections/features/FeaturesStats.astro';
+import { getServicesPage } from '@/lib/cms/services-page';
+import type { ServicesPageViewModel } from '@/lib/cms/services-page';
+import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
+import { SITE } from '@data/constants';
+import { CmsContentNotFoundError } from '@/lib/cms/errors';
+
+// Fetch CMS data
+let servicesPage: ServicesPageViewModel;
+try {
+  servicesPage = await getServicesPage('fr');
+} catch (e) {
+  if (e instanceof CmsContentNotFoundError) {
+    return new Response(null, { status: 404 });
+  }
+  if (e instanceof Error && e.message === 'CMS not configured') {
+    return new Response(null, { status: 503 });
+  }
+  return new Response(null, { status: 502 });
+}
+
+// SEO setup
+let siteDomain = SITE.url;
+try {
+  const runtimeConfig = await getRuntimeConfig();
+  if (runtimeConfig?.site?.domain) {
+    siteDomain = runtimeConfig.site.domain.replace(/\/+$/, '');
+  }
+} catch {
+  /* fallback */
+}
+
+const pageTitle = servicesPage.seo?.title
+  ? `${servicesPage.seo.title} | ${SITE.title}`
+  : `${servicesPage.introTitle} | ${SITE.title}`;
+const metaDescription =
+  servicesPage.seo?.description || servicesPage.introSubtitle;
+const canonicalUrl = `${siteDomain}/fr/services`;
+
+const pageContentAvailability = { en: true, fr: true };
+
+// Helper to build article array for the 5 service slots (fixed order: 1R, 2L, 3R, 4L, 5R)
+const articles = [
+  { isRightSection: true, data: servicesPage.service1, single: false },
+  { isRightSection: false, data: servicesPage.service2, single: true },
+  { isRightSection: true, data: servicesPage.service3, single: false },
+  { isRightSection: false, data: servicesPage.service4, single: true },
+  { isRightSection: true, data: servicesPage.service5, single: false },
+];
 ---
+
+<MainLayout
+  title={pageTitle}
+  lang="fr"
+  customDescription={metaDescription}
+  customOgTitle={servicesPage.seo?.title || servicesPage.introTitle}
+  pageContentAvailability={pageContentAvailability}
+  structuredData={{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+    url: canonicalUrl,
+    name: servicesPage.seo?.title || servicesPage.introTitle,
+    description: metaDescription,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: siteDomain,
+      name: SITE.title,
+      description: SITE.description,
+    },
+    inLanguage: 'fr',
+  }}
+>
+  <MainSection
+    title={servicesPage.introTitle}
+    subTitle={servicesPage.introSubtitle}
+    btnExists={!!servicesPage.introCtaLabel}
+    btnTitle={servicesPage.introCtaLabel || ''}
+    btnURL={servicesPage.introCtaUrl || '#'}
+  />
+  {
+    articles.map(article => {
+      const d = article.data;
+      return article.isRightSection ? (
+        <RightSection
+          title={d.title}
+          subTitle={d.description}
+          single={article.single}
+          imgOne={d.image1?.url || undefined}
+          imgOneAlt={d.image1Alt || ''}
+          imgTwo={d.image2?.url || undefined}
+          imgTwoAlt={d.image2Alt || ''}
+          btnExists={!!d.ctaLabel}
+          btnTitle={d.ctaLabel || ''}
+          btnURL={d.ctaUrl || '#'}
+        />
+      ) : (
+        <LeftSection
+          title={d.title}
+          subTitle={d.description}
+          img={d.image1?.url || undefined}
+          imgAlt={d.image1Alt || ''}
+          btnExists={!!d.ctaLabel}
+          btnTitle={d.ctaLabel || ''}
+          btnURL={d.ctaUrl || '#'}
+        />
+      );
+    })
+  }
+  <FeaturesStats
+    title={servicesPage.statsTitle}
+    subTitle={servicesPage.statsSubtitle}
+    mainStatTitle={servicesPage.mainStatValue}
+    mainStatSubTitle={servicesPage.mainStatDescription}
+    stats={[
+      {
+        stat: servicesPage.stat1Value,
+        description: servicesPage.stat1Description,
+      },
+      {
+        stat: servicesPage.stat2Value,
+        description: servicesPage.stat2Description,
+      },
+      {
+        stat: servicesPage.stat3Value,
+        description: servicesPage.stat3Description,
+      },
+    ]}
+  />
+</MainLayout>

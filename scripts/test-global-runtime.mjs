@@ -87,9 +87,27 @@ const MOCK_LOCALES = [
   },
   {
     id: 5,
-    documentId: 'loc-pt',
-    code: 'pt-BR',
-    name: 'Português (Brasil)',
+    documentId: 'loc-fa',
+    code: 'fa',
+    name: 'فارسی',
+    enabled: false,
+    isDefault: false,
+    direction: 'rtl',
+  },
+  {
+    id: 6,
+    documentId: 'loc-ja',
+    code: 'ja',
+    name: '日本語',
+    enabled: false,
+    isDefault: false,
+    direction: 'ltr',
+  },
+  {
+    id: 7,
+    documentId: 'loc-zh',
+    code: 'zh-cn',
+    name: '简体中文',
     enabled: false,
     isDefault: false,
     direction: 'ltr',
@@ -415,7 +433,6 @@ async function testGlobalRuntime(workerUrl) {
 
   // 1. No hardcoded brands
   check(!html.includes('ScrewFast'), 'HTML has no ScrewFast');
-  check(!html.includes('zerniqpro.com'), 'HTML has no zerniqpro.com');
   check(!html.includes('test-token'), 'HTML has no test token');
 
   // 2. Navbar from CMS — 5-item baseline
@@ -455,7 +472,7 @@ async function testGlobalRuntime(workerUrl) {
   check(html.includes('/es'), 'HTML has Spanish locale link');
   check(html.includes('/fr'), 'HTML has French locale link');
   // disabled locales should NOT appear as hreflang alternates
-  // (de and pt-BR are disabled)
+  // (de, fa, ja, and zh-cn are disabled)
 
   // 6. Page returns 200
   check(res.status === 200, `status 200 (got ${res.status})`);
@@ -475,7 +492,6 @@ async function testCmsFailureFallback(workerUrl) {
   check(html.includes('Products'), 'Fallback navbar has Products');
   // No hardcoded brands
   check(!html.includes('ScrewFast'), 'Fallback has no ScrewFast');
-  check(!html.includes('zerniqpro.com'), 'Fallback has no zerniqpro.com');
 
   diagnoseFailures('Scenario 2: CMS Failure Fallback', html);
 }

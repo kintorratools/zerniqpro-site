@@ -38,16 +38,19 @@ function resolveNumber(
 }
 
 /**
- * Resolve a repeatable list: CMS has >=1 item → CMS, else → baseline.
+ * Resolve a repeatable list additively:
+ * CMS items come first, then baseline items fill the remaining slots.
+ * If CMS is empty, use full baseline.
  */
 function resolveList<T>(
   cmsList: T[] | null | undefined,
   baselineList: T[]
 ): T[] {
-  if (cmsList && cmsList.length > 0) {
-    return cmsList;
+  if (!cmsList || cmsList.length === 0) {
+    return baselineList;
   }
-  return baselineList;
+  // Additive: CMS items first, then fill remaining from baseline
+  return [...cmsList, ...baselineList.slice(cmsList.length)];
 }
 
 /**
@@ -64,9 +67,10 @@ function resolveMedia<T extends { url?: string } | null | undefined>(
 }
 
 /**
- * Resolve a repeatable list with per-item media fallback.
+ * Resolve a repeatable list with per-item media fallback — additive.
  * When CMS list has items but their media fields are empty,
  * merge CMS text content with baseline media images.
+ * CMS items come first, then baseline items fill remaining slots.
  *
  * @param cmsList - CMS items (may have text but empty media)
  * @param baselineList - baseline items (with full content including media)
@@ -84,13 +88,20 @@ function resolveListWithMedia<T>(
   }
 
   // For each CMS item, try to find matching baseline item (by index) and merge media
-  return cmsList.map((cmsItem, index) => {
+  const merged = cmsList.map((cmsItem, index) => {
     const baselineItem = baselineList[index];
     if (!baselineItem) {
       return cmsItem;
     }
     return mergeFn(cmsItem, baselineItem);
   });
+
+  // Append remaining baseline items (additive: fill the gap)
+  if (cmsList.length < baselineList.length) {
+    merged.push(...baselineList.slice(cmsList.length));
+  }
+
+  return merged;
 }
 
 /**

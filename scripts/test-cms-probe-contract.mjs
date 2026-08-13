@@ -24,11 +24,30 @@ function startMock(handler) {
   });
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url);
-  const headers = Object.fromEntries(res.headers.entries());
-  const body = await res.json();
-  return { status: res.status, headers, body };
+function fetchJson(url) {
+  return new Promise((resolve, reject) => {
+    // `agent: false` disables keep-alive so the connection closes after each
+    // response, avoiding lingering undici sockets at process exit.
+    const req = http.get(url, { agent: false }, res => {
+      let raw = '';
+      res.setEncoding('utf8');
+      res.on('data', chunk => {
+        raw += chunk;
+      });
+      res.on('end', () => {
+        try {
+          resolve({
+            status: res.statusCode,
+            headers: res.headers,
+            body: JSON.parse(raw),
+          });
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+    req.on('error', reject);
+  });
 }
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -289,7 +308,7 @@ async function run() {
   }
 
   // ─── Shutdown ──────────────────────────────────────────────────────────
-  server.close();
+  await new Promise(resolve => server.close(resolve));
 
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
