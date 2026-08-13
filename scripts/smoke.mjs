@@ -23,7 +23,7 @@ const ROUTES = [
   },
 ];
 
-const BASE = process.env.SMOKE_BASE ?? 'http://localhost:4321';
+const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:4321';
 
 let failed = false;
 
