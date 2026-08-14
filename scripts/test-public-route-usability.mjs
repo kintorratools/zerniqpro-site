@@ -24,6 +24,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { expectedCanonicalPath, fetchFinal } from './lib/route-contract.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.BASE ?? 'http://localhost:4321';
@@ -205,6 +206,7 @@ function buildRouteList() {
 
 // ── Test a single route ──
 async function testRoute(route) {
+  const canonicalPath = expectedCanonicalPath(route.path);
   const url = `${BASE}${route.path}`;
   let result = {
     path: route.path,
@@ -223,14 +225,26 @@ async function testRoute(route) {
   };
 
   try {
-    const res = await fetch(url, { redirect: 'manual' });
-    result.status = res.status;
-    const html = await res.text();
+    const final = await fetchFinal(url);
+    const html = final.html;
+    result.status = final.status;
     result.contentLength = html.length;
 
-    result.classification = classify(res.status, html, route.path);
+    if (final.error === 'REDIRECT_LOOP') {
+      result.classification = CLASS.OTHER;
+      result.errors.push('Redirect loop');
+      return result;
+    }
 
-    if (res.status === 200) {
+    if (final.error === 'TOO_MANY_REDIRECTS') {
+      result.classification = CLASS.OTHER;
+      result.errors.push('Too many redirects');
+      return result;
+    }
+
+    result.classification = classify(final.status, html, route.path);
+
+    if (final.status === 200) {
       result.navPresent = hasNavigation(html);
       result.footerPresent = hasFooter(html);
       result.hasContent = hasMeaningfulContent(html);
@@ -250,21 +264,17 @@ async function testRoute(route) {
         result.errors.push(`Content too short (${result.contentLength} bytes)`);
     }
 
-    if (res.status >= 300 && res.status < 400) {
-      const location = res.headers.get('location') || '';
-      const expected = EXPECTED_REDIRECTS[route.path];
-      let normalizedLocation = location;
-      try {
-        normalizedLocation = new URL(location, BASE).pathname;
-      } catch {
-        normalizedLocation = location;
-      }
-      const expectedClean = expected ? expected.replace(/\/+$/, '') : '';
-      const locClean = normalizedLocation.replace(/\/+$/, '');
-      if (expected && locClean === expectedClean) {
+    if (final.status >= 200 && final.status < 300) {
+      const finalPathname = new URL(final.finalUrl).pathname;
+      if (
+        finalPathname.replace(/\/+$/, '') !== canonicalPath.replace(/\/+$/, '')
+      ) {
+        result.errors.push(
+          `Unexpected final URL ${final.finalUrl} (expected ${canonicalPath})`
+        );
+        result.classification = CLASS.OTHER;
+      } else if (EXPECTED_REDIRECTS[route.path] && final.redirects.length > 0) {
         result.expectedRedirect = true;
-      } else {
-        result.errors.push(`Redirect to: ${location}`);
       }
     }
   } catch (err) {

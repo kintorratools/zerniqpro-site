@@ -1,0 +1,122 @@
+---
+import { Image } from '@unpic/astro';
+import { normalizeCmsMedia, isSvgMedia, type MediaInput } from '@lib/cms/media';
+import { getCmsConfig } from '@lib/cms/config';
+import {
+  getRuntimeImageTransformConfig,
+  type ImageBreakpointSet,
+} from '@lib/cms/image-config';
+
+interface Props {
+  src: MediaInput;
+  alt?: string;
+  width?: number;
+  height?: number;
+  aspectRatio?: number;
+  layout?: 'fixed' | 'constrained' | 'fullWidth';
+  sizes?: string;
+  priority?: boolean;
+  loading?: 'eager' | 'lazy';
+  class?: string;
+  id?: string;
+  draggable?: boolean;
+  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  breakpoints?: ImageBreakpointSet;
+}
+
+const {
+  src: rawSrc,
+  alt,
+  width,
+  height,
+  aspectRatio,
+  layout = 'constrained',
+  sizes,
+  priority = false,
+  loading,
+  class: className,
+  id,
+  draggable,
+  objectFit = 'cover',
+  breakpoints: breakpointSet = 'content',
+} = Astro.props;
+
+// Resolve relative /uploads/* against the CMS origin (generic env-driven).
+// Absolute URLs and site-relative static paths pass through untouched.
+const cmsOrigin = getCmsConfig().baseUrl ?? '';
+const media = normalizeCmsMedia(rawSrc, {
+  cmsOrigin,
+  explicitAlt: alt ?? null,
+});
+
+const isSvg = isSvgMedia(media);
+
+const transform = getRuntimeImageTransformConfig();
+const providerEnabled = transform.provider === 'cloudflare';
+
+// Unpic needs an explicit dimension or aspect ratio to build a srcset.
+// When none is known we keep the plain <img> path even in cloudflare mode.
+const effectiveWidth = width ?? media?.width;
+const effectiveHeight = height ?? media?.height;
+const effectiveAspectRatio =
+  aspectRatio ??
+  (effectiveWidth && effectiveHeight
+    ? effectiveWidth / effectiveHeight
+    : undefined);
+
+const canTransform =
+  providerEnabled &&
+  !isSvg &&
+  ((typeof effectiveWidth === 'number' &&
+    typeof effectiveHeight === 'number') ||
+    (typeof effectiveWidth === 'number' &&
+      typeof effectiveAspectRatio === 'number') ||
+    (typeof effectiveHeight === 'number' &&
+      typeof effectiveAspectRatio === 'number'));
+
+const breakpoints = transform.breakpoints[breakpointSet];
+
+// `canTransform` above guarantees that at least one dimension pair
+// (width+height, width+aspectRatio, or height+aspectRatio) is present and
+// that `media.src` is a non-empty string. @unpic/astro encodes that as a
+// discriminated union which cannot be proven from a separately built object,
+// so we cast the guarded props here rather than weakening the guard.
+const unpicProps = {
+  src: media?.src,
+  alt: media?.alt ?? '',
+  class: className,
+  id,
+  draggable,
+  cdn: 'cloudflare' as const,
+  layout,
+  width: effectiveWidth,
+  height: effectiveHeight,
+  aspectRatio: effectiveAspectRatio,
+  sizes,
+  priority,
+  loading,
+  objectFit,
+  breakpoints,
+  ...(transform.domain
+    ? { options: { cloudflare: { domain: transform.domain } } }
+    : {}),
+} as any;
+---
+
+{
+  media && canTransform ? (
+    <Image {...unpicProps} />
+  ) : media ? (
+    <img
+      src={media.src}
+      alt={media.alt}
+      class={className}
+      id={id}
+      width={width}
+      height={height}
+      draggable={draggable}
+      loading={loading ?? (priority ? 'eager' : undefined)}
+      fetchpriority={priority ? 'high' : undefined}
+    />
+  ) : null
+}

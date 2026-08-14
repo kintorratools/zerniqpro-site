@@ -1,6 +1,7 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro';
 import SafeBlocksRenderer from '@components/blocks/SafeBlocksRenderer.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import CardBlogSupport from '@components/ui/cards/CardBlogSupport.astro';
 import Bookmark from '@components/ui/buttons/Bookmark.astro';
 import SocialShare from '@components/ui/buttons/SocialShare.astro';
@@ -159,11 +160,11 @@ const pageContentAvailability = { en: true, fr: true };
             <div class="mb-6 flex items-center justify-between">
               <div class="flex w-full gap-x-5 sm:items-center sm:gap-x-3">
                 <div class="shrink-0">
-                  <img
+                  <UnifiedImage
                     class="size-10 rounded-full sm:h-14 sm:w-14"
                     src={authorImgSrc}
                     alt={authorImgAlt}
-                    draggable="false"
+                    draggable={false}
                   />
                 </div>
                 <div class="grow">
@@ -195,17 +196,12 @@ const pageContentAvailability = { en: true, fr: true };
             </h2>
 
             {article.cardImage?.url && (
-              <img
+              <UnifiedImage
                 class="mb-5 w-full rounded-xl object-cover md:mb-8"
-                src={
-                  typeof article.cardImage.url === 'string'
-                    ? article.cardImage.url.startsWith('/')
-                      ? `${cmsBaseUrl}${article.cardImage.url}`
-                      : article.cardImage.url
-                    : ''
-                }
+                src={article.cardImage.url}
                 alt={article.cardImage?.alt || article.cardImageAlt}
-                draggable="false"
+                draggable={false}
+                breakpoints="content"
               />
             )}
 
@@ -262,17 +258,12 @@ const pageContentAvailability = { en: true, fr: true };
             <div>
               <div class="h-64 overflow-hidden rounded-lg shadow-lg md:h-auto">
                 {article.cardImage?.url && (
-                  <img
+                  <UnifiedImage
                     class="h-full w-full object-cover object-center"
-                    src={
-                      typeof article.cardImage.url === 'string'
-                        ? article.cardImage.url.startsWith('/')
-                          ? `${cmsBaseUrl}${article.cardImage.url}`
-                          : article.cardImage.url
-                        : ''
-                    }
+                    src={article.cardImage.url}
                     alt={article.cardImage?.alt || article.cardImageAlt}
-                    draggable="false"
+                    draggable={false}
+                    breakpoints="content"
                   />
                 )}
               </div>

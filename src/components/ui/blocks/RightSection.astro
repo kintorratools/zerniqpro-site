@@ -1,5 +1,6 @@
 ---
 import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 // Extract properties from Astro.props
 const {
   title,
@@ -55,30 +56,33 @@ interface Props {
     single ? (
       <div class="mt-8">
         {/* Single image */}
-        <img
+        <UnifiedImage
           class="w-full rounded-lg"
           src={imgOne}
           alt={imgOneAlt}
           loading="lazy"
+          breakpoints="content"
         />
       </div>
     ) : (
       <div class="mt-8 grid grid-cols-2 gap-4">
         {/* First image in a two-image layout */}
-        <img
+        <UnifiedImage
           class="w-full rounded-xl"
           src={imgOne}
           alt={imgOneAlt}
-          draggable="false"
+          draggable={false}
           loading="lazy"
+          breakpoints="content"
         />
         {/* Second image in a two-image layout */}
-        <img
+        <UnifiedImage
           class="mt-4 w-full rounded-xl lg:mt-10"
           src={imgTwo}
           alt={imgTwoAlt}
-          draggable="false"
+          draggable={false}
           loading="lazy"
+          breakpoints="content"
         />
       </div>
     )

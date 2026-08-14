@@ -1,5 +1,6 @@
 ---
 import type { SafeBlock } from '@lib/cms/support-models';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 
 export interface Props {
   blocks: SafeBlock[];
@@ -140,11 +141,12 @@ function trimLeadingNewline(text: string | undefined): string {
       if (block.type === 'image') {
         return (
           <figure class="my-6">
-            <img
+            <UnifiedImage
               src={block.url || ''}
               alt={getBlockText(block) || ''}
               class="rounded-xl"
               loading="lazy"
+              breakpoints="content"
             />
           </figure>
         );

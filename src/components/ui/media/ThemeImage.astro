@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 
 interface Props {
   src: any; // ImageMetadata | string — local import or remote URL
@@ -26,16 +27,15 @@ const {
 
 {
   typeof src === 'string' ? (
-    <img
+    <UnifiedImage
       src={src}
       alt={alt}
       class={className}
       width={width}
       height={height}
       loading={loading}
-      fetchpriority={fetchpriority}
-      draggable="false"
-      decoding="async"
+      priority={fetchpriority === 'high'}
+      draggable={false}
     />
   ) : (
     <Image

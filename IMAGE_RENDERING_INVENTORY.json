@@ -1,0 +1,340 @@
+{
+  "generated_at": "2026-08-14T00:00:00Z",
+  "scope": "zerniqpro-site/src (frozen baseline c3fbaf97)",
+  "methodology": "grep scan of <img>, astro:assets <Image>, <Picture>, background-image/bg-[url(], and CMS media resolvers (resolveMediaUrl/resolveCmsMediaUrl/toCmsMediaView)",
+  "stats": {
+    "TOTAL_IMAGE_RENDER_PATHS": 55,
+    "RAW_IMG_COUNT": 41,
+    "ASTRO_IMAGE_COUNT": 14,
+    "CMS_IMAGE_COUNT": 28,
+    "STATIC_IMAGE_COUNT": 14,
+    "BACKGROUND_IMAGE_COUNT": 1
+  },
+  "notes": [
+    "RAW_IMG_COUNT counts literal <img> tags (excludes ThemeImage.astro internal <Image> branch).",
+    "ASTRO_IMAGE_COUNT counts astro:assets <Image> render sites (static imports).",
+    "STATIC_IMAGE_COUNT approximates astro:assets static-import images.",
+    "CMS_IMAGE_COUNT counts resolver call sites (resolveMediaUrl/resolveCmsMediaUrl/toCmsMediaView).",
+    "BACKGROUND_IMAGE_COUNT = AnnouncementBanner.astro bg-[url('/banner-pattern.svg')]; the two starlight css hits are `background-image: none`.",
+    "<Picture> count = 0 (not used).",
+    "BrandLogo.astro (Navbar/Footer logo) is UAT-passed and OUT OF SCOPE for migration."
+  ],
+  "render_paths": [
+    {
+      "file": "src/components/ui/media/ThemeImage.astro",
+      "component": "ThemeImage",
+      "source_type": "static/remote",
+      "kind": "mixed",
+      "current_renderer": "astro:assets Image + raw img fallback",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/BrandLogo.astro",
+      "component": "BrandLogo",
+      "source_type": "cms",
+      "kind": "logo",
+      "current_renderer": "raw img (resolveMediaUrl) + inline SVG fallback",
+      "responsive": false,
+      "transformation": "none",
+      "migrate": false
+    },
+    {
+      "file": "src/components/sections/products/ProductDetail.astro",
+      "component": "ProductDetail",
+      "source_type": "cms",
+      "kind": "product-main/blueprints",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardWide.astro",
+      "component": "CardWide",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image + raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardSmall.astro",
+      "component": "CardSmall",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image + raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardRelated.astro",
+      "component": "CardRelated",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardInsight.astro",
+      "component": "CardInsight",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardBlog.astro",
+      "component": "CardBlog",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardBlogRecent.astro",
+      "component": "CardBlogRecent",
+      "source_type": "static",
+      "kind": "card",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardBlogSupport.astro",
+      "component": "CardBlogSupport",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardBlogRecentSupport.astro",
+      "component": "CardBlogRecentSupport",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/cards/CardInsightSupport.astro",
+      "component": "CardInsightSupport",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/avatars/AvatarBlog.astro",
+      "component": "AvatarBlog",
+      "source_type": "static",
+      "kind": "avatar",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/avatars/AvatarBlogLarge.astro",
+      "component": "AvatarBlogLarge",
+      "source_type": "static",
+      "kind": "avatar",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/avatars/AvatarTestimonialSection.astro",
+      "component": "AvatarTestimonialSection",
+      "source_type": "cms",
+      "kind": "avatar",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/sections/insights/InsightDetail.astro",
+      "component": "InsightDetail",
+      "source_type": "static",
+      "kind": "article",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/sections/features/FeaturesStatsAlt.astro",
+      "component": "FeaturesStatsAlt",
+      "source_type": "static",
+      "kind": "feature",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/links/MegaMenuLink.astro",
+      "component": "MegaMenuLink",
+      "source_type": "static",
+      "kind": "menu",
+      "current_renderer": "astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/blocks/SafeBlocksRenderer.astro",
+      "component": "SafeBlocksRenderer",
+      "source_type": "cms",
+      "kind": "block",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/blocks/LeftSection.astro",
+      "component": "LeftSection",
+      "source_type": "cms",
+      "kind": "block",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/blocks/RightSection.astro",
+      "component": "RightSection",
+      "source_type": "cms",
+      "kind": "block",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/blog/[id].astro",
+      "component": "blog detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img + astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/fr/blog/[id].astro",
+      "component": "fr blog detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img + astro:assets Image",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/blog/index.astro",
+      "component": "blog index",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/fr/blog/index.astro",
+      "component": "fr blog index",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/insights/[id].astro",
+      "component": "insight detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/fr/insights/[id].astro",
+      "component": "fr insight detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/insights/index.astro",
+      "component": "insights index",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/fr/insights/index.astro",
+      "component": "fr insights index",
+      "source_type": "cms",
+      "kind": "card",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/preview/products/[handle].astro",
+      "component": "product preview",
+      "source_type": "cms",
+      "kind": "product",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/blogs/support/[handle].astro",
+      "component": "support detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/fr/blogs/support/[handle].astro",
+      "component": "fr support detail",
+      "source_type": "cms",
+      "kind": "article",
+      "current_renderer": "raw img",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/Meta.astro",
+      "component": "Meta (SEO/OG)",
+      "source_type": "static",
+      "kind": "seo",
+      "current_renderer": "astro:assets getImage",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/pages/manifest.json.ts",
+      "component": "manifest icons",
+      "source_type": "static",
+      "kind": "icon",
+      "current_renderer": "astro:assets getImage",
+      "responsive": false,
+      "transformation": "none"
+    },
+    {
+      "file": "src/components/ui/banners/AnnouncementBanner.astro",
+      "component": "AnnouncementBanner",
+      "source_type": "static",
+      "kind": "background",
+      "current_renderer": "CSS bg-[url(svg)]",
+      "responsive": false,
+      "transformation": "none"
+    }
+  ]
+}

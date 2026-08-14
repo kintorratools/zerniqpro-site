@@ -122,3 +122,120 @@ export function toCmsMediaView(
 
   return view;
 }
+
+// ── Unified normalization ──
+
+export interface NormalizedMedia {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  mime?: string;
+}
+
+export interface MediaSourceObject {
+  url?: string | null;
+  src?: string | null;
+  alternativeText?: string | null;
+  alt?: string | null;
+  width?: number | null;
+  height?: number | null;
+  mime?: string | null;
+  format?: string | null;
+}
+
+export type MediaInput = string | MediaSourceObject | null | undefined;
+
+export interface NormalizeMediaOptions {
+  cmsOrigin?: string;
+  explicitAlt?: string | null;
+}
+
+function isHttpUrl(value: string): boolean {
+  return value.startsWith('http://') || value.startsWith('https://');
+}
+
+function isUnsafeProtocol(value: string): boolean {
+  return (
+    value.startsWith('javascript:') ||
+    value.startsWith('data:') ||
+    value.startsWith('file:')
+  );
+}
+
+/**
+ * Normalize any supported media input into a single
+ * `{ src, alt, width, height, mime }` shape.
+ *
+ * - `string`: relative `/uploads/*` → resolved against cmsOrigin;
+ *   http(s) → passthrough; other `/...` site-relative → passthrough;
+ *   unsafe protocol → null.
+ * - object (`CmsMedia` or Astro static `ImageMetadata`-like): extracts
+ *   `url`/`src`, `alternativeText`/`alt`, `width`, `height`, `mime`/`format`.
+ * - `null`/`undefined` → null.
+ *
+ * Never returns `[object Object]` or an undefined URL.
+ */
+export function normalizeCmsMedia(
+  input: MediaInput,
+  options: NormalizeMediaOptions = {}
+): NormalizedMedia | null {
+  if (input == null) return null;
+
+  const cmsOrigin = (options.cmsOrigin ?? '').replace(/\/+$/, '');
+  const explicitAlt = options.explicitAlt ?? null;
+
+  let rawUrl: string | null | undefined;
+  let rawAlt: string | null | undefined;
+  let width: number | null | undefined;
+  let height: number | null | undefined;
+  let mime: string | null | undefined;
+
+  if (typeof input === 'string') {
+    rawUrl = input;
+  } else {
+    rawUrl = input.url ?? input.src;
+    rawAlt = input.alternativeText ?? input.alt;
+    width = input.width;
+    height = input.height;
+    mime = input.mime;
+    if (!mime && input.format) {
+      mime = input.format.startsWith('image/')
+        ? input.format
+        : `image/${input.format}`;
+    }
+  }
+
+  if (!rawUrl || rawUrl.trim() === '') return null;
+
+  const trimmed = rawUrl.trim();
+  if (isUnsafeProtocol(trimmed)) return null;
+
+  let src: string;
+  if (isHttpUrl(trimmed)) {
+    src = trimmed;
+  } else if (trimmed.startsWith('/uploads/')) {
+    src = `${cmsOrigin}${trimmed}`;
+  } else if (trimmed.startsWith('/')) {
+    // site-relative static asset (e.g. /_astro/..., /banner-pattern.svg)
+    src = trimmed;
+  } else {
+    return null;
+  }
+
+  const alt = rawAlt ?? explicitAlt ?? '';
+
+  return {
+    src,
+    alt,
+    ...(typeof width === 'number' ? { width } : {}),
+    ...(typeof height === 'number' ? { height } : {}),
+    ...(typeof mime === 'string' && mime.length > 0 ? { mime } : {}),
+  };
+}
+
+export function isSvgMedia(media: NormalizedMedia | null | undefined): boolean {
+  if (!media) return false;
+  if (media.mime === 'image/svg+xml') return true;
+  return media.src.toLowerCase().split('?')[0].endsWith('.svg');
+}

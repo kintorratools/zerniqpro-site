@@ -47,6 +47,16 @@ export default defineConfig({
         access: 'secret',
         optional: true,
       }),
+      IMAGE_TRANSFORM_PROVIDER: envField.string({
+        context: 'server',
+        access: 'public',
+        default: 'none',
+      }),
+      IMAGE_TRANSFORM_DOMAIN: envField.string({
+        context: 'server',
+        access: 'public',
+        optional: true,
+      }),
     },
   },
   adapter: cloudflare({

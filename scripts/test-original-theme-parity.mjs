@@ -15,6 +15,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { expectedCanonicalPath, fetchFinal } from './lib/route-contract.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE = process.env.BASE ?? 'http://localhost:4321';
@@ -55,21 +56,22 @@ const INSIGHT_SLUGS = ['insight-1', 'insight-2', 'insight-3'];
 const PRODUCT_HANDLES = ['item-a765', 'item-b203', 'item-f303', 'item-t845'];
 
 function resolveConcreteUrl(route) {
+  let concretePath = route;
   if (route.includes(':id') || route.includes('[id]')) {
     if (route.includes('/fr/products'))
-      return route.replace(/:id|\[id\]/, PRODUCT_HANDLES[0]);
-    if (route.includes('/products'))
-      return route.replace(/:id|\[id\]/, PRODUCT_HANDLES[0]);
-    if (route.includes('/fr/blog'))
-      return route.replace(/:id|\[id\]/, BLOG_SLUGS[0]);
-    if (route.includes('/blog'))
-      return route.replace(/:id|\[id\]/, BLOG_SLUGS[0]);
-    if (route.includes('/fr/insights'))
-      return route.replace(/:id|\[id\]/, INSIGHT_SLUGS[0]);
-    if (route.includes('/insights'))
-      return route.replace(/:id|\[id\]/, INSIGHT_SLUGS[0]);
+      concretePath = route.replace(/:id|\[id\]/, PRODUCT_HANDLES[0]);
+    else if (route.includes('/products'))
+      concretePath = route.replace(/:id|\[id\]/, PRODUCT_HANDLES[0]);
+    else if (route.includes('/fr/blog'))
+      concretePath = route.replace(/:id|\[id\]/, BLOG_SLUGS[0]);
+    else if (route.includes('/blog'))
+      concretePath = route.replace(/:id|\[id\]/, BLOG_SLUGS[0]);
+    else if (route.includes('/fr/insights'))
+      concretePath = route.replace(/:id|\[id\]/, INSIGHT_SLUGS[0]);
+    else if (route.includes('/insights'))
+      concretePath = route.replace(/:id|\[id\]/, INSIGHT_SLUGS[0]);
   }
-  return route;
+  return expectedCanonicalPath(concretePath);
 }
 
 // ── Counting helpers ──
@@ -134,14 +136,24 @@ function countSections(html) {
 // ── Test a single page ──
 async function testPage(pageEntry, routeKey, routePath) {
   const url = `${BASE}${routePath}`;
+  const canonicalPath = expectedCanonicalPath(routePath);
 
   console.log(`\n[${routeKey}] → ${routePath}`);
 
-  let html, status;
+  let html, status, finalUrl;
   try {
-    const res = await fetch(url, { redirect: 'manual' });
-    status = res.status;
-    html = await res.text();
+    const final = await fetchFinal(url);
+    if (
+      final.error === 'REDIRECT_LOOP' ||
+      final.error === 'TOO_MANY_REDIRECTS' ||
+      final.error === 'REDIRECT_WITHOUT_LOCATION'
+    ) {
+      check(false, `fetch: ${final.error}`);
+      return;
+    }
+    status = final.status;
+    html = final.html;
+    finalUrl = final.finalUrl;
   } catch (err) {
     check(false, `fetch: ${err.message}`);
     return;
@@ -182,6 +194,14 @@ async function testPage(pageEntry, routeKey, routePath) {
       `CMS-dependent page with minimal HTML (${html.length} bytes) — skipping content checks`
     );
     return;
+  }
+
+  // ---- Final URL canonical check ----
+  if (status >= 200 && status < 300) {
+    check(
+      new URL(finalUrl).pathname === canonicalPath,
+      'final URL equals canonical URL'
+    );
   }
 
   // ---- Navigation & Footer ----
@@ -326,7 +346,7 @@ async function testConcreteRoutes() {
   console.log('\n── Product detail pages ──');
   for (const handle of PRODUCT_HANDLES) {
     for (const prefix of ['', '/fr']) {
-      const path = `${prefix}/products/${handle}`;
+      const path = expectedCanonicalPath(`${prefix}/products/${handle}`);
       const url = `${BASE}${path}`;
       console.log(`\n[${path}]`);
       try {
@@ -350,7 +370,7 @@ async function testConcreteRoutes() {
   console.log('\n── Blog detail pages ──');
   for (const slug of BLOG_SLUGS) {
     for (const prefix of ['', '/fr']) {
-      const path = `${prefix}/blog/${slug}`;
+      const path = expectedCanonicalPath(`${prefix}/blog/${slug}`);
       const url = `${BASE}${path}`;
       console.log(`\n[${path}]`);
       try {
@@ -374,7 +394,7 @@ async function testConcreteRoutes() {
   console.log('\n── Insight detail pages ──');
   for (const slug of INSIGHT_SLUGS) {
     for (const prefix of ['', '/fr']) {
-      const path = `${prefix}/insights/${slug}`;
+      const path = expectedCanonicalPath(`${prefix}/insights/${slug}`);
       const url = `${BASE}${path}`;
       console.log(`\n[${path}]`);
       try {

@@ -39,6 +39,9 @@
     "test:cms-material-parity": "node scripts/test-cms-material-parity.mjs",
     "test:public-route-usability": "node scripts/test-public-route-usability.mjs",
     "test:product-tabs": "node scripts/test-product-tabs.mjs",
+    "test:image-normalization": "node scripts/test-image-normalization.mjs",
+    "test:unified-image": "node scripts/test-unified-image.mjs",
+    "test:image-transformation-contract": "node scripts/test-image-transformation-contract.mjs",
     "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run --config dist-out/server/wrangler.json"
   },
   "dependencies": {
@@ -48,6 +51,7 @@
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/starlight": "^0.41.5",
     "@tailwindcss/vite": "^4.3.3",
+    "@unpic/astro": "^1.0.2",
     "astro": "^7.1.6",
     "clipboard": "^2.0.11",
     "globby": "^16.2.2",
@@ -62,6 +66,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.20",
+    "@unpic/core": "^1.0.3",
     "astro-vtbot": "^3.0.1",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",

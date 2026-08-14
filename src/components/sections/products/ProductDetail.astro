@@ -1,6 +1,7 @@
 ---
 import ProductTabBtn from '@components/ui/buttons/ProductTabBtn.astro';
 import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import type { ProductViewModel } from '@/lib/cms/product-models';
 
 interface Props {
@@ -60,12 +61,13 @@ const tabs = [
       </p>
     </div>
     <div class="overflow-hidden">
-      <img
+      <UnifiedImage
         id="fadeInMoveRight"
         src={product.mainImage?.url}
         class="w-[600px] will-change-transform"
         alt={product.mainImageAlt}
         loading="eager"
+        breakpoints="content"
       />
     </div>
   </div>
@@ -211,10 +213,11 @@ const tabs = [
         >
           {
             product.blueprintFirst?.url && (
-              <img
+              <UnifiedImage
                 src={product.blueprintFirst.url}
                 class="h-full w-full object-cover object-center"
                 alt={product.blueprintFirstAlt}
+                breakpoints="content"
               />
             )
           }
@@ -223,10 +226,11 @@ const tabs = [
         <div class="relative right-12 overflow-hidden rounded-xl shadow-xl">
           {
             product.blueprintSecond?.url && (
-              <img
+              <UnifiedImage
                 src={product.blueprintSecond.url}
                 class="h-full w-full object-cover object-center"
                 alt={product.blueprintSecondAlt}
+                breakpoints="content"
               />
             )
           }

@@ -2,6 +2,7 @@
 // Import necessary modules and utilities
 import { Image } from 'astro:assets';
 import Icon from '@components/ui/icons/Icon.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import fallbackImage from '@/images/product-image-1.avif';
 import type { ProductViewModel } from '@/lib/cms/product-models';
 
@@ -29,11 +30,12 @@ const imageSrc = product.cardImage?.url || fallbackImage;
   {/* The product's main image */}
   {
     typeof imageSrc === 'string' ? (
-      <img
+      <UnifiedImage
         src={imageSrc}
         alt={product.mainImageAlt}
-        draggable="false"
+        draggable={false}
         class={imageClass}
+        breakpoints="productCard"
       />
     ) : (
       <Image

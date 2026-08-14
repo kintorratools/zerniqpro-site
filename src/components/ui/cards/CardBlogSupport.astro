@@ -3,6 +3,7 @@ import { formatDate } from '@utils/utils';
 import type { SupportArticleViewModel } from '@lib/cms/support-models';
 import fallbackImg from '@images/blog/post-1.avif';
 import fallbackAuthorImg from '@images/blog/jacob.avif';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 
 interface Props {
   article: SupportArticleViewModel;
@@ -33,12 +34,13 @@ const displayDate = article.displayDate
   <div
     class="relative h-[350px] w-full shrink-0 overflow-hidden rounded-xl before:absolute before:inset-x-0 before:z-1 before:size-full before:bg-linear-to-t before:from-neutral-900/[.7]"
   >
-    <img
+    <UnifiedImage
       class="absolute start-0 top-0 size-full object-cover transition duration-500 group-hover:scale-110"
       src={imageSrc}
       alt={imageAlt}
-      draggable="false"
+      draggable={false}
       loading="lazy"
+      breakpoints="content"
     />
   </div>
 
@@ -46,11 +48,11 @@ const displayDate = article.displayDate
     <div class="flex h-full flex-col p-4 sm:p-6">
       <div class="flex items-center">
         <div class="shrink-0">
-          <img
+          <UnifiedImage
             class="size-[46px] rounded-full border-2 border-neutral-50"
             src={authorImgSrc}
             alt={authorImgAlt}
-            draggable="false"
+            draggable={false}
           />
         </div>
 

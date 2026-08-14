@@ -2,6 +2,7 @@
 // Import necessary components, modules and types
 import MainLayout from '@/layouts/MainLayout.astro';
 import CardInsight from '@components/ui/cards/CardInsight.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import { SITE } from '@data/constants';
@@ -98,11 +99,12 @@ const ogTitle = `Industry Insights | ${brandName}`;
               >
                 <div class="relative overflow-hidden rounded-xl pt-[50%] sm:pt-[70%]">
                   {article.cardImage?.url && (
-                    <img
+                    <UnifiedImage
                       class="absolute start-0 top-0 size-full rounded-xl object-cover transition duration-500 ease-in-out group-hover:scale-105"
-                      src={`http://127.0.0.1:1337${article.cardImage.url}`}
+                      src={article.cardImage.url}
                       alt={article.cardImageAlt}
                       loading="lazy"
+                      breakpoints="content"
                     />
                   )}
                 </div>

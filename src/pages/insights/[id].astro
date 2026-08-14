@@ -2,6 +2,7 @@
 import { SITE } from '@data/constants';
 import MainLayout from '@/layouts/MainLayout.astro';
 import InsightDetail from '@components/sections/insights/InsightDetail.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import { getCollection } from 'astro:content';
 import { getRuntimeConfig } from '@/lib/runtime/site-runtime';
 import { getCmsArticleBySlug, renderBlocksToHtml } from '@/lib/cms/blog-data';
@@ -110,10 +111,11 @@ const ogTitle = `${displayTitle} | Insights | ${SITE.title}`;
             <div>
               <div class="h-64 overflow-hidden rounded-lg shadow-lg md:h-auto">
                 {displayImageUrl && (
-                  <img
+                  <UnifiedImage
                     class="h-full w-full object-cover object-center"
-                    src={`http://127.0.0.1:1337${displayImageUrl}`}
+                    src={displayImageUrl}
                     alt={displayImageAlt}
+                    breakpoints="content"
                   />
                 )}
               </div>

@@ -6,6 +6,7 @@ import CardRelated from '@components/ui/cards/CardRelated.astro';
 import Bookmark from '@components/ui/buttons/Bookmark.astro';
 import SocialShare from '@components/ui/buttons/SocialShare.astro';
 import PostFeedback from '@components/ui/feedback/PostFeedback.astro';
+import UnifiedImage from '@components/ui/media/UnifiedImage.astro';
 import { Image } from 'astro:assets';
 import { capitalize, formatDate } from '@utils/utils';
 import { getCollection, render } from 'astro:content';
@@ -140,7 +141,7 @@ const { Content } = post ? await render(post) : { Content: null };
             isCmsDriven ? (
               <div class="flex items-center gap-x-3">
                 {cmsArticle?.authorImage?.url && (
-                  <img
+                  <UnifiedImage
                     class="size-16 shrink-0 rounded-full object-cover"
                     src={cmsArticle.authorImage.url}
                     alt={displayAuthor}
@@ -175,10 +176,11 @@ const { Content } = post ? await render(post) : { Content: null };
       {
         isCmsDriven ? (
           displayImageUrl && (
-            <img
+            <UnifiedImage
               class="mb-5 w-full rounded-xl object-cover md:mb-8"
-              src={`http://127.0.0.1:1337${displayImageUrl}`}
+              src={displayImageUrl}
               alt={displayImageAlt}
+              breakpoints="content"
             />
           )
         ) : post ? (
