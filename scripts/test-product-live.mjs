@@ -15,7 +15,7 @@
 // Configuration
 // ---------------------------------------------------------------------------
 
-const STRAPI_URL = 'http://127.0.0.1:1337';
+const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 
 if (!API_TOKEN) {
@@ -24,14 +24,9 @@ if (!API_TOKEN) {
   process.exit(0);
 }
 
-const SITE_KEY = 'store-us';
+const SITE_KEY = process.env.CMS_SITE_KEY || 'store-us';
 
-const EXPECTED_HANDLES = [
-  'sf-tb-t845',
-  'sf-ab-a765',
-  'sf-bn-b203',
-  'sf-fn-f303',
-];
+const EXPECTED_HANDLES = ['item-t845', 'item-a765', 'item-b203', 'item-f303'];
 const LOCALES = ['en', 'fr'];
 
 // ---------------------------------------------------------------------------
@@ -82,8 +77,7 @@ async function main() {
   try {
     // ── (a) EN listing ──
     {
-      const path =
-        '/api/products?filters[site][key][$eq]=store-us&locale=en&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50';
+      const path = `/api/products?filters[site][key][$eq]=${SITE_KEY}&locale=en&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50`;
 
       let res, body;
       try {
@@ -107,11 +101,9 @@ async function main() {
 
           if (visibleCount === 4) {
             const handles = visibleProducts.map(p => p.handle);
-            const correctHandles =
-              handles[0] === 'sf-tb-t845' &&
-              handles[1] === 'sf-ab-a765' &&
-              handles[2] === 'sf-bn-b203' &&
-              handles[3] === 'sf-fn-f303';
+            const correctHandles = EXPECTED_HANDLES.every(
+              (handle, index) => handles[index] === handle
+            );
 
             const orders = visibleProducts.map(p => p.displayOrder);
             const correctOrder =
@@ -144,8 +136,7 @@ async function main() {
     // ── (b) FR listing ──
     let frListingData = null;
     {
-      const path =
-        '/api/products?filters[site][key][$eq]=store-us&locale=fr&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50';
+      const path = `/api/products?filters[site][key][$eq]=${SITE_KEY}&locale=fr&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50`;
 
       let res, body;
       try {
@@ -183,8 +174,7 @@ async function main() {
     // ── Store EN listing data for media URL comparison ──
     const enProductData = {};
     {
-      const path =
-        '/api/products?filters[site][key][$eq]=store-us&locale=en&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50';
+      const path = `/api/products?filters[site][key][$eq]=${SITE_KEY}&locale=en&status=published&sort[0]=displayOrder:asc&pagination[pageSize]=50`;
       try {
         const res = await cmsFetch(path);
         if (res.ok) {
@@ -273,8 +263,7 @@ async function main() {
 
     // ── (e) Product Page EN ──
     {
-      const path =
-        '/api/product-pages?filters[site][key][$eq]=store-us&locale=en&status=published&pagination[pageSize]=1&populate=*';
+      const path = `/api/product-pages?filters[site][key][$eq]=${SITE_KEY}&locale=en&status=published&pagination[pageSize]=1&populate=*`;
 
       let res, body;
       try {
@@ -305,8 +294,7 @@ async function main() {
 
     // ── (f) Product Page FR ──
     {
-      const path =
-        '/api/product-pages?filters[site][key][$eq]=store-us&locale=fr&status=published&pagination[pageSize]=1&populate=*';
+      const path = `/api/product-pages?filters[site][key][$eq]=${SITE_KEY}&locale=fr&status=published&pagination[pageSize]=1&populate=*`;
 
       let res, body;
       try {

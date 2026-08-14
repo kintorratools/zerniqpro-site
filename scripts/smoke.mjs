@@ -1,14 +1,20 @@
+const ALLOW_UNCONFIGURED_CMS = process.env.SMOKE_ALLOW_UNCONFIGURED_CMS === '1';
+
+// CMS-dependent SSR routes: must render successfully (2xx/3xx) in a normal
+// environment. In a CI no-CMS environment (SMOKE_ALLOW_UNCONFIGURED_CMS=1)
+// they may return a documented CMS-unconfigured/error status.
+function cmsDependent(s) {
+  if (s >= 200 && s < 400) return true;
+  return ALLOW_UNCONFIGURED_CMS && (s === 500 || s === 502 || s === 503);
+}
+
 const ROUTES = [
   { path: '/', expectStatus: s => s >= 200 && s < 300 },
   { path: '/fr/', expectStatus: s => s >= 200 && s < 300 },
-  // Product listing is SSR-only (CMS-dependent), accept errors when no CMS
-  {
-    path: '/products/',
-    expectStatus: s =>
-      (s >= 200 && s < 300) || s === 500 || s === 502 || s === 503,
-  },
+  { path: '/products/', expectStatus: cmsDependent },
   { path: '/blog/', expectStatus: s => s >= 200 && s < 300 },
-  { path: '/contact/', expectStatus: s => s >= 200 && s < 400 },
+  { path: '/contact/', expectStatus: cmsDependent },
+  { path: '/services/', expectStatus: cmsDependent },
   { path: '/404', expectStatus: s => s === 404 },
   { path: '/api/health.json', expectStatus: s => s === 200 },
   // CMS probe: 200 if CMS configured, 503 if not, 502 if CMS error

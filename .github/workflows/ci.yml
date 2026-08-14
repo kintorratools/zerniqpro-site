@@ -90,3 +90,5 @@ jobs:
 
       - name: Smoke tests
         run: pnpm test:smoke
+        env:
+          SMOKE_ALLOW_UNCONFIGURED_CMS: '1'

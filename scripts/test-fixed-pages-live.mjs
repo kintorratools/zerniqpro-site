@@ -13,7 +13,7 @@
 // Configuration
 // ---------------------------------------------------------------------------
 
-const STRAPI_URL = 'http://127.0.0.1:1337';
+const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
 const API_TOKEN = process.env.STRAPI_API_TOKEN;
 
 if (!API_TOKEN) {
@@ -22,7 +22,7 @@ if (!API_TOKEN) {
   process.exit(0);
 }
 
-const SITE_KEY = 'store-us';
+const SITE_KEY = process.env.CMS_SITE_KEY || 'store-us';
 
 // ---------------------------------------------------------------------------
 // Test state

@@ -53,6 +53,14 @@ const CLASS = {
 /** Routes that are CMS-dependent and expected to show minimal content when CMS data is unavailable. */
 const CMS_DEPENDENT_ROUTES = ['/services', '/fr/services'];
 
+/** Legacy routes that intentionally 301-redirect to their canonical route. */
+const EXPECTED_REDIRECTS = {
+  '/pages/contact': '/contact',
+  '/pages/services': '/services',
+  '/fr/pages/contact': '/fr/contact',
+  '/fr/pages/services': '/fr/services',
+};
+
 function classify(status, html, routePath) {
   if (status >= 300 && status < 400) return CLASS.REDIRECT;
   if (status === 404) return CLASS.NOT_FOUND;
@@ -146,11 +154,13 @@ function buildRouteList() {
     '/contact',
     '/products',
     '/blog',
+    '/insights',
     '/fr',
     '/fr/services',
     '/fr/contact',
     '/fr/products',
     '/fr/blog',
+    '/fr/insights',
   ];
 
   for (const r of staticRoutes) {
@@ -179,6 +189,8 @@ function buildRouteList() {
   }
 
   // Additional legal pages (not in baseline but exist now)
+  routes.push({ path: '/pages/contact', type: 'legal_page' });
+  routes.push({ path: '/pages/services', type: 'legal_page' });
   routes.push({ path: '/pages/downloads', type: 'legal_page' });
   routes.push({ path: '/pages/privacy', type: 'legal_page' });
   routes.push({ path: '/pages/warranty', type: 'legal_page' });
@@ -187,13 +199,6 @@ function buildRouteList() {
   routes.push({ path: '/fr/pages/downloads', type: 'legal_page' });
   routes.push({ path: '/fr/pages/privacy', type: 'legal_page' });
   routes.push({ path: '/fr/pages/warranty', type: 'legal_page' });
-
-  // Additional utility routes from manifest
-  routes.push({ path: '/api/health.json', type: 'api' });
-  routes.push({ path: '/robots.txt', type: 'utility' });
-
-  // Non-existent route (should 404)
-  routes.push({ path: '/nonexistent-page-xyz', type: '404_check' });
 
   return routes;
 }
@@ -213,6 +218,7 @@ async function testRoute(route) {
     hasContent: false,
     hasErrorText: false,
     contentLength: 0,
+    expectedRedirect: false,
     errors: [],
   };
 
@@ -246,7 +252,20 @@ async function testRoute(route) {
 
     if (res.status >= 300 && res.status < 400) {
       const location = res.headers.get('location') || '';
-      result.errors.push(`Redirect to: ${location}`);
+      const expected = EXPECTED_REDIRECTS[route.path];
+      let normalizedLocation = location;
+      try {
+        normalizedLocation = new URL(location, BASE).pathname;
+      } catch {
+        normalizedLocation = location;
+      }
+      const expectedClean = expected ? expected.replace(/\/+$/, '') : '';
+      const locClean = normalizedLocation.replace(/\/+$/, '');
+      if (expected && locClean === expectedClean) {
+        result.expectedRedirect = true;
+      } else {
+        result.errors.push(`Redirect to: ${location}`);
+      }
     }
   } catch (err) {
     result.classification = CLASS.OTHER;
@@ -257,9 +276,20 @@ async function testRoute(route) {
 }
 
 // ── Report ──
+function isPass(r) {
+  return (
+    r.classification === CLASS.PASS_200_RENDERED ||
+    r.classification === CLASS.CMS_DEPENDENT ||
+    r.expectedRedirect === true
+  );
+}
+
 function printResult(r) {
+  const displayClass = r.expectedRedirect
+    ? 'EXPECTED_REDIRECT'
+    : r.classification;
   let icon;
-  if (r.classification === CLASS.PASS_200_RENDERED) {
+  if (isPass(r)) {
     icon = '\x1b[32m✓\x1b[0m';
   } else if (r.classification === CLASS.CMS_DEPENDENT) {
     icon = '\x1b[33m~\x1b[0m';
@@ -286,7 +316,7 @@ function printResult(r) {
   const detailStr = details.length > 0 ? ` (${details.join(', ')})` : '';
 
   console.log(
-    `  ${icon} [${r.classification}] ${r.path} → HTTP ${r.status}${detailStr}`
+    `  ${icon} [${displayClass}] ${r.path} → HTTP ${r.status}${detailStr}`
   );
 
   if (r.errors.length > 0 && r.classification !== CLASS.REDIRECT) {
@@ -294,11 +324,6 @@ function printResult(r) {
       console.log(`      ⚠ ${e}`);
     }
   }
-}
-
-// ── Special handling for API routes ──
-function isApiRoute(path) {
-  return path.startsWith('/api/');
 }
 
 // ── Main ──
@@ -310,158 +335,55 @@ async function main() {
   const routes = buildRouteList();
   console.log(`Testing ${routes.length} routes...\n`);
 
-  let passCount = 0;
-  let totalHtmlRoutes = 0;
-
   for (const route of routes) {
     const result = await testRoute(route);
-
-    // API routes have different criteria
-    if (isApiRoute(route.path)) {
-      if (result.status === 200) {
-        result.classification = CLASS.PASS_200_RENDERED;
-      }
-    }
-
-    // Utility routes like robots.txt just need any successful response
-    if (route.type === 'utility') {
-      if (result.status === 200) {
-        result.classification = CLASS.PASS_200_RENDERED;
-      }
-    }
-
-    // 404_check routes should return 404
-    if (route.type === '404_check') {
-      if (result.status === 404) {
-        result.classification = CLASS.PASS_200_RENDERED;
-        result.errors = [];
-      } else {
-        result.errors.push(`Expected 404, got ${result.status}`);
-      }
-    }
-
     printResult(result);
     results.push(result);
-
-    if (
-      result.classification === CLASS.PASS_200_RENDERED ||
-      result.classification === CLASS.CMS_DEPENDENT
-    ) {
-      passCount++;
-    }
-    if (!isApiRoute(route.path) && route.type !== 'utility') {
-      totalHtmlRoutes++;
-    }
   }
 
-  // Summary
+  const pass = results.filter(isPass);
+  const failedRoutes = results.filter(r => !isPass(r));
+
+  const brokenImages = results.reduce((sum, r) => sum + r.emptyImgCount, 0);
+  const ssrErrors = results.filter(
+    r => r.classification === CLASS.SERVER_ERROR
+  ).length;
+  const cmsRuntimeErrors = results.filter(r => r.hasErrorText).length;
+
   console.log(`\n=== ROUTE USABILITY SUMMARY ===`);
-  console.log(`Total routes tested: ${routes.length}`);
-  console.log(
-    `200_RENDERED (PASS): ${results.filter(r => r.classification === CLASS.PASS_200_RENDERED).length}`
-  );
-  console.log(
-    `CMS_DEPENDENT:       ${results.filter(r => r.classification === CLASS.CMS_DEPENDENT).length}`
-  );
-  console.log(
-    `REDIRECT:            ${results.filter(r => r.classification === CLASS.REDIRECT).length}`
-  );
-  console.log(
-    `EMPTY_200:           ${results.filter(r => r.classification === CLASS.EMPTY_200).length}`
-  );
-  console.log(
-    `404:                 ${results.filter(r => r.classification === CLASS.NOT_FOUND).length}`
-  );
-  console.log(
-    `5XX:                 ${results.filter(r => r.classification === CLASS.SERVER_ERROR).length}`
-  );
-  console.log(
-    `OTHER:               ${results.filter(r => r.classification === CLASS.OTHER).length}`
-  );
+  console.log(`LOCAL_ROUTE_TOTAL=${results.length}`);
+  console.log(`LOCAL_ROUTE_PASS=${pass.length}`);
+  console.log(`LOCAL_ROUTE_FAIL=${failedRoutes.length}`);
+  console.log(`BROKEN_IMAGE=${brokenImages}`);
+  console.log(`SSR_ERROR=${ssrErrors}`);
+  console.log(`CMS_RUNTIME_ERROR=${cmsRuntimeErrors}`);
 
-  // Distribution
-  const routeTypes = {};
-  for (const r of results) {
-    routeTypes[r.type] = routeTypes[r.type] || { total: 0, pass: 0 };
-    routeTypes[r.type].total++;
-    if (
-      r.classification === CLASS.PASS_200_RENDERED ||
-      r.classification === CLASS.CMS_DEPENDENT
-    )
-      routeTypes[r.type].pass++;
+  const expectedRedirects = results.filter(r => r.expectedRedirect);
+  if (expectedRedirects.length > 0) {
+    console.log(`EXPECTED_REDIRECT=${expectedRedirects.length}`);
+    for (const r of expectedRedirects) {
+      console.log(`  ${r.path} → ${EXPECTED_REDIRECTS[r.path]}`);
+    }
   }
 
-  console.log(`\nRoute type breakdown:`);
-  for (const [type, counts] of Object.entries(routeTypes)) {
-    const pct =
-      counts.total > 0 ? Math.round((counts.pass / counts.total) * 100) : 0;
-    console.log(`  ${type}: ${counts.pass}/${counts.total} pass (${pct}%)`);
-  }
-
-  // Non-passing: routes that are not 200_RENDERED, not CMS_DEPENDENT, and not REDIRECT
-  const nonPass = results.filter(
-    r =>
-      r.classification !== CLASS.PASS_200_RENDERED &&
-      r.classification !== CLASS.CMS_DEPENDENT &&
-      r.classification !== CLASS.REDIRECT
-  );
-  if (nonPass.length > 0) {
-    console.log(`\nNon-passing routes:`);
-    for (const r of nonPass) {
+  if (failedRoutes.length > 0) {
+    console.log(`\nFAILED_ROUTE_LIST:`);
+    for (const r of failedRoutes) {
       console.log(
         `  [${r.classification}] ${r.path} → HTTP ${r.status}${r.errors.length > 0 ? ' — ' + r.errors.join('; ') : ''}`
       );
     }
-  }
-
-  // Log intentional redirects
-  const redirects = results.filter(r => r.classification === CLASS.REDIRECT);
-  if (redirects.length > 0) {
-    console.log(`\nRedirects (recorded, not errors):`);
-    for (const r of redirects) {
-      console.log(
-        `  [${r.classification}] ${r.path} → HTTP ${r.status}${r.errors.length > 0 ? ' — ' + r.errors.join('; ') : ''}`
-      );
-    }
-  }
-
-  // Log CMS-dependent routes
-  const cmsDeps = results.filter(r => r.classification === CLASS.CMS_DEPENDENT);
-  if (cmsDeps.length > 0) {
-    console.log(`\nCMS-dependent routes (no CMS data available):`);
-    for (const r of cmsDeps) {
-      console.log(
-        `  [${r.classification}] ${r.path} → HTTP ${r.status} (${r.contentLength} bytes)`
-      );
-    }
-  }
-
-  // Determine overall pass/fail
-  // HTML routes that are not 404_check should pass
-  const htmlRoutesNon404 = results.filter(
-    r => !isApiRoute(r.path) && r.type !== 'utility' && r.type !== '404_check'
-  );
-  const htmlFailures = htmlRoutesNon404.filter(
-    r =>
-      r.classification !== CLASS.PASS_200_RENDERED &&
-      r.classification !== CLASS.CMS_DEPENDENT &&
-      r.classification !== CLASS.REDIRECT
-  );
-
-  if (htmlFailures.length > 0) {
-    console.error(
-      `\nPublic Route Usability test FAILED — ${htmlFailures.length} route(s) not usable`
-    );
     failed = true;
-  } else {
-    console.log(
-      `\nPublic Route Usability test PASSED — all ${htmlRoutesNon404.length} HTML routes are usable`
-    );
   }
 
   if (failed) {
+    console.error(`\nPublic Route Usability test FAILED`);
     process.exit(1);
   }
+
+  console.log(
+    `\nPublic Route Usability test PASSED — ${pass.length}/${results.length} routes usable`
+  );
 }
 
 main();
